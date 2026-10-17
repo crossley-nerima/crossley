@@ -181,3 +181,6 @@ a { color: inherit; }
 .site-footer small { display: block; margin-top: 14px; font-size: 11px; }
 
 @media (prefers-reduced-motion: reduce) { .btn { transition: none; } html { scroll-behavior: auto; } }
+
+/* 道順の図（共通の見た目は src/_parts/route-map.css） */
+.route-map { --rm-paper: var(--bg); --rm-ink: var(--ink); --rm-accent: var(--yellow); --rm-on-accent: var(--bg); --rm-radius: 18px; }

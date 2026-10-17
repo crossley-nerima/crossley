@@ -163,3 +163,6 @@ a { color: inherit; }
 .footer small { display: block; margin-top: 18px; color: #5f668f; font-size: 11px; letter-spacing: .2em; }
 
 @media (prefers-reduced-motion: reduce) { .flicker { animation: none; } .tile--photo > img { transition: none; } }
+
+/* 道順の図（共通の見た目は src/_parts/route-map.css） */
+.route-map { margin: 4px 0 16px; --rm-paper: var(--bg); --rm-ink: var(--ink); --rm-accent: var(--red); --rm-on-accent: #fff; --rm-radius: 14px; }

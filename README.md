@@ -13,10 +13,18 @@
 | `patterns.json` | 10 案の名前・説明・構成 |
 | `src/<案>/` | 各案のひな形（HTML・CSS・JavaScript） |
 | `src/_common/` | 提案のときだけ使う部品（案の切り替えの帯・「仮」の札） |
+| `src/_parts/` | 全案に差し込む部品。`route-map.svg`（道順の図）と、その見た目 `route-map.css` |
 | `docs/` | 書き出したサイト（GitHub Pages はここを公開する） |
 | `build.py` | `site.json` をひな形に差し込んで `docs/` に書き出す |
 | `tools/prepare_photos.py` | 写真を Web 用に縮め、撮影情報を消し、テレビの画面をぼかす。チラシからロゴを抜き出す |
 | `tools/shoot.py` | 書き出したページを画面なしの Edge で撮って、崩れを確かめる |
+| `tools/make_route_map.py` | 練馬駅から店までの道順の図を、OpenStreetMap の地図データから作る（歩く道・番号の位置はこの中に書く） |
+
+## 道順を直すとき
+
+1. 手順の文は `site.json` の `route`。図の番号（1〜4）と順番を合わせる。
+2. 歩く道や番号の位置を変えるときは `tools/make_route_map.py` の `ROUTE`・`STEPS` を直し、`python -I -X utf8 tools/make_route_map.py` で図を作り直す。
+3. 図の色は各案の `style.css` の `.route-map { --rm-… }` で変える。
 
 ## 店の情報を直すとき
 

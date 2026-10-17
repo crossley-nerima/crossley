@@ -1,0 +1,36 @@
+/* 道順の図の見た目。色は各案の CSS で .route-map に --rm-… を決めて変える。
+   --rm-paper 図の地の色 / --rm-ink 文字と線 / --rm-accent 歩く道・店・番号 / --rm-on-accent 番号と札の文字 */
+:where(.route-map) { margin: 0 0 18px; max-width: 460px; }
+:where(.route-map .rm) { display: block; width: 100%; height: auto; border-radius: var(--rm-radius, 12px); font-family: inherit; }
+:where(.route-map figcaption) { margin-top: 6px; font-size: 11px; line-height: 1.6; opacity: .7; }
+:where(.route-map figcaption a) { color: inherit; }
+:where(.rm-bg) { fill: var(--rm-paper, #111); }
+:where(.rm-roads) { stroke: var(--rm-road, var(--rm-ink, currentColor)); opacity: var(--rm-road-opacity, .2); }
+:where(.rm-rail__base) { stroke: var(--rm-ink, currentColor); opacity: .5; }
+:where(.rm-rail__tie) { stroke: var(--rm-paper, #111); }
+:where(.rm-station) { fill: var(--rm-paper, #111); stroke: var(--rm-ink, currentColor); stroke-width: 1.4; }
+:where(.rm-station__name) { font-size: 14px; font-weight: 700; letter-spacing: .12em; fill: var(--rm-ink, currentColor); }
+:where(.rm-station__sub) { font-size: 8.5px; fill: var(--rm-ink, currentColor); opacity: .75; }
+:where(.rm-road-label) { font-size: 10px; letter-spacing: .14em; fill: var(--rm-ink, currentColor); opacity: .85;
+  paint-order: stroke; stroke: var(--rm-paper, #111); stroke-width: 3px; stroke-linejoin: round; }
+:where(.rm-shop-glow) { fill: var(--rm-accent, #e33); fill-opacity: .22; stroke: var(--rm-accent, #e33); stroke-opacity: .7; stroke-width: 1.2; }
+:where(.rm-shop) { fill: var(--rm-accent, #e33); }
+:where(.rm-route) { stroke: var(--rm-accent, #e33); stroke-width: 4; stroke-dasharray: 7 5; }
+:where(.rm-mark circle) { fill: var(--rm-ink, currentColor); }
+:where(.rm-mark text) { font-size: 10.5px; font-weight: 700; fill: var(--rm-ink, currentColor);
+  paint-order: stroke; stroke: var(--rm-paper, #111); stroke-width: 3.5px; stroke-linejoin: round; }
+:where(.rm-pin__lead) { fill: none; stroke: var(--rm-accent, #e33); stroke-width: 1.6; }
+:where(.rm-pin__box) { fill: var(--rm-accent, #e33); }
+:where(.rm-pin__name) { font-size: 15px; font-weight: 800; letter-spacing: .06em; fill: var(--rm-on-accent, #fff); }
+:where(.rm-pin__sub) { font-size: 9px; font-weight: 700; fill: var(--rm-on-accent, #fff); }
+:where(.rm-step circle) { fill: var(--rm-accent, #e33); stroke: var(--rm-paper, #111); stroke-width: 2; }
+:where(.rm-step text) { font-size: 11px; font-weight: 800; fill: var(--rm-on-accent, #fff); }
+:where(.rm-north path) { fill: var(--rm-ink, currentColor); }
+:where(.rm-north text), :where(.rm-scale text) { font-size: 9px; font-weight: 700; fill: var(--rm-ink, currentColor); }
+:where(.rm-scale path) { fill: none; stroke: var(--rm-ink, currentColor); stroke-width: 1.2; }
+/* 幅に余裕がある場所では、図と手順の文を横に並べる */
+:where(.route-guide) { container-type: inline-size; }
+@container (min-width: 760px) {
+  :where(.route-guide__in) { display: grid; grid-template-columns: minmax(0, 440px) minmax(0, 1fr); gap: 36px; align-items: center; }
+  :where(.route-guide__in) > .route-map { margin: 0; }
+}

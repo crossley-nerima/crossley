@@ -9,6 +9,7 @@ src/ のひな形に site.json（店の情報）を差し込んで docs/ に置�
 
 使い方: python -I -X utf8 build.py
 """
+import base64
 import html
 import json
 import re
@@ -159,12 +160,16 @@ def full_address():
 
 
 def map_url():
-    return 'https://www.google.com/maps/search/?api=1&query=' + urllib.parse.quote(addr_query())
+    # Google マップの店の登録（place_id）を開く。住所だけだと、店名や口コミが出ない。
+    g = SITE['gmap']
+    return ('https://www.google.com/maps/search/?api=1&query=' + urllib.parse.quote(g['name'])
+            + '&query_place_id=' + g['place_id'])
 
 
 def route_url():
-    return ('https://www.google.com/maps/dir/?api=1&travelmode=walking&destination='
-            + urllib.parse.quote(addr_query()))
+    g = SITE['gmap']
+    return ('https://www.google.com/maps/dir/?api=1&travelmode=walking&destination=' + urllib.parse.quote(g['name'])
+            + '&destination_place_id=' + g['place_id'])
 
 
 def h_img(ctx, name, sizes='100vw', alt=None, cls=None, eager=None, pos=None, scene=None):
@@ -260,7 +265,10 @@ def h_jsonld(ctx):
         }],
         'hasMap': map_url(),
         'amenityFeature': [{'@type': 'LocationFeatureSpecification', 'name': 'ダーツ', 'value': True}],
+        'geo': {'@type': 'GeoCoordinates', 'latitude': SITE['gmap']['pin'][0], 'longitude': SITE['gmap']['pin'][1]},
     }
+    if not raw('smoking')[1]:
+        data['smokingAllowed'] = SITE['smoking_allowed']
     # 未確定の値（電話番号・料金）は、検索エンジンに渡すデータには入れない。
     if not raw('phone')[1]:
         data['telephone'] = raw('phone')[0]
@@ -363,14 +371,34 @@ def h_hours_table(ctx, cls='hours'):
 
 
 def h_map(ctx, cls='map', title=None):
-    src = 'https://maps.google.com/maps?q=' + urllib.parse.quote(addr_query()) + '&z=17&hl=ja&output=embed'
+    # Google マップの「地図を埋め込む」の形。店の登録に印が立ち、駅と店が1画面に入る広さで開く。
+    g = SITE['gmap']
+    name = base64.b64encode(g['name'].encode()).decode().rstrip('=')
+    lat, lng = g['view']
+    src = ('https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d' + str(g['view_m']) + f'!2d{lng}!3d{lat}'
+           '!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s' + urllib.parse.quote(g['ftid'])
+           + '!2z' + name + '!5e0!3m2!1sja!2sjp!4v1792247389433!5m2!1sja!2sjp')
     return (f'<iframe class="{esc(cls)}" src="{esc(src)}" title="{esc(title or SITE["full_name"] + "の地図")}" '
-            'loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>')
+            'loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>')
 
 
 def h_route(ctx, cls='route'):
     items = ''.join(f'<li>{show_value(s, "道順")}</li>' for s in SITE['route'])
     return f'<ol class="{esc(cls)}">{items}</ol>'
+
+
+ROUTE_MAP = SRC / '_parts' / 'route-map.svg'
+ROUTE_MAP_CSS = SRC / '_parts' / 'route-map.css'
+
+
+def h_route_map(ctx, cls='route-map'):
+    """駅から店までの道順の図（tools/make_route_map.py で作る）。色は各案の CSS の --rm-… で変える。"""
+    css = re.sub(r'\s+', ' ', re.sub(r'/\*.*?\*/', '', ROUTE_MAP_CSS.read_text(encoding='utf-8'), flags=re.S)).strip()
+    svg = ROUTE_MAP.read_text(encoding='utf-8').strip().replace('</svg>', f'<style>{css}</style></svg>')
+    return (f'<figure class="{esc(cls)}">{svg}'
+            '<figcaption>道順の図（縮尺はおおよそ）。地図データ © '
+            '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
+            '</figcaption></figure>')
 
 
 def h_features(ctx, cls='features', h='h3'):
@@ -408,7 +436,7 @@ def h_year(ctx):
 HELPERS = {
     'head': h_head, 'fonts': h_fonts, 'jsonld': h_jsonld, 'proposal': h_proposal, 'img': h_img, 'logo': h_logo,
     'menu': h_menu, 'food': h_food, 'faq': h_faq, 'info': h_info, 'hours_table': h_hours_table, 'map': h_map,
-    'route': h_route, 'features': h_features, 'icon': h_icon, 'access': h_access, 'addr': h_addr,
+    'route': h_route, 'route_map': h_route_map, 'features': h_features, 'icon': h_icon, 'access': h_access, 'addr': h_addr,
     'tel_href': h_tel_href, 'insta_href': h_insta_href, 'year': h_year,
     'map_url': lambda ctx: esc(map_url()), 'route_url': lambda ctx: esc(route_url()),
     'root': lambda ctx: ctx['root'],

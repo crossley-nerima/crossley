@@ -126,3 +126,6 @@ a { color: inherit; }
 .footer { text-align: center; padding: 0 0 130px; color: #6f5262; font-size: 13px; }
 .footer b { display: block; font-family: var(--num); font-size: 40px; color: #3b2a3f; }
 .footer address { font-style: normal; }
+
+/* 道順の図（共通の見た目は src/_parts/route-map.css） */
+.route-map { margin: 16px 0; --rm-paper: #fff; --rm-ink: var(--card-ink); --rm-accent: #d0643f; --rm-on-accent: #fff; --rm-radius: 16px; --rm-road-opacity: .16; }

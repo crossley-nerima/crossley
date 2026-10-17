@@ -181,3 +181,7 @@ a { color: inherit; }
 .site-footer small { display: block; margin-top: 16px; font-family: var(--en); font-size: 11px; color: #6a665f; letter-spacing: .2em; }
 
 @media (prefers-reduced-motion: reduce) { .chapter, .chapter > img, .chapter__go .icon { transition: none; } html { scroll-behavior: auto; } }
+
+/* 道順の図（共通の見た目は src/_parts/route-map.css） */
+.route-map { --rm-paper: var(--bg); --rm-ink: var(--ink); --rm-accent: var(--c1); --rm-on-accent: var(--bg); --rm-radius: 0; }
+.route-map .rm { border: 1px solid var(--line); }
