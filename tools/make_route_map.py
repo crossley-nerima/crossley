@@ -6,6 +6,7 @@
 build.py が各案の「練馬駅からの行き方」に差し込む（色は各案の CSS の --rm-… で変える）。
 道の形・建物・目印の位置は地図データのまま。道順（どこを歩くか）と、目印の名前の出し方はこのファイルに書く。
 """
+import heapq
 import json
 import math
 import sys
@@ -27,11 +28,12 @@ COS = math.cos(math.radians(SHOP[0]))
 X0, X1, Y0, Y1 = -120, 130, -240, 95
 S = 1.25
 
-# 歩く道（m）。駅の南側から「練馬駅前」交差点で千川通りを渡り、マクドナルドの角を南へ。
-ROUTE = [(64, -183), (60, -158), (59, -150), (61, -136), (25, -128), (-10, -123),
-         (-6, -90), (2, -44), (6, -12), (7, -5), (4, -1)]
-# 番号の位置（site.json の route の順番と合わせる）
-STEPS = [(59, -150), (-10, -123), (-4, -68), (-8, 10)]
+# 通る場所（m）: 駅の南口 → 「練馬駅前」交差点 → マクドナルドの角 → 斜めの通りとの角（店の前）。
+# あいだは、図に描いた道に沿って、いちばん短い道筋で自動でつなぐ（手で線を引くと、道からずれて建物の上を通るため）。
+VIA = [(64, -185), (73, -146), (-12, -130), (7, -5)]
+ROUTE_END = (4, -1)  # 道から店の建物へ入る、最後のひと区切り
+# 番号の位置（site.json の route の順番と合わせる）。1〜3 は歩く道の上のいちばん近い点に置く。4 は店の札の近く。
+STEPS = [(73, -146), (-12, -130), (-2, -68), (-8, 10)]
 
 # 目印（地図データの名前 → 図に出す名前、文字を置く側）
 LANDMARKS = {
@@ -111,6 +113,64 @@ def path_d(pts):
     return 'M' + ' L'.join(f'{x} {y}' for x, y in q)
 
 
+def road_route(els):
+    """VIA の点のあいだを、図に描いた道（ROAD_W の道）に沿った、いちばん短い道筋でつなぐ。"""
+    pos, graph = {}, {}
+    for e in els:
+        t = e.get('tags', {})
+        if e['type'] != 'way' or t.get('highway') not in ROAD_W or 'geometry' not in e:
+            continue
+        ids = e['nodes']
+        for nid, g in zip(ids, e['geometry']):
+            pos[nid] = xy(g['lat'], g['lon'])
+        for a, b in zip(ids, ids[1:]):
+            w = math.dist(pos[a], pos[b])
+            graph.setdefault(a, []).append((b, w))
+            graph.setdefault(b, []).append((a, w))
+
+    def nearest(p):
+        return min(pos, key=lambda n: math.dist(pos[n], p))
+
+    def shortest(src, dst):
+        best, prev, queue = {src: 0}, {}, [(0, src)]
+        while queue:
+            d, n = heapq.heappop(queue)
+            if n == dst:
+                break
+            if d > best[n]:
+                continue
+            for m, w in graph.get(n, []):
+                if d + w < best.get(m, float('inf')):
+                    best[m], prev[m] = d + w, n
+                    heapq.heappush(queue, (d + w, m))
+        path = [dst]
+        while path[-1] != src:
+            path.append(prev[path[-1]])
+        return path[::-1]
+
+    route = []
+    for p, q in zip(VIA, VIA[1:]):
+        a, b = nearest(p), nearest(q)
+        far = max(math.dist(pos[a], p), math.dist(pos[b], q))
+        if far > 6:
+            raise SystemExit(f'通る場所 {p} か {q} の近くに道がありません（{far:.0f}m 離れています）')
+        pts = [pos[n] for n in shortest(a, b)]
+        route += pts if not route else pts[1:]
+    return route + [ROUTE_END]
+
+
+def nearest_on(line, p):
+    """折れ線 line の上で、点 p にいちばん近い点。"""
+    best, best_d = line[0], float('inf')
+    for (x1, y1), (x2, y2) in zip(line, line[1:]):
+        dx, dy = x2 - x1, y2 - y1
+        k = 0 if dx == dy == 0 else max(0, min(1, ((p[0] - x1) * dx + (p[1] - y1) * dy) / (dx * dx + dy * dy)))
+        q = (x1 + k * dx, y1 + k * dy)
+        if math.dist(q, p) < best_d:
+            best, best_d = q, math.dist(q, p)
+    return best
+
+
 def main():
     if len(sys.argv) > 1:
         data = json.load(open(sys.argv[1], encoding='utf-8'))
@@ -154,7 +214,9 @@ def main():
     if missing:
         raise SystemExit(f'目印が地図データに見つかりません: {missing}')
 
-    walked = sum(math.dist(a, b) for a, b in zip(ROUTE, ROUTE[1:]))
+    route = road_route(els)
+    steps = [nearest_on(route, p) for p in STEPS[:-1]] + [STEPS[-1]]
+    walked = sum(math.dist(a, b) for a, b in zip(route, route[1:]))
 
     o = []
     o.append(f'<svg class="rm" viewBox="0 0 {W} {H}" width="{W}" height="{H}" role="img" '
@@ -190,7 +252,7 @@ def main():
     o.append(f'<circle class="rm-shop-glow" cx="{hx}" cy="{hy}" r="17"/>')
     o.append(f'<path class="rm-shop" d="{path_d(shop_poly)} Z"/>')
     # 歩く道
-    o.append(f'<path class="rm-route" fill="none" stroke-linecap="round" stroke-linejoin="round" d="{path_d(ROUTE)}"/>')
+    o.append(f'<path class="rm-route" fill="none" stroke-linecap="round" stroke-linejoin="round" d="{path_d(route)}"/>')
     # 目印
     for (label, side), p in marks:
         px, py = to_svg(p)
@@ -205,7 +267,7 @@ def main():
              f'<text class="rm-pin__name" x="-63" y="39" text-anchor="middle">XⅢ</text>'
              f'<text class="rm-pin__sub" x="-63" y="53" text-anchor="middle">エクセル豊玉 3F</text></g>')
     # 番号
-    for i, p in enumerate(STEPS[:-1], 1):
+    for i, p in enumerate(steps[:-1], 1):
         px, py = to_svg(p)
         o.append(f'<g class="rm-step"><circle cx="{px}" cy="{py}" r="10"/>'
                  f'<text x="{px}" y="{py}" dy=".36em" text-anchor="middle">{i}</text></g>')

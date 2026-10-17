@@ -24,7 +24,7 @@
 ## 道順を直すとき
 
 1. 手順の文は `site.json` の `route`。図の番号（1〜4）と順番を合わせる。
-2. 歩く道や番号の位置を変えるときは `tools/make_route_map.py` の `ROUTE`・`STEPS` を直し、`python -I -X utf8 tools/make_route_map.py` で図を作り直す。
+2. 通る場所や番号の位置を変えるときは `tools/make_route_map.py` の `VIA`（通る場所。あいだは道に沿って自動でつなぐ）・`STEPS` を直し、`python -I -X utf8 tools/make_route_map.py` で図を作り直す。
 3. 図の色は各案の `style.css` の `.route-map { --rm-… }` で変える。
 
 ## お知らせ（臨時休業・臨時営業）を出すとき
