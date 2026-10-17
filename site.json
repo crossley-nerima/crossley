@@ -72,7 +72,7 @@
   "reservation": {"v": "お電話・Instagram の DM で承ります", "tbd": true},
   "private_hire": {"v": "〇名様から貸切できます", "tbd": true},
   "party_plan": {"v": "飲み放題 〇時間 ¥〇,〇〇〇", "tbd": true},
-  "darts_price": {"v": "1ゲーム ¥〇〇〇", "tbd": true},
+  "darts_price": "1ゲーム ¥100",
   "instagram": "@xiii.nerima.2026",
   "instagram_url": "https://www.instagram.com/xiii.nerima.2026/",
   "tabelog_url": "https://tabelog.com/tokyo/A1321/A132102/13324964/",
