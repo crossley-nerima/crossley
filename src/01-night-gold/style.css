@@ -233,3 +233,5 @@ a { color: inherit; }
 .route-map .rm { border: 1px solid var(--line); }
 .streetview { --rm-radius: 0; margin: 40px auto 0; }
 .notices { --nt-bg: var(--bg-2); --nt-card: rgba(201, 164, 92, .07); --nt-line: var(--line); --nt-ink: var(--ink); --nt-muted: var(--muted); --nt-closed: #b8473a; --nt-open: var(--gold); --nt-on-open: var(--bg); --nt-radius: 0; --nt-width: var(--wrap); }
+/* メニューの最後の段に1つだけ余ったときは、横いっぱいに広げる（2列の並び） */
+.menu > .menu__cat:last-child:nth-child(2n+1) { grid-column: 1 / -1; }

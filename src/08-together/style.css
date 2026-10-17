@@ -186,3 +186,5 @@ a { color: inherit; }
 .route-map { --rm-paper: var(--bg); --rm-ink: var(--ink); --rm-accent: var(--yellow); --rm-on-accent: var(--bg); --rm-radius: 18px; }
 .streetview { --rm-radius: 18px; margin: 18px 0; }
 .notices { --nt-bg: var(--bg); --nt-card: var(--panel); --nt-line: transparent; --nt-ink: var(--ink); --nt-muted: var(--muted); --nt-closed: #ff5a5f; --nt-open: var(--yellow); --nt-on-open: var(--bg); --nt-radius: 18px; }
+/* メニューの最後の段に1つだけ余ったときは、横いっぱいに広げる（3列の並び） */
+.menu > .menu__cat:last-child:nth-child(3n+1) { grid-column: 1 / -1; }

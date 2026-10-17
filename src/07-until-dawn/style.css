@@ -131,3 +131,5 @@ a { color: inherit; }
 .route-map { margin: 16px 0; --rm-paper: #fff; --rm-ink: var(--card-ink); --rm-accent: #d0643f; --rm-on-accent: #fff; --rm-radius: 16px; --rm-road-opacity: .16; }
 .streetview { --rm-radius: 16px; }
 .notices { --nt-bg: transparent; --nt-card: var(--card); --nt-line: transparent; --nt-ink: var(--card-ink); --nt-muted: var(--card-muted); --nt-closed: #d0643f; --nt-open: #5b4fc4; --nt-radius: 16px; --nt-pad: 96px 0 8px; --nt-title: var(--ink); }
+/* メニューの最後の段に1つだけ余ったときは、横いっぱいに広げる（3列の並び） */
+.menu > .menu__cat:last-child:nth-child(3n+1) { grid-column: 1 / -1; }
