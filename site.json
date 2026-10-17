@@ -98,7 +98,7 @@
     {"cat": "ビール・シャンパン", "en": "BEER & CHAMPAGNE", "price": {"v": "¥〇〇〇〜", "tbd": true},
      "items": ["ビール", "モエ・エ・シャンドン"], "items_tbd": true},
     {"cat": "焼酎", "en": "SHOCHU", "price": {"v": "¥〇〇〇〜", "tbd": true},
-     "items": ["茜霧島（芋）", "芋焼酎・麦焼酎 各種"], "items_tbd": true}
+     "items": ["茜霧島（芋）", "だいやめ～DAIYAME～（芋）", "芋焼酎・麦焼酎 各種"], "items_tbd": true}
   ],
   "menu_note": "棚に並ぶお酒の一例です（写真より）。品ぞろえは変わることがあります。",
 
