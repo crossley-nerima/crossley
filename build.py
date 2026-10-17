@@ -365,6 +365,15 @@ def h_faq(ctx, cls='faq', open=None):
     return ''.join(out)
 
 
+def link_or_text(key, href, external=False):
+    """値が決まっていてリンク先もあれば、押せるリンクにする（電話は電話がかかる、Instagram は別のタブで開く）。"""
+    text, tbd = raw(key)
+    if tbd or not href or href.startswith('#'):
+        return show(key)
+    ext = ' target="_blank" rel="noopener"' if external else ''
+    return f'<a href="{esc(href)}"{ext}>{esc(text)}</a>'
+
+
 def h_access(ctx):
     return f'{esc(SITE["lines"])}「{esc(SITE["station"])}」{show("exit")}から徒歩{show("walk")}分'
 
@@ -378,10 +387,10 @@ def h_info(ctx, cls='info'):
         ('定休日', f'{esc(SITE["closed"])}<br><small>{show("closed_note")}</small>'),
         ('席数', show('seats')),
         ('チャージ', show('charge')),
-        ('電話', show('phone')),
+        ('電話', link_or_text('phone', h_tel_href(ctx))),
         ('お支払い', show('payment')),
         ('たばこ', show('smoking')),
-        ('Instagram', show('instagram')),
+        ('Instagram', link_or_text('instagram', SITE.get('instagram_url'), external=True)),
     ]
     body = ''.join(f'<div class="{cls}__row"><dt>{k}</dt><dd>{v}</dd></div>' for k, v in rows)
     return f'<dl class="{esc(cls)}">{body}</dl>'
