@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ja">
+<head>
+{{head title="グループ・貸切｜X-III（クロスリー）練馬駅のバー" desc="練馬駅近くのバーX-III（クロスリー）のグループ利用・貸切のご案内。二次会や仲間内の集まりに。ダーツとテーブル席があります。人数・ご予算はご相談ください。" theme="#101318"}}
+{{fonts f="M+PLUS+Rounded+1c:wght@500;800|Archivo+Black"}}
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+{{proposal}}
+<header class="site-header">
+  <div class="wrap site-header__in">
+    <a class="brand" href="index.html"><b>X-III</b><span>クロスリー</span></a>
+    <nav class="gnav" aria-label="メインメニュー">
+      <a class="opt" href="index.html#menu">メニュー</a>
+      <a href="index.html#access">アクセス</a>
+      <a class="cta" href="party.html" aria-current="page">グループ・貸切</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="page-hero">
+    {{img name="tables" sizes="100vw" eager alt="" pos="50% 70%"}}
+    <div class="wrap">
+      <p class="sticker">GROUP &amp; PARTY</p>
+      <h1>グループ・貸切</h1>
+      <p>二次会や、仲間内の集まりに。ダーツとテーブル席で、みんなでワイワイ過ごせます。人数やご予算は、お気軽にご相談ください。</p>
+      <div class="btns"><a class="btn" href="#contact">{{icon name="phone"}}相談する</a></div>
+    </div>
+  </div>
+  <div class="wrap"><nav class="crumbs" aria-label="現在地"><ol><li><a href="index.html">トップ</a></li><li aria-current="page">グループ・貸切</li></ol></nav></div>
+
+  <section class="section" aria-labelledby="plan-h">
+    <div class="wrap">
+      <header class="head"><span class="en" aria-hidden="true">PLANS</span><h2 id="plan-h">プラン</h2></header>
+      <div class="plans">
+        <div class="plan"><h3>飲み放題</h3><p class="val">{{party_plan}}</p><p><span class="tbd">ビール・カクテル・ハイボールなど</span></p></div>
+        <div class="plan"><h3>貸切</h3><p class="val">{{private_hire}}</p><p><span class="tbd">お店をまるごと使えます</span></p></div>
+        <div class="plan"><h3>ダーツ</h3><p class="val">{{darts_price}}</p><p><span class="tbd">みんなで遊べるゲームもあります</span></p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--panel" aria-labelledby="flow-h">
+    <div class="wrap">
+      <header class="head"><span class="en" aria-hidden="true">FLOW</span><h2 id="flow-h">ご予約の流れ</h2></header>
+      <ol class="steps">
+        <li><b>ご相談</b><p>日にち・人数・ご予算をお知らせください。</p></li>
+        <li><b>内容を決める</b><p>プランや時間を、一緒に決めます。</p></li>
+        <li><b>当日</b><p>そのままお店へ。3階までお越しください。</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section" id="contact" aria-labelledby="contact-h">
+    <div class="wrap">
+      <header class="head"><span class="en" aria-hidden="true">CONTACT</span><h2 id="contact-h">ご相談・ご予約</h2><p>{{reservation}}</p></header>
+      <div class="contact">
+        <a href="{{tel_href}}">{{icon name="phone"}}<span><small>電話で相談</small>{{phone}}</span></a>
+        <a href="{{insta_href}}">{{icon name="insta"}}<span><small>Instagram の DM で相談</small>{{instagram}}</span></a>
+      </div>
+      <div class="prices">
+        <div class="price">{{icon name="chair"}}<b>席数</b><span>{{seats}}</span></div>
+        <div class="price">{{icon name="clock"}}<b>営業時間</b><span>{{hours}}</span></div>
+        <div class="price">{{icon name="card"}}<b>お支払い</b><span>{{payment}}</span></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <b>X-III</b>
+  <address>{{full_name}}　{{addr}}<br>{{hours}}／{{closed}}</address>
+  <small>&copy; {{year}} X-III CROSS THREE</small>
+</footer>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ja">
+<head>
+{{head title="II 過ごす（一人でも気軽に）｜X-III（クロスリー）練馬駅のバー" desc="練馬駅近くのバーX-III（クロスリー）は、一人でも気軽に過ごせるカウンターのバー。19:00〜翌朝7:00営業、日曜定休。席数・料金・営業時間のご案内。" theme="#0e0e0e"}}
+{{fonts f="Zen+Kaku+Gothic+Antique:wght@400;500;700|Cinzel:wght@500;700"}}
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="is-stay">
+{{proposal}}
+<header class="site-header">
+  <div class="wrap site-header__in">
+    <a class="brand" href="index.html">X-III</a>
+    <nav class="gnav" aria-label="メインメニュー">
+      <a href="drink.html"><span class="en">I</span>飲む</a>
+      <a href="stay.html" aria-current="page"><span class="en">II</span>過ごす</a>
+      <a href="play.html"><span class="en">III</span>遊ぶ</a>
+      <a class="gnav__access" href="index.html#access"><span class="en">·</span>アクセス</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="ch-hero">
+    {{img name="counter-dark" sizes="100vw" eager alt=""}}
+    <div class="wrap">
+      <p class="ch-hero__num" aria-hidden="true">II</p>
+      <h1><small>STAY</small>過ごす</h1>
+      <p>木のカウンターに、背もたれ付きのスツール。一人でふらりと寄って、自分のペースで過ごせます。</p>
+    </div>
+  </div>
+  <div class="wrap"><nav class="crumbs" aria-label="現在地"><ol><li><a href="index.html">トップ</a></li><li aria-current="page">II 過ごす</li></ol></nav></div>
+
+  <section class="section" aria-labelledby="solo-h">
+    <div class="wrap split">
+      {{img name="counter-wide" sizes="(min-width: 760px) 45vw, 100vw"}}
+      <div>
+        <header class="head" style="justify-items:start;text-align:left"><span class="en">SOLO</span><h2 id="solo-h">一人でも気軽に</h2></header>
+        <h3>仕事帰りの一杯に。<br>飲み直しの、もう一軒に。</h3>
+        <p>夜7時から朝7時まで。終電を逃した夜も、明け方の一杯も。カウンターでゆっくり過ごせる、心地よい空間です。</p>
+        <div class="facts">
+          <div class="fact">{{icon name="chair"}}<b>席数</b>{{seats}}</div>
+          <div class="fact">{{icon name="smoke"}}<b>たばこ</b>{{smoking}}</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" aria-labelledby="hours-h">
+    <div class="wrap visit">
+      <div>
+        <header class="head" style="justify-items:start;text-align:left"><span class="en">HOURS</span><h2 id="hours-h">営業時間</h2></header>
+        {{hours_table}}
+        <p class="sub-h" style="margin-top:18px">ラストオーダー {{last_order}}</p>
+        <p class="sub-h">{{closed_note}}</p>
+      </div>
+      <div>
+        <header class="head" style="justify-items:start;text-align:left"><span class="en">PRICE</span><h2>料金</h2></header>
+        <div class="facts" style="margin-top:0">
+          <div class="fact">{{icon name="yen"}}<b>チャージ</b>{{charge}}</div>
+          <div class="fact">{{icon name="card"}}<b>お支払い</b>{{payment}}</div>
+        </div>
+        <div class="btns"><a class="btn" href="index.html#access">{{icon name="pin"}}アクセスを見る</a></div>
+      </div>
+    </div>
+  </section>
+
+  <a class="next is-play" href="play.html"><small>NEXT CHAPTER</small><b><span class="en" style="color:var(--c3)">III</span>遊ぶ</b></a>
+</main>
+
+<footer class="site-footer">
+  <p class="marks" aria-hidden="true"><span>I DRINK</span> · <span>II STAY</span> · <span>III PLAY</span></p>
+  <address>{{full_name}}<br>{{addr}}<br>{{hours}}／{{closed}}</address>
+  <small>&copy; {{year}} X-III CROSS THREE</small>
+</footer>
+</body>
+</html>

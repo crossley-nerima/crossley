@@ -1,0 +1,123 @@
+/* 提案のときだけ読み込む見た目。本番（site.json の proposal: false）では読み込まない。 */
+
+/* 帯の高さ。各案の上に貼り付くヘッダーは、この下に付くように top: var(--pp-h, 0px) にしてある。 */
+:root { --pp-h: 40px; }
+html { scroll-padding-top: calc(var(--pp-h) + 72px); }
+
+/* ページの一番上の帯。スクロールしても上に残し、どこからでも案を切り替えられるようにする。 */
+.pp-bar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: var(--pp-h);
+  padding: 0 max(10px, env(safe-area-inset-right)) 0 max(14px, env(safe-area-inset-left));
+  background: rgba(24, 24, 27, .96);
+  color: #e9e9ec;
+  font: 500 13px/1.4 system-ui, -apple-system, "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+  letter-spacing: 0;
+  border-bottom: 1px solid #34343a;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.pp-bar a { color: #e9e9ec; text-decoration: none; }
+.pp-bar__now { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #a9a9b2; }
+.pp-bar__now b { color: #fff; font-weight: 700; margin-left: .4em; }
+.pp-bar__step { display: grid; place-items: center; width: 30px; height: 28px; border-radius: 8px; background: #2e2e34; font-size: 15px; }
+.pp-bar__step:hover, .pp-bar__step:focus-visible { background: #46464e; }
+
+/* 「10案を切り替え」：押すと 10 案が並ぶ。JavaScript が無くても開け閉めできるよう details で作る。 */
+.pp-switch { position: static; }
+.pp-switch > summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: #f2f2f4;
+  color: #18181b;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+}
+.pp-switch > summary::-webkit-details-marker { display: none; }
+.pp-switch > summary::after { content: ""; width: 7px; height: 7px; border: solid currentColor; border-width: 0 2px 2px 0; transform: translateY(-2px) rotate(45deg); transition: transform .2s; }
+.pp-switch[open] > summary::after { transform: translateY(1px) rotate(-135deg); }
+.pp-switch > summary:focus-visible { outline: 2px solid #8ab4ff; outline-offset: 2px; }
+
+.pp-panel {
+  position: absolute;
+  top: calc(var(--pp-h) + 6px);
+  right: max(10px, env(safe-area-inset-right));
+  width: min(760px, calc(100vw - 20px));
+  max-height: calc(100vh - var(--pp-h) - 24px);
+  max-height: calc(100dvh - var(--pp-h) - 24px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 14px;
+  border-radius: 16px;
+  background: #1f1f23;
+  border: 1px solid #3a3a41;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .55);
+}
+.pp-panel__head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 2px 6px 12px; color: #a9a9b2; font-size: 12px; }
+.pp-panel__head strong { color: #fff; font-size: 14px; }
+.pp-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pp-item {
+  display: grid;
+  grid-template-columns: 38px 1fr;
+  gap: 2px 12px;
+  align-items: center;
+  height: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #2a2a2f;
+  border: 1px solid transparent;
+  transition: background .15s, border-color .15s;
+}
+.pp-item:hover, .pp-item:focus-visible { background: #34343b; border-color: #55555e; }
+.pp-item[aria-current="page"] { border-color: #f2f2f4; background: #34343b; }
+.pp-item__swatch { grid-row: span 3; width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; font-weight: 800; font-size: 14px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14); }
+.pp-item__name { font-weight: 700; color: #fff; font-size: 14px; }
+.pp-item__name small { font-weight: 500; color: #9a9aa3; margin-left: .5em; font-size: 11px; }
+.pp-item__structure { font-size: 11px; color: #c9c9cf; }
+.pp-item__concept { font-size: 12px; color: #9a9aa3; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.pp-item[aria-current="page"] .pp-item__name::after { content: "表示中"; margin-left: .6em; padding: 1px 6px; border-radius: 6px; background: #f2f2f4; color: #18181b; font-size: 10px; vertical-align: 1px; }
+
+@media (max-width: 640px) {
+  :root { --pp-h: 44px; }
+  .pp-bar { font-size: 12px; gap: 6px; }
+  .pp-bar__now span { display: none; }
+  .pp-list { grid-template-columns: 1fr; }
+  .pp-panel { right: 8px; width: calc(100vw - 16px); padding: 10px; }
+  .pp-switch > summary { padding: 0 10px; }
+}
+@media (prefers-reduced-motion: reduce) { .pp-switch > summary::after, .pp-item { transition: none; } }
+
+/* まだ決まっていない値。「仮」の札を付けて、本物の値と見分けられるようにする。 */
+.tbd {
+  text-decoration: underline dashed 1px;
+  text-underline-offset: .22em;
+}
+.tbd::after {
+  content: "仮";
+  display: inline-block;
+  margin-left: .35em;
+  padding: .08em .42em;
+  border-radius: .35em;
+  background: #ffb020;
+  color: #1a1200;
+  font: 700 11px/1.35 system-ui, -apple-system, "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+  letter-spacing: 0;
+  text-transform: none;
+  text-decoration: none;
+  vertical-align: .18em;
+  font-style: normal;
+  white-space: nowrap;
+}
+.tbd--only { text-decoration: none; }

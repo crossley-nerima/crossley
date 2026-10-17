@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ja">
+<head>
+{{head title="X-III（クロスリー）｜練馬駅のダーツもできるバー｜朝7時まで" desc="練馬駅近くのバー「X-III（クロスリー）」。ダーツとテーブル席があり、仲間との飲み会や二次会にも。19時から翌朝7時まで営業（日曜定休）。練馬区豊玉北5丁目、エクセル豊玉3F。" theme="#101318"}}
+{{fonts f="M+PLUS+Rounded+1c:wght@500;800|Archivo+Black"}}
+<link rel="stylesheet" href="style.css">
+{{jsonld}}
+</head>
+<body>
+{{proposal}}
+<header class="site-header">
+  <div class="wrap site-header__in">
+    <a class="brand" href="index.html"><b>X-III</b><span>クロスリー</span></a>
+    <nav class="gnav" aria-label="メインメニュー">
+      <a class="opt" href="#menu">メニュー</a>
+      <a href="#access">アクセス</a>
+      <a class="cta" href="party.html">グループ・貸切</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero" aria-label="お店の紹介">
+    <div class="wrap hero__in">
+      <div>
+        <p class="sticker">ダーツあり ＆ 朝7時まで</p>
+        <h1>練馬駅のバー X-III（クロスリー）</h1>
+        <p class="hero__title"><span class="nb">みんなで<em>飲もう</em>、</span><br><span class="nb">みんなで<em>投げよう</em>。</span></p>
+        <p class="hero__lead">ダーツにテーブル席、L字のカウンター。仕事終わりの仲間と、二次会の流れで、ふらっと一人でも。</p>
+        <div class="btns">
+          <a class="btn" href="party.html">{{icon name="chair"}}グループ・貸切の相談</a>
+          <a class="btn btn--ghost" href="#access">{{icon name="pin"}}アクセス</a>
+        </div>
+      </div>
+      <div class="hero__art">
+        {{img name="darts" sizes="(min-width: 820px) 45vw, 86vw" eager}}
+        <p class="hero__badge"><span>19:00-7:00</span>{{closed}}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--panel" aria-labelledby="can-h">
+    <div class="wrap">
+      <header class="head"><span class="en" aria-hidden="true">WHAT'S FUN</span><h2 id="can-h">X-IIIでできること</h2></header>
+      <ul class="can">
+        <li class="can__item">{{icon name="darts" class="can__icon"}}<h3 class="can__title">ダーツ</h3><p class="can__body">飲みながら気軽に。{{darts_price}}</p></li>
+        <li class="can__item">{{icon name="chair" class="can__icon"}}<h3 class="can__title">テーブル席</h3><p class="can__body">丸いハイテーブルで、みんなでワイワイ。</p></li>
+        <li class="can__item">{{icon name="cocktail" class="can__icon"}}<h3 class="can__title">お酒とカクテル</h3><p class="can__body">ウイスキーから、定番・オリジナルのカクテルまで。</p></li>
+        <li class="can__item">{{icon name="clock" class="can__icon"}}<h3 class="can__title">朝7時まで</h3><p class="can__body">終電のあとの飲み直しにも。</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="use-h">
+    <div class="wrap">
+      <header class="head"><span class="en" aria-hidden="true">HOW TO USE</span><h2 id="use-h">こんなときに</h2></header>
+      <div class="uses">
+        <div class="use"><span class="num">01</span><b>二次会に</b><p>一軒目のあと、みんなでもう一杯。</p></div>
+        <div class="use"><span class="num">02</span><b>仕事終わりに</b><p>同僚と、ダーツで一勝負。</p></div>
+        <div class="use"><span class="num">03</span><b>ダーツ仲間と</b><p>投げて、飲んで、また投げて。</p></div>
+        <div class="use"><span class="num">04</span><b>ふらっと一人で</b><p>カウンターで、ゆっくり一杯。</p></div>
+      </div>
+      <div class="prices">
+        <div class="price">{{icon name="darts"}}<b>ダーツ</b><span>{{darts_price}}</span></div>
+        <div class="price">{{icon name="yen"}}<b>チャージ</b><span>{{charge}}</span></div>
+        <div class="price">{{icon name="glass"}}<b>飲み放題</b><span>{{party_plan}}</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-label="店内の写真" style="padding-top:0">
+    <div class="wrap photos">
+      {{img name="tables" sizes="(min-width: 700px) 40vw, 100vw" pos="50% 70%"}}
+      {{img name="neon-counter" sizes="(min-width: 700px) 30vw, 50vw" pos="35% 50%"}}
+      {{img name="backbar" sizes="(min-width: 700px) 30vw, 50vw" pos="62% 50%"}}
+    </div>
+  </section>
+
+  <section class="section section--panel" id="menu" aria-labelledby="menu-h">
+    <div class="wrap">
+      <header class="head"><span class="en" aria-hidden="true">MENU</span><h2 id="menu-h">メニュー</h2></header>
+      {{menu}}
+      <h3 style="margin:30px 0 10px;font-weight:800">フード</h3>
+      {{food}}
+    </div>
+  </section>
+
+  <section class="section" id="access" aria-labelledby="access-h">
+    <div class="wrap">
+      <header class="head"><span class="en" aria-hidden="true">ACCESS</span><h2 id="access-h">アクセス・営業時間</h2></header>
+      <div class="visit">
+        {{map}}
+        <div class="card">
+          <h3>練馬駅からの行き方</h3>
+          {{route}}
+          <div class="btns">
+            <a class="btn btn--blue" href="{{route_url}}" target="_blank" rel="noopener">{{icon name="walk"}}今いる場所から道順</a>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:18px">{{info}}</div>
+    </div>
+  </section>
+
+  <section class="section section--panel" aria-labelledby="faq-h">
+    <div class="wrap">
+      <header class="head"><span class="en" aria-hidden="true">FAQ</span><h2 id="faq-h">よくある質問</h2></header>
+      {{faq}}
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <b>X-III</b>
+  <address>{{full_name}}　{{addr}}<br>{{hours}}／{{closed}}</address>
+  <small>&copy; {{year}} X-III CROSS THREE</small>
+</footer>
+</body>
+</html>

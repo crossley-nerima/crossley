@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ja">
+<head>
+{{head theme="#060a07"}}
+{{fonts f="Zen+Kaku+Gothic+New:wght@400;500;700|Syne:wght@600;700;800"}}
+<link rel="stylesheet" href="style.css">
+{{jsonld}}
+</head>
+<body>
+{{proposal}}
+<main>
+  <section class="hero" aria-label="お店の紹介">
+    <div class="hero__bg">{{img name="backbar" sizes="100vw" eager alt=""}}</div>
+    <header class="top">
+      <a class="top__brand" href="#">X-III <small>クロスリー</small></a>
+      <nav class="top__nav" aria-label="ページ内メニュー">
+        <a href="#story">STORY</a><a href="#menu">MENU</a><a href="#info">ACCESS</a><a href="#faq">FAQ</a>
+      </nav>
+    </header>
+    <div class="hero__body">
+      <p class="hero__kicker">OPEN 19:00 — 7:00 ／ {{closed}}</p>
+      <h1 class="hero__title"><span class="hero__name">X-III</span><span class="hero__sub">クロスリー ｜ 練馬駅のバー</span></h1>
+      <p class="hero__catch">今夜、<span class="nb">ちょっとだけ寄り道しない？</span></p>
+    </div>
+    <a class="hero__scroll" href="#story">SCROLL</a>
+  </section>
+
+  <div id="story">
+    <div class="story-intro wrap">
+      <p>{{lead1}}<br>{{lead2}}<br><span>{{lead3}}</span></p>
+    </div>
+
+    <article class="ch">
+      <figure class="ch__photo">{{img name="backbar" sizes="(min-width: 860px) 56vw, 100vw"}}</figure>
+      <div class="ch__text">
+        <p class="ch__no">01 THE SHELF</p>
+        <h2 class="ch__title">緑に灯る、<br>酒棚の前で。</h2>
+        <p>カウンターの向こうには、ジャパニーズウイスキーやスコッチ、ジン、ラム、リキュールがずらり。ボトルを眺めながら、今夜の一杯を選んでください。</p>
+        <ul class="ch__tags"><li>山崎</li><li>白州</li><li>知多</li><li>マッカラン</li><li>ラフロイグ</li><li>クラセアスール</li></ul>
+      </div>
+    </article>
+
+    <article class="ch">
+      <figure class="ch__photo">{{img name="counter-dark" sizes="(min-width: 860px) 56vw, 100vw" pos="60% 50%"}}</figure>
+      <div class="ch__text">
+        <p class="ch__no">02 THE COUNTER</p>
+        <h2 class="ch__title">一人の夜も、<br>ここなら。</h2>
+        <p>使い込まれた木のカウンターに、背もたれ付きのスツール。仕事帰りにふらりと寄って、自分のペースで過ごせます。</p>
+        <p>夜7時から朝7時まで。終電を逃した夜の、飲み直しにも。</p>
+      </div>
+    </article>
+
+    <article class="ch">
+      <figure class="ch__photo">{{img name="neon-counter" sizes="(min-width: 860px) 56vw, 100vw" pos="35% 50%"}}</figure>
+      <div class="ch__text">
+        <p class="ch__no">03 COCKTAIL</p>
+        <h2 class="ch__title">定番から、<br>オリジナルまで。</h2>
+        <p>ジントニックのような定番から、ここだけのオリジナルまで。その日の気分に合わせて楽しめます。</p>
+      </div>
+    </article>
+
+    <article class="ch">
+      <figure class="ch__photo">{{img name="darts" sizes="(min-width: 860px) 56vw, 100vw"}}</figure>
+      <div class="ch__text">
+        <p class="ch__no">04 DARTS</p>
+        <h2 class="ch__title">飲んで、投げて、<br>また飲んで。</h2>
+        <p>ダーツマシンと、テーブル席も。友達とワイワイも、しっとり飲むのも、自由なスタイルで。</p>
+        <ul class="ch__tags"><li>ダーツ {{darts_price}}</li></ul>
+      </div>
+    </article>
+  </div>
+
+  <section class="section section--panel" id="menu" aria-labelledby="menu-h">
+    <div class="wrap">
+      <header class="head"><span class="head__en" aria-hidden="true">MENU</span><h2 id="menu-h">メニュー</h2></header>
+      {{menu}}
+      <div class="food-wrap">
+        <div class="food-box"><h3>フード</h3>{{food}}</div>
+        <div class="food-box">
+          <h3>料金のこと</h3>
+          <ul class="price-list">
+            <li>{{icon name="yen"}}<b>チャージ</b><span>{{charge}}</span></li>
+            <li>{{icon name="darts"}}<b>ダーツ</b><span>{{darts_price}}</span></li>
+            <li>{{icon name="card"}}<b>お支払い</b><span>{{payment}}</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="info" aria-labelledby="info-h">
+    <div class="wrap">
+      <header class="head"><span class="head__en" aria-hidden="true">ACCESS</span><h2 id="info-h">アクセス・営業時間</h2></header>
+      <div class="info-grid">
+        <div>
+          {{info}}
+          {{hours_table}}
+        </div>
+        <div>
+          <div class="map-box">{{map}}</div>
+          <div class="btns">
+            <a class="btn" href="{{route_url}}" target="_blank" rel="noopener">{{icon name="walk"}}今いる場所から道順</a>
+            <a class="btn btn--line" href="{{map_url}}" target="_blank" rel="noopener">{{icon name="map"}}Googleマップ</a>
+          </div>
+          <p class="sub-h">練馬駅からの行き方</p>
+          {{route}}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--panel" id="faq" aria-labelledby="faq-h">
+    <div class="wrap">
+      <header class="head"><span class="head__en" aria-hidden="true">FAQ</span><h2 id="faq-h">よくある質問</h2></header>
+      {{faq}}
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <p class="footer__name" aria-hidden="true">X-III</p>
+  <address>{{full_name}}<br>{{addr}}<br>{{hours}}／{{closed}}</address>
+  <small>&copy; {{year}} X-III CROSS THREE</small>
+</footer>
+</body>
+</html>

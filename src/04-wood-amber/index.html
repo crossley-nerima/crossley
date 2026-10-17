@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ja">
+<head>
+{{head title="X-III（クロスリー）｜練馬駅のウイスキーとカクテルのバー｜朝7時まで" theme="#2a190e"}}
+{{fonts f="Zen+Old+Mincho:wght@400;700;900|Playfair+Display:ital,wght@0,600;1,400"}}
+<link rel="stylesheet" href="style.css">
+{{jsonld}}
+</head>
+<body>
+{{proposal}}
+<header class="site-header">
+  <div class="wrap site-header__in">
+    <a class="brand" href="index.html"><b>X-III</b><span>クロスリー</span></a>
+    <nav class="gnav" aria-label="メインメニュー">
+      <a href="index.html" aria-current="page">ホーム</a>
+      <a href="menu.html">お酒の棚</a>
+      <a href="#access">アクセス</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero" aria-label="お店の紹介">
+    <div class="wrap hero__in">
+      <div>
+        <p class="hero__kicker it">Whisky &amp; Cocktail Bar in Nerima</p>
+        <h1>練馬駅のウイスキーとカクテルのバー<b>X-III<small>クロスリー</small></b></h1>
+        <p class="hero__catch">今夜、<span class="nb">ちょっとだけ</span><span class="nb">寄り道しない？</span></p>
+        <p class="hero__lead">ジャパニーズウイスキーからスコッチ、テキーラまで。木のカウンターで、琥珀色の一杯をゆっくりと。{{lead3}}</p>
+        <div class="btns">
+          <a class="btn" href="menu.html">お酒の棚を見る {{icon name="arrow"}}</a>
+          <a class="btn btn--line" href="#access">{{icon name="pin"}}アクセス</a>
+        </div>
+      </div>
+      <div class="arch">
+        {{img name="backbar" sizes="(min-width: 820px) 45vw, 88vw" eager}}
+        <p class="badge"><span class="it">Open till</span><b>7 a.m.</b><small>19:00〜／{{closed}}</small></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--deep" aria-labelledby="pour-h">
+    <div class="wrap">
+      <header class="head"><span class="it" aria-hidden="true">Tonight's Pour</span><h2 id="pour-h">今夜の一杯</h2></header>
+      <ul class="pours">
+        <li class="label">
+          <span class="it">The Yamazaki</span>
+          <h3>山崎 12年</h3>
+          <span class="kind">JAPANESE SINGLE MALT</span>
+          <p>華やかな果実の香りと、やわらかな甘み。まず一杯目に選びたい、ジャパニーズウイスキーの定番です。</p>
+          <span class="glass">グラス {{menu.0.price}}</span>
+        </li>
+        <li class="label">
+          <span class="it">The Hakushu</span>
+          <h3>白州 12年</h3>
+          <span class="kind">JAPANESE SINGLE MALT</span>
+          <p>森の若葉のような爽やかさと、ほのかなスモーク。ハイボールにしても香りが立ちます。</p>
+          <span class="glass">グラス {{menu.0.price}}</span>
+        </li>
+        <li class="label">
+          <span class="it">Laphroaig</span>
+          <h3>ラフロイグ 10年</h3>
+          <span class="kind">ISLAY SINGLE MALT</span>
+          <p>潮の香りと、力強いスモーク。好きな人にはたまらない、アイラの一本です。</p>
+          <span class="glass">グラス {{menu.1.price}}</span>
+        </li>
+      </ul>
+      <ul class="ways">
+        <li><b>ストレート</b><span>香りをそのまま</span></li>
+        <li><b>ロック</b><span>冷やして、ゆっくり</span></li>
+        <li><b>水割り</b><span>食事のあとにも</span></li>
+        <li><b>ハイボール</b><span>一杯目にすっきり</span></li>
+      </ul>
+      <p class="center"><a class="btn btn--line" href="menu.html">お酒の棚をすべて見る {{icon name="arrow"}}</a></p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="space-h">
+    <div class="wrap space">
+      <div class="space__photos">
+        {{img name="counter-wide" sizes="(min-width: 820px) 28vw, 55vw"}}
+        {{img name="darts" sizes="(min-width: 820px) 20vw, 40vw"}}
+      </div>
+      <div>
+        <header class="head" style="text-align:left;margin-bottom:28px"><span class="it" aria-hidden="true">The Counter</span><h2 id="space-h">木のカウンターで</h2></header>
+        <h3>使い込んだカウンターに、<br>今夜の居場所を。</h3>
+        <p>仕事帰りの一杯にも、飲み直しにも。一人でふらりと、仲間とにぎやかに。奥にはダーツとテーブル席もあります。</p>
+        {{features}}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--deep" id="access" aria-labelledby="access-h">
+    <div class="wrap">
+      <header class="head"><span class="it" aria-hidden="true">Access</span><h2 id="access-h">アクセス・営業時間</h2></header>
+      <div class="visit">
+        <div>
+          <div class="frame">{{map}}</div>
+          <div class="btns">
+            <a class="btn" href="{{route_url}}" target="_blank" rel="noopener">{{icon name="walk"}}今いる場所から道順</a>
+            <a class="btn btn--line" href="{{map_url}}" target="_blank" rel="noopener">Googleマップ</a>
+          </div>
+          <p class="sub-h">練馬駅からの行き方</p>
+          {{route}}
+        </div>
+        <div>{{info}}</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="faq-h">
+    <div class="wrap">
+      <header class="head"><span class="it" aria-hidden="true">Questions</span><h2 id="faq-h">よくある質問</h2></header>
+      {{faq}}
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <a class="brand" href="index.html"><b>X-III</b><span>クロスリー</span></a>
+    <address>{{addr}}<br>{{hours}}／{{closed}}</address>
+    <small>&copy; {{year}} X-III CROSS THREE</small>
+  </div>
+</footer>
+</body>
+</html>

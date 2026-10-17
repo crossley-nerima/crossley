@@ -1,0 +1,179 @@
+[
+ {
+  "no": "01",
+  "slug": "01-night-gold",
+  "name": "夜と金",
+  "en": "Night & Gold",
+  "concept": "チラシと同じ黒と金。王道の落ち着いたバーらしさを、いちばん素直に形にしました。",
+  "structure": "3ページ（トップ・メニュー・アクセス）",
+  "pages": [
+   "index.html",
+   "menu.html",
+   "access.html"
+  ],
+  "suits": "初めての方にも、きちんとしたお店だと伝えたい",
+  "hero": "counter-dark",
+  "colors": [
+   "#0b0a09",
+   "#c9a45c"
+  ]
+ },
+ {
+  "no": "02",
+  "slug": "02-green-shelf",
+  "name": "緑の酒棚",
+  "en": "Green Shelf",
+  "concept": "酒棚を照らす緑の光が主役。大きな写真をめくるように、スクロールで店内を案内します。",
+  "structure": "1ページ（写真で物語る縦長）",
+  "pages": [
+   "index.html"
+  ],
+  "suits": "写真の雰囲気で「行ってみたい」と思わせたい",
+  "hero": "backbar",
+  "colors": [
+   "#070b08",
+   "#b7f34a"
+  ]
+ },
+ {
+  "no": "03",
+  "slug": "03-neon",
+  "name": "ネオン",
+  "en": "Neon",
+  "concept": "窓辺の赤いネオンと、ダーツ席の青い壁から。タイルを並べたような、にぎやかな1ページです。",
+  "structure": "1ページ（タイル状のカード）",
+  "pages": [
+   "index.html"
+  ],
+  "suits": "若い方や、ダーツ目当ての方に来てほしい",
+  "hero": "neon-counter",
+  "colors": [
+   "#0a0d1f",
+   "#ff3358"
+  ]
+ },
+ {
+  "no": "04",
+  "slug": "04-wood-amber",
+  "name": "木と琥珀",
+  "en": "Wood & Amber",
+  "concept": "使い込んだ木のカウンターと、ウイスキーの琥珀色。お酒の棚を1ページかけて紹介します。",
+  "structure": "2ページ（トップ・お酒の棚）",
+  "pages": [
+   "index.html",
+   "menu.html"
+  ],
+  "suits": "お酒好き・ウイスキー好きに選ばれたい",
+  "hero": "backbar",
+  "colors": [
+   "#1a110b",
+   "#d9963f"
+  ]
+ },
+ {
+  "no": "05",
+  "slug": "05-editorial",
+  "name": "雑誌風",
+  "en": "Editorial",
+  "concept": "雑誌の特集ページのような、白地に縦書きの見出し。ほかのバーと並んだときに埋もれません。",
+  "structure": "1ページ（雑誌の特集）",
+  "pages": [
+   "index.html"
+  ],
+  "suits": "大人っぽく、少し文化的な印象にしたい",
+  "hero": "counter-dark",
+  "colors": [
+   "#f3efe6",
+   "#b3261e"
+  ]
+ },
+ {
+  "no": "06",
+  "slug": "06-three",
+  "name": "III",
+  "en": "Cross Three",
+  "concept": "店名の「III」にちなみ、楽しみ方を3つ（飲む・過ごす・遊ぶ）に分けて、それぞれの入口を作りました。",
+  "structure": "4ページ（トップ・飲む・過ごす・遊ぶ）",
+  "pages": [
+   "index.html",
+   "drink.html",
+   "stay.html",
+   "play.html"
+  ],
+  "suits": "店名の由来や、お店の世界観を印象づけたい",
+  "hero": "counter-dark",
+  "colors": [
+   "#0e0e0e",
+   "#f1efe9"
+  ]
+ },
+ {
+  "no": "07",
+  "slug": "07-until-dawn",
+  "name": "夜明けまで",
+  "en": "Until 7AM",
+  "concept": "19時から朝7時まで。スクロールすると時計が進み、夜の色から朝焼けへ変わっていきます。",
+  "structure": "1ページ（時間の流れで進む）",
+  "pages": [
+   "index.html"
+  ],
+  "suits": "「朝まで開いている」ことをいちばんの強みにしたい",
+  "hero": "counter-dark",
+  "colors": [
+   "#1b1440",
+   "#f2a07b"
+  ]
+ },
+ {
+  "no": "08",
+  "slug": "08-together",
+  "name": "みんなで",
+  "en": "Together",
+  "concept": "ダーツとテーブル席を前に出した、明るく元気な案。グループ・貸切のページも付けました。",
+  "structure": "2ページ（トップ・グループと貸切）",
+  "pages": [
+   "index.html",
+   "party.html"
+  ],
+  "suits": "仲間うちの飲み会や、貸切の相談を増やしたい",
+  "hero": "darts",
+  "colors": [
+   "#111318",
+   "#ffd23f"
+  ]
+ },
+ {
+  "no": "09",
+  "slug": "09-quick",
+  "name": "すぐ行ける",
+  "en": "Quick Access",
+  "concept": "スマホで開いてすぐ「いま開いているか」「どう行くか」が分かる案。軽さと分かりやすさを最優先にしました。",
+  "structure": "1ページ（スマホの使いやすさ最優先）",
+  "pages": [
+   "index.html"
+  ],
+  "suits": "検索や地図から来た人を、迷わずお店まで連れてきたい",
+  "hero": "counter-wide",
+  "colors": [
+   "#111111",
+   "#34c759"
+  ]
+ },
+ {
+  "no": "10",
+  "slug": "10-hideout",
+  "name": "隠れ家",
+  "en": "Hideout",
+  "concept": "ビルの3階にある隠れ家。暗い画面を指やマウスで照らすと、店内が浮かび上がります。",
+  "structure": "1ページ（照らして見る演出）",
+  "pages": [
+   "index.html"
+  ],
+  "suits": "知る人ぞ知る、特別な一軒として覚えてほしい",
+  "hero": "backbar",
+  "colors": [
+   "#050505",
+   "#b08a52"
+  ]
+ }
+]

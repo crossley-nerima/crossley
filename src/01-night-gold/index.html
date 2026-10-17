@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ja">
+<head>
+{{head theme="#0b0a09"}}
+{{fonts f="Shippori+Mincho:wght@400;500;600;700|Cormorant+Garamond:wght@500;600"}}
+<link rel="stylesheet" href="style.css">
+{{jsonld}}
+</head>
+<body>
+{{proposal}}
+<header class="site-header">
+  <div class="site-header__in">
+    <a class="site-header__logo" href="index.html">{{logo}}</a>
+    <nav class="gnav" aria-label="メインメニュー">
+      <ul>
+        <li><a href="index.html" aria-current="page">TOP<small>トップ</small></a></li>
+        <li><a href="menu.html">MENU<small>メニュー</small></a></li>
+        <li><a href="access.html">ACCESS<small>アクセス</small></a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero" aria-label="お店の紹介">
+    <div class="hero__bg">{{img name="counter-dark" sizes="100vw" eager pos="62% 50%"}}</div>
+    <div class="hero__in">
+      <div>
+        <p class="hero__label">{{opened}}</p>
+        <p class="hero__catch">今夜、<br>ちょっとだけ<br>寄り道しない<span class="q">？</span></p>
+        <p class="hero__lead">{{lead1}}<br>{{lead2}}<br>{{lead3}}</p>
+        <h1><span class="h1-text">練馬駅のバー</span>{{logo class="logo" alt="X-III（クロスリー）"}}</h1>
+      </div>
+      <div class="hours-box">
+        <p><span class="t">OPEN</span><span class="n">19:00</span></p>
+        <p class="arrow" aria-hidden="true">▼</p>
+        <p><span class="t">CLOSE</span><span class="n">7:00</span><small>翌朝</small></p>
+        <p class="closed">{{closed}}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap concept">
+      <div class="concept__photo">{{img name="counter-wide" sizes="(min-width: 760px) 40vw, 90vw"}}</div>
+      <div>
+        <header class="sec-head sec-head--left"><span class="en">CONCEPT</span><h2>X-IIIについて</h2></header>
+        <p class="concept__title">帰り道に、<br><em>もう一軒</em>の居場所を。</p>
+        <p>練馬駅のそば、ビルの3階。木のカウンターと、緑に灯る酒棚が迎えます。</p>
+        <p>仕事帰りの一杯にも、飲み直しにも。一人でふらりと、仲間とにぎやかに。夜7時から朝7時まで、それぞれの過ごし方で、ゆるっと楽しんでください。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt">
+    <div class="wrap">
+      <header class="sec-head"><span class="en">FEATURES</span><h2>X-IIIの楽しみ方</h2></header>
+      {{features}}
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <header class="sec-head"><span class="en">GALLERY</span><h2>店内の様子</h2></header>
+      <div class="gallery">
+        <figure>{{img name="backbar" sizes="(min-width: 760px) 45vw, 100vw"}}<figcaption>ジャパニーズウイスキーとテキーラ</figcaption></figure>
+        <figure>{{img name="neon-counter" sizes="(min-width: 760px) 28vw, 50vw" pos="40% 50%"}}<figcaption>L字のカウンター</figcaption></figure>
+        <figure>{{img name="darts" sizes="(min-width: 760px) 28vw, 50vw"}}<figcaption>ダーツとテーブル席</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt">
+    <div class="wrap teaser">
+      <header class="sec-head"><span class="en">MENU</span><h2>お酒とフード</h2></header>
+      <p>山崎・白州などのジャパニーズウイスキーから、スコッチ、テキーラ、カクテルまで。気分に合わせて選べます。</p>
+      <ul class="picks">
+        <li>山崎 12年</li><li>白州 12年</li><li>ザ・マッカラン 12年</li><li>ラフロイグ 10年</li><li>クラセアスール</li><li>カクテル各種</li>
+      </ul>
+      <a class="btn" href="menu.html">メニューを見る {{icon name="arrow"}}</a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap visit">
+      <div>
+        <header class="sec-head sec-head--left"><span class="en">ACCESS</span><h2>営業時間とアクセス</h2></header>
+        <ul class="visit__lines">
+          <li>{{icon name="clock"}}<div><b>営業時間</b>{{hours}}（{{closed}}）</div></li>
+          <li>{{icon name="pin"}}<div><b>住所</b>{{addr}}</div></li>
+          <li>{{icon name="train"}}<div><b>最寄り駅</b>{{access}}</div></li>
+          <li>{{icon name="phone"}}<div><b>電話</b>{{phone}}</div></li>
+        </ul>
+        <div class="btns">
+          <a class="btn" href="access.html">行き方を見る {{icon name="arrow"}}</a>
+          <a class="btn btn--ghost" href="{{map_url}}" target="_blank" rel="noopener">Googleマップ</a>
+        </div>
+      </div>
+      <div class="visit__photo">{{img name="tables" sizes="(min-width: 760px) 45vw, 100vw" pos="50% 70%"}}</div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  {{logo class="logo"}}
+  <address>{{addr}}<br>{{hours}}／{{closed}}</address>
+  <nav aria-label="フッターメニュー"><ul><li><a href="index.html">TOP</a></li><li><a href="menu.html">MENU</a></li><li><a href="access.html">ACCESS</a></li></ul></nav>
+  <small>&copy; {{year}} X-III CROSS THREE</small>
+</footer>
+</body>
+</html>

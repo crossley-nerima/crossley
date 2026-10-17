@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ja">
+<head>
+{{head theme="#f3efe6"}}
+{{fonts f="Noto+Serif+JP:wght@400;600;900|Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900"}}
+<link rel="stylesheet" href="style.css">
+{{jsonld}}
+</head>
+<body>
+{{proposal}}
+<div class="page">
+  <header class="mast">
+    <p class="mast__meta"><span>Nerima, Tokyo</span><span>Bar Journal No.01</span><span>Since 2026.07</span></p>
+    <p class="mast__title"><span class="en" aria-hidden="true">X-III</span><span class="sub">クロスリー　練馬駅のバー</span></p>
+    <nav class="mast__nav" aria-label="ページ内メニュー">
+      <a href="#feature">特集</a><a href="#four">楽しみ方</a><a href="#menu">お品書き</a><a href="#info">店舗案内</a><a href="#faq">質問</a>
+    </nav>
+  </header>
+
+  <main>
+    <figure class="cover">
+      {{img name="counter-dark" sizes="(min-width: 1200px) 1180px, 100vw" eager}}
+      <figcaption><b>COVER</b>緑の光に照らされた酒棚と、木のカウンター。練馬駅のそば、ビルの3階。</figcaption>
+    </figure>
+
+    <article class="feature" id="feature">
+      <p class="feature__head">今夜、<br>ちょっとだけ<br>寄り道しない<span class="q">？</span></p>
+      <div>
+        <p class="feature__label">Feature — A place to stop by tonight</p>
+        <p class="feature__lede">{{lead1}}{{lead2}}<br>{{lead3}}</p>
+        <div class="feature__body">
+          <p>練馬駅のそば、ビルの3階に、夜7時から朝7時まで灯りのともるバーがある。名前は X-III、読みはクロスリー。2026年7月に生まれた、まだ新しい店だ。</p>
+          <p>木のカウンターの向こうには、緑の光に照らされた酒棚。山崎、白州、マッカラン、ラフロイグ。白と青の陶器のボトルは、テキーラのクラセアスール。眺めているだけで、今夜の一杯が決まっていく。</p>
+          <p>仕事帰りの一杯に。二軒目の飲み直しに。一人でカウンターに座ってもいいし、奥のダーツで仲間と遊んでもいい。定番のカクテルから、ここだけのオリジナルまで、その夜の気分に合わせて楽しめる。</p>
+        </div>
+        <h1>練馬駅のバー X-III（クロスリー）</h1>
+      </div>
+    </article>
+
+    <blockquote class="pull">
+      <p>一人でも、<span>誰かとでも。</span></p>
+      <cite>X-III CROSS THREE</cite>
+    </blockquote>
+
+    <div class="spread">
+      <figure>{{img name="backbar" sizes="(min-width: 760px) 45vw, 100vw"}}<figcaption><b>01</b>カウンターに並ぶ、山崎・白州とクラセアスール。</figcaption></figure>
+      <figure>{{img name="neon-counter" sizes="(min-width: 760px) 26vw, 50vw" pos="35% 50%"}}<figcaption><b>02</b>L字のカウンターと、窓辺のネオン。</figcaption></figure>
+      <figure>{{img name="darts" sizes="(min-width: 760px) 26vw, 50vw"}}<figcaption><b>03</b>奥にはダーツと、テーブル席。</figcaption></figure>
+    </div>
+
+    <section class="sec" id="four" aria-labelledby="four-h">
+      <header class="sec__head"><h2 id="four-h">X-IIIの楽しみ方</h2><span class="en">Four ways</span></header>
+      <ol class="four">
+        <li><h3>{{features.0.title}}</h3><p>{{features.0.body}}</p></li>
+        <li><h3>{{features.1.title}}</h3><p>{{features.1.body}}</p></li>
+        <li><h3>{{features.2.title}}</h3><p>{{features.2.body}}</p></li>
+        <li><h3>{{features.3.title}}</h3><p>{{features.3.body}}</p></li>
+      </ol>
+    </section>
+
+    <section class="sec" id="menu" aria-labelledby="menu-h">
+      <header class="sec__head"><h2 id="menu-h">お品書き</h2><span class="en">The List</span></header>
+      {{menu}}
+      <h3 class="food-head">フード</h3>
+      {{food}}
+    </section>
+
+    <section class="sec" id="info" aria-labelledby="info-h">
+      <header class="sec__head"><h2 id="info-h">店舗案内</h2><span class="en">Information</span></header>
+      <div class="infobox">
+        <div>
+          <p class="infobox__name">X-III<small>クロスリー</small></p>
+          {{info}}
+        </div>
+        <div>
+          {{map}}
+          <div class="links">
+            <a class="link" href="{{route_url}}" target="_blank" rel="noopener">{{icon name="walk"}}今いる場所から道順</a>
+            <a class="link link--line" href="{{map_url}}" target="_blank" rel="noopener">Googleマップ</a>
+          </div>
+          <p class="box-h">練馬駅からの行き方</p>
+          {{route}}
+        </div>
+      </div>
+    </section>
+
+    <section class="sec" id="faq" aria-labelledby="faq-h">
+      <header class="sec__head"><h2 id="faq-h">よくある質問</h2><span class="en">Q &amp; A</span></header>
+      {{faq open="all"}}
+    </section>
+  </main>
+
+  <footer class="colophon">
+    <b aria-hidden="true">X-III</b>
+    <address>{{full_name}}　{{addr}}<br>{{hours}}／{{closed}}</address>
+    <small>&copy; {{year}} X-III CROSS THREE</small>
+  </footer>
+</div>
+</body>
+</html>

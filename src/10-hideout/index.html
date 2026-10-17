@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ja">
+<head>
+{{head title="X-III（クロスリー）｜練馬駅の隠れ家バー｜朝7時まで" theme="#050505"}}
+{{fonts f="Hina+Mincho|Italiana"}}
+<link rel="stylesheet" href="style.css">
+<script src="script.js" defer></script>
+{{jsonld}}
+</head>
+<body>
+{{proposal}}
+<div class="stage" aria-hidden="true">
+  {{img name="counter-dark" sizes="100vw" eager alt="" cls="is-on" scene="s1"}}
+  {{img name="backbar" sizes="100vw" alt="" scene="s2"}}
+  {{img name="neon-counter" sizes="100vw" alt="" scene="s3"}}
+  {{img name="darts" sizes="100vw" alt="" scene="s4"}}
+  {{img name="tables" sizes="100vw" alt="" scene="s5"}}
+</div>
+<div class="dark" aria-hidden="true"></div>
+<button class="lights" type="button" aria-pressed="false">明かりをつける</button>
+
+<div class="wrap">
+  <header class="top">
+    <a class="top__name" href="#">X-III</a>
+    <nav aria-label="ページ内メニュー"><a href="#shelf">酒棚</a><a href="#door">扉</a><a href="#night">過ごし方</a><a href="#guide">ご案内</a></nav>
+  </header>
+
+  <main>
+    <section class="scene" data-scene="s1" aria-label="お店の紹介">
+      <div class="opening">
+        <div>
+          <h1>練馬駅の隠れ家バー<br>{{logo class="logo" alt="X-III（クロスリー）"}}</h1>
+          <p class="catch">今夜、ちょっとだけ寄り道しない？</p>
+          <p>{{lead1}}{{lead2}}<br>{{lead3}}</p>
+          <p class="hint">画面をなぞると、店内が見えます</p>
+        </div>
+        <p class="opening__poem">練馬の、ビルの三階。<br>朝まで灯る、小さな隠れ家。</p>
+      </div>
+    </section>
+
+    <section class="scene" id="shelf" data-scene="s2" aria-labelledby="shelf-h">
+      <div class="scene__text scene__text--right">
+        <span class="en">The Shelf</span>
+        <h2 id="shelf-h">緑の灯りの、<br>酒棚の前で。</h2>
+        <p>カウンターの向こうに、ボトルが静かに並んでいます。ジャパニーズウイスキー、スコッチ、テキーラ。定番からオリジナルまでのカクテルも。</p>
+        <ul class="list"><li>山崎 12年</li><li>白州 12年</li><li>ザ・マッカラン 12年</li><li>ラフロイグ 10年</li><li>クラセアスール</li></ul>
+      </div>
+    </section>
+
+    <section class="scene" id="door" data-scene="s3" aria-labelledby="door-h">
+      <div class="scene__text">
+        <span class="en">The Door</span>
+        <h2 id="door-h">エクセル豊玉の、<br>三階へ。</h2>
+        <p>練馬駅から歩いて{{walk}}分。窓辺の赤いネオンが目印です。</p>
+        {{route}}
+      </div>
+    </section>
+
+    <section class="scene" id="night" data-scene="s4" aria-labelledby="night-h">
+      <div class="scene__text scene__text--right">
+        <span class="en">The Night</span>
+        <h2 id="night-h">夜7時から、<br>朝7時まで。</h2>
+        <ul class="poems">
+          <li><b>一人で、カウンターに。</b><span>{{features.2.body}}</span></li>
+          <li><b>気分に合わせた、一杯を。</b><span>{{features.1.body}}</span></li>
+          <li><b>奥には、ダーツも。</b><span>{{features.3.body}}</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="guide" id="guide" data-scene="s5" aria-labelledby="guide-h">
+      <div class="board">
+        <h2 id="guide-h">ご案内</h2>
+        <span class="en">Information</span>
+        <div class="grid2">
+          <div>{{info}}</div>
+          <div>
+            {{map}}
+            <div class="links">
+              <a class="link" href="{{route_url}}" target="_blank" rel="noopener">{{icon name="walk"}}今いる場所から道順</a>
+              <a class="link" href="{{map_url}}" target="_blank" rel="noopener">Googleマップ</a>
+            </div>
+            <p class="sub">営業時間</p>
+            {{hours_table}}
+          </div>
+        </div>
+        <p class="sub">お品書き</p>
+        {{menu}}
+        {{food}}
+        <p class="sub">よくある質問</p>
+        {{faq}}
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer class="footer">
+  <span class="en">X-III</span>
+  <address>{{full_name}}　{{addr}}<br>{{hours}}／{{closed}}</address>
+  <small>&copy; {{year}} X-III CROSS THREE</small>
+</footer>
+</body>
+</html>

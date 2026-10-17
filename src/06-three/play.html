@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ja">
+<head>
+{{head title="III 遊ぶ（ダーツ・グループ）｜X-III（クロスリー）練馬駅のバー" desc="練馬駅近くのバーX-III（クロスリー）でダーツを。テーブル席もあり、仲間との飲み会や二次会にも。ダーツの料金・貸切のご案内。" theme="#0e0e0e"}}
+{{fonts f="Zen+Kaku+Gothic+Antique:wght@400;500;700|Cinzel:wght@500;700"}}
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="is-play">
+{{proposal}}
+<header class="site-header">
+  <div class="wrap site-header__in">
+    <a class="brand" href="index.html">X-III</a>
+    <nav class="gnav" aria-label="メインメニュー">
+      <a href="drink.html"><span class="en">I</span>飲む</a>
+      <a href="stay.html"><span class="en">II</span>過ごす</a>
+      <a href="play.html" aria-current="page"><span class="en">III</span>遊ぶ</a>
+      <a class="gnav__access" href="index.html#access"><span class="en">·</span>アクセス</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="ch-hero">
+    {{img name="darts" sizes="100vw" eager alt=""}}
+    <div class="wrap">
+      <p class="ch-hero__num" aria-hidden="true">III</p>
+      <h1><small>PLAY</small>遊ぶ</h1>
+      <p>奥にはダーツマシンと、テーブル席。友達とワイワイも、しっとり飲むのも、自由なスタイルで。</p>
+    </div>
+  </div>
+  <div class="wrap"><nav class="crumbs" aria-label="現在地"><ol><li><a href="index.html">トップ</a></li><li aria-current="page">III 遊ぶ</li></ol></nav></div>
+
+  <section class="section" aria-labelledby="darts-h">
+    <div class="wrap split">
+      <div>
+        <header class="head" style="justify-items:start;text-align:left"><span class="en">DARTS</span><h2 id="darts-h">ダーツ</h2></header>
+        <h3>飲んで、投げて、<br>また飲んで。</h3>
+        <p>ダーツは一杯飲みながら、気軽にどうぞ。初めての方も、仲間と一緒なら盛り上がります。</p>
+        <div class="facts">
+          <div class="fact">{{icon name="darts"}}<b>ダーツ</b>{{darts_price}}</div>
+          <div class="fact">{{icon name="clock"}}<b>営業時間</b>{{hours}}</div>
+        </div>
+      </div>
+      {{img name="tables" sizes="(min-width: 760px) 45vw, 100vw" pos="50% 70%"}}
+    </div>
+  </section>
+
+  <section class="section section--alt" aria-labelledby="group-h">
+    <div class="wrap">
+      <header class="head"><span class="en">GROUP</span><h2 id="group-h">グループ・貸切</h2></header>
+      <p class="lede">二次会や仲間内の集まりに。人数やご予算は、お気軽にご相談ください。</p>
+      <div class="facts">
+        <div class="fact">{{icon name="chair"}}<b>貸切</b>{{private_hire}}</div>
+        <div class="fact">{{icon name="glass"}}<b>プラン</b>{{party_plan}}</div>
+        <div class="fact">{{icon name="phone"}}<b>ご予約</b>{{reservation}}</div>
+      </div>
+    </div>
+  </section>
+
+  <a class="next is-drink" href="drink.html"><small>BACK TO CHAPTER</small><b><span class="en" style="color:var(--c1)">I</span>飲む</b></a>
+</main>
+
+<footer class="site-footer">
+  <p class="marks" aria-hidden="true"><span>I DRINK</span> · <span>II STAY</span> · <span>III PLAY</span></p>
+  <address>{{full_name}}<br>{{addr}}<br>{{hours}}／{{closed}}</address>
+  <small>&copy; {{year}} X-III CROSS THREE</small>
+</footer>
+</body>
+</html>

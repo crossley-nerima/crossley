@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ja">
+<head>
+{{head title="アクセス・営業時間｜X-III（クロスリー）練馬駅のバー" desc="X-III（クロスリー）への行き方。練馬駅から徒歩圏内、練馬区豊玉北5丁目30-12 エクセル豊玉3F。営業時間は19:00〜翌朝7:00、日曜定休。" theme="#0b0a09"}}
+{{fonts f="Shippori+Mincho:wght@400;500;600;700|Cormorant+Garamond:wght@500;600"}}
+<link rel="stylesheet" href="style.css">
+{{jsonld}}
+</head>
+<body>
+{{proposal}}
+<header class="site-header">
+  <div class="site-header__in">
+    <a class="site-header__logo" href="index.html">{{logo}}</a>
+    <nav class="gnav" aria-label="メインメニュー">
+      <ul>
+        <li><a href="index.html">TOP<small>トップ</small></a></li>
+        <li><a href="menu.html">MENU<small>メニュー</small></a></li>
+        <li><a href="access.html" aria-current="page">ACCESS<small>アクセス</small></a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="page-hero">
+    {{img name="neon-counter" sizes="100vw" eager alt=""}}
+    <span class="en" aria-hidden="true">ACCESS</span>
+    <h1>アクセス・営業時間</h1>
+  </div>
+  <nav class="crumbs" aria-label="現在地"><ol><li><a href="index.html">トップ</a></li><li aria-current="page">アクセス・営業時間</li></ol></nav>
+
+  <section class="section" aria-labelledby="map-h">
+    <div class="wrap">
+      <header class="sec-head"><span class="en">MAP</span><h2 id="map-h">地図</h2></header>
+      <div class="map-frame">{{map}}</div>
+      <div class="map-links">
+        <a class="btn" href="{{route_url}}" target="_blank" rel="noopener">{{icon name="walk"}} 今いる場所から道順を見る</a>
+        <a class="btn btn--ghost" href="{{map_url}}" target="_blank" rel="noopener">Googleマップで開く</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" aria-labelledby="route-h">
+    <div class="wrap">
+      <header class="sec-head"><span class="en">ROUTE</span><h2 id="route-h">練馬駅からの行き方</h2></header>
+      {{route}}
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="info-h">
+    <div class="wrap access-grid">
+      <div>
+        <header class="sec-head sec-head--left"><span class="en">INFORMATION</span><h2 id="info-h">店舗情報</h2></header>
+        {{info}}
+      </div>
+      <div>
+        <p class="hours-title">営業時間</p>
+        {{hours_table}}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" aria-labelledby="faq-h">
+    <div class="wrap">
+      <header class="sec-head"><span class="en">Q&amp;A</span><h2 id="faq-h">よくある質問</h2></header>
+      {{faq}}
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  {{logo class="logo"}}
+  <address>{{addr}}<br>{{hours}}／{{closed}}</address>
+  <nav aria-label="フッターメニュー"><ul><li><a href="index.html">TOP</a></li><li><a href="menu.html">MENU</a></li><li><a href="access.html">ACCESS</a></li></ul></nav>
+  <small>&copy; {{year}} X-III CROSS THREE</small>
+</footer>
+</body>
+</html>

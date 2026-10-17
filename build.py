@@ -1,0 +1,493 @@
+"""X-III（クロスリー）のデザイン案を書き出す。
+
+src/ のひな形に site.json（店の情報）を差し込んで docs/ に置く。docs/ が GitHub Pages で公開される。
+店の情報は site.json の1か所だけを直せば、全パターンに反映される。
+
+ひな形の書き方:
+  {{name}}                  … site.json の値（未確定なら「仮」の印付き）
+  {{img name="backbar" sizes="100vw" alt="…"}} などの部品 … 下の HELPERS を参照
+
+使い方: python -I -X utf8 build.py
+"""
+import html
+import json
+import re
+import shutil
+import sys
+import urllib.parse
+from datetime import date
+from pathlib import Path
+
+from PIL import Image
+
+ROOT = Path(__file__).resolve().parent
+SRC = ROOT / 'src'
+OUT = ROOT / 'docs'
+SITE = json.loads((ROOT / 'site.json').read_text(encoding='utf-8'))
+ALL_PATTERNS = json.loads((ROOT / 'patterns.json').read_text(encoding='utf-8'))
+PATTERNS = list(ALL_PATTERNS)
+PROPOSAL = SITE.get('proposal', True)
+
+TOKEN = re.compile(r'\{\{\s*([\w.]+)((?:\s+[\w-]+(?:="[^"]*")?)*)\s*\}\}')
+ARG = re.compile(r'([\w-]+)(?:="([^"]*)")?')
+
+used_tbd = set()
+
+
+def esc(s):
+    return html.escape(str(s), quote=True)
+
+
+def lookup(key):
+    cur = SITE
+    for part in key.split('.'):
+        if isinstance(cur, list):
+            cur = cur[int(part)]
+        elif isinstance(cur, dict) and part in cur:
+            cur = cur[part]
+        else:
+            raise KeyError(key)
+    return cur
+
+
+def raw(key):
+    v = lookup(key)
+    if isinstance(v, dict) and 'v' in v:
+        return v['v'], v.get('tbd', False)
+    return v, False
+
+
+def tbd_span(text):
+    return f'<span class="tbd">{esc(text)}</span>'
+
+
+def show_value(v, label=''):
+    if isinstance(v, dict) and 'v' in v:
+        if v.get('tbd'):
+            used_tbd.add(label or v['v'])
+            return tbd_span(v['v'])
+        return esc(v['v'])
+    return esc(v)
+
+
+def show(key):
+    return show_value(lookup(key), key)
+
+
+def fill(text):
+    """「{charge} をいただいています」のような文の中の {名前} を、値（仮の印付き）にする。"""
+    parts = re.split(r'\{(\w+)\}', text)
+    out = []
+    for i, p in enumerate(parts):
+        out.append(show(p) if i % 2 else esc(p))
+    return ''.join(out)
+
+
+def plain(key):
+    """属性やメタ情報に入れる文字。未確定の値は入れない（検索結果に「〇〇」が出るのを防ぐ）。"""
+    text, tbd = raw(key)
+    if tbd:
+        raise ValueError(f'未確定の値 {key} は、属性やメタ情報には使えません')
+    return str(text)
+
+
+# ---- 写真 ----------------------------------------------------------------------
+IMG_DIR = OUT / 'assets' / 'img'
+
+
+def photo_widths(name):
+    ws = sorted(int(p.stem.rsplit('-', 1)[1]) for p in IMG_DIR.glob(f'{name}-*.webp') if p.stem.rsplit('-', 1)[1].isdigit())
+    if not ws:
+        raise FileNotFoundError(f'写真 {name} がありません（tools/prepare_photos.py を先に動かす）')
+    return ws
+
+
+def photo_size(name):
+    w = photo_widths(name)[-1]
+    with Image.open(IMG_DIR / f'{name}-{w}.webp') as im:
+        return im.size
+
+
+ALT = {
+    'counter-dark': '照明を落としたX-IIIのカウンター。緑に光る酒棚と、山崎・白州のボトル',
+    'backbar': 'カウンターに並ぶ山崎・白州とクラセアスール。奥に緑に光る酒棚',
+    'counter-wide': '木のカウンターと、背もたれ付きのハイスツール',
+    'neon-counter': 'L字のカウンターと、窓辺の赤いネオンサイン',
+    'tables': '丸いハイテーブルの席と、奥のカウンター',
+    'darts': 'ダーツマシンと、青い壁のテーブル席',
+}
+
+# ---- アイコン（線画。色は文字の色に合わせる） -------------------------------------------
+ICONS = {
+    'glass': '<path d="M6 8h20l-2 18a3 3 0 0 1-3 2.6H11A3 3 0 0 1 8 26z"/><path d="M7 15h18"/><path d="M12 19.5l3 2.5 4-4"/>',
+    'cocktail': '<path d="M5 6h22L16 18z"/><path d="M16 18v9"/><path d="M11 27h10"/><circle cx="23" cy="7" r="3.2"/>',
+    'stool': '<path d="M8 8h16"/><path d="M9 8c0-2 3-3 7-3s7 1 7 3"/><path d="M10 8l-2 20M22 8l2 20M10.6 17h10.8"/>',
+    'darts': '<circle cx="15" cy="17" r="10"/><circle cx="15" cy="17" r="6"/><circle cx="15" cy="17" r="2"/><path d="M15 17l12-12"/><path d="M23.5 4.5l3.5-.5-.5 3.5"/>',
+    'clock': '<circle cx="16" cy="16" r="11"/><path d="M16 9v7l5 3"/>',
+    'pin': '<path d="M16 28s-9-8.5-9-15a9 9 0 0 1 18 0c0 6.5-9 15-9 15z"/><circle cx="16" cy="13" r="3.2"/>',
+    'phone': '<path d="M8 5h5l2 6-3 2a15 15 0 0 0 7 7l2-3 6 2v5a2 2 0 0 1-2 2A21 21 0 0 1 6 7a2 2 0 0 1 2-2z"/>',
+    'train': '<rect x="8" y="4" width="16" height="19" rx="4"/><path d="M8 14h16"/><circle cx="12" cy="18.5" r="1"/><circle cx="20" cy="18.5" r="1"/><path d="M11 23l-3 5M21 23l3 5"/>',
+    'insta': '<rect x="5" y="5" width="22" height="22" rx="6"/><circle cx="16" cy="16" r="5"/><circle cx="22.5" cy="9.5" r="1"/>',
+    'map': '<path d="M4 8l8-3 8 3 8-3v19l-8 3-8-3-8 3z"/><path d="M12 5v19M20 8v19"/>',
+    'walk': '<circle cx="17" cy="5" r="2.2"/><path d="M14 28l3-8-3-3 1-7 4 4 4 1"/><path d="M15 10l-4 3-1 5M17 20l3 8"/>',
+    'arrow': '<path d="M6 16h20M19 9l7 7-7 7"/>',
+    'calendar': '<rect x="5" y="7" width="22" height="20" rx="3"/><path d="M5 13h22M11 4v6M21 4v6"/>',
+    'yen': '<path d="M9 5l7 10 7-10M16 15v12M10 17h12M10 22h12"/>',
+    'smoke': '<path d="M4 21h18v5H4zM24 21v5M27 21v5"/><path d="M24 17c0-3 3-3 3-6s-3-3-3-6"/>',
+    'card': '<rect x="4" y="8" width="24" height="17" rx="3"/><path d="M4 13h24M8 20h6"/>',
+    'chair': '<path d="M9 4v14h14M9 18l-2 10M23 18l2 10M23 18V10"/>',
+}
+
+
+def icon(name, cls='icon', label=''):
+    body = ICONS[name]
+    aria = f'role="img" aria-label="{esc(label)}"' if label else 'aria-hidden="true"'
+    return (f'<svg class="{esc(cls)}" viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentColor" '
+            f'stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" {aria}>{body}</svg>')
+
+
+# ---- 部品 ------------------------------------------------------------------------
+DAYS = [('月', 'Mon'), ('火', 'Tue'), ('水', 'Wed'), ('木', 'Thu'), ('金', 'Fri'), ('土', 'Sat'), ('日', 'Sun')]
+
+
+def addr_query():
+    return f"{SITE['region']}{SITE['locality']}{SITE['street']}"
+
+
+def full_address():
+    return f"{SITE['region']}{SITE['locality']}{SITE['street']} {SITE['building']}"
+
+
+def map_url():
+    return 'https://www.google.com/maps/search/?api=1&query=' + urllib.parse.quote(addr_query())
+
+
+def route_url():
+    return ('https://www.google.com/maps/dir/?api=1&travelmode=walking&destination='
+            + urllib.parse.quote(addr_query()))
+
+
+def h_img(ctx, name, sizes='100vw', alt=None, cls=None, eager=None, pos=None, scene=None):
+    ws = photo_widths(name)
+    w, h = photo_size(name)
+    src = f"{ctx['root']}assets/img/{name}-{ws[0] if len(ws) == 1 else ws[-2]}.webp"
+    srcset = ', '.join(f"{ctx['root']}assets/img/{name}-{x}.webp {x}w" for x in ws)
+    attrs = [f'src="{src}"', f'srcset="{srcset}"', f'sizes="{esc(sizes)}"', f'width="{w}"', f'height="{h}"',
+             f'alt="{esc(ALT[name] if alt is None else alt)}"', 'decoding="async"']
+    if eager is not None:
+        attrs.append('fetchpriority="high"')
+    else:
+        attrs.append('loading="lazy"')
+    if cls:
+        attrs.append(f'class="{esc(cls)}"')
+    if pos:
+        attrs.append(f'style="object-position:{esc(pos)}"')
+    if scene:
+        attrs.append(f'data-scene="{esc(scene)}"')
+    return '<img ' + ' '.join(attrs) + '>'
+
+
+def h_logo(ctx, cls='logo', variant='color', alt=None):
+    file = 'logo-x-iii.png' if variant == 'color' else 'logo-x-iii-white.png'
+    return (f'<img class="{esc(cls)}" src="{ctx["root"]}assets/img/{file}" width="444" height="234" '
+            f'alt="{esc(alt or "X-III クロスリー CROSS THREE")}">')
+
+
+def h_head(ctx, title=None, desc=None, theme='#0b0b0b', page=None):
+    t = title or f"{SITE['full_name']}｜練馬駅のバー｜朝7時まで営業・ダーツあり"
+    if PROPOSAL and ctx.get('pattern'):
+        t = f"【案{ctx['pattern']['no']}】" + t
+    d = desc or SITE['description']
+    base = SITE.get('base_url', '').rstrip('/')
+    lines = [
+        '<meta charset="utf-8">',
+        '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">',
+        f'<title>{esc(t)}</title>',
+        f'<meta name="description" content="{esc(d)}">',
+        f'<meta name="theme-color" content="{esc(theme)}">',
+        '<meta name="format-detection" content="telephone=no">',
+    ]
+    if PROPOSAL:
+        # 提案のページが検索に残ると、本番のページと競い合ってしまう。
+        lines.append('<meta name="robots" content="noindex, nofollow">')
+    elif base:
+        lines.append(f'<link rel="canonical" href="{esc(base + "/" + ctx["path"])}">')
+    lines += [
+        '<meta property="og:type" content="website">',
+        f'<meta property="og:site_name" content="{esc(SITE["full_name"])}">',
+        f'<meta property="og:title" content="{esc(t)}">',
+        f'<meta property="og:description" content="{esc(d)}">',
+        '<meta property="og:locale" content="ja_JP">',
+        '<meta name="twitter:card" content="summary_large_image">',
+    ]
+    if base:
+        lines.append(f'<meta property="og:url" content="{esc(base + "/" + ctx["path"])}">')
+        lines.append(f'<meta property="og:image" content="{esc(base)}/assets/img/og.jpg">')
+    lines += [
+        f'<link rel="icon" href="{ctx["root"]}assets/img/icon-32.png" sizes="32x32">',
+        f'<link rel="apple-touch-icon" href="{ctx["root"]}assets/img/icon-180.png">',
+    ]
+    if PROPOSAL:
+        lines.append(f'<link rel="stylesheet" href="{ctx["root"]}assets/common/proposal.css">')
+        lines.append(f'<script src="{ctx["root"]}assets/common/proposal.js" defer></script>')
+    return '\n'.join(lines)
+
+
+def h_fonts(ctx, f):
+    fams = '&'.join('family=' + x for x in f.split('|'))
+    return ('<link rel="preconnect" href="https://fonts.googleapis.com">\n'
+            '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
+            f'<link rel="stylesheet" href="https://fonts.googleapis.com/css2?{esc(fams)}&amp;display=swap">')
+
+
+def h_jsonld(ctx):
+    base = SITE.get('base_url', '').rstrip('/')
+    data = {
+        '@context': 'https://schema.org',
+        '@type': 'BarOrPub',
+        'name': SITE['full_name'],
+        'alternateName': [SITE['name'], SITE['kana'], SITE['en']],
+        'description': SITE['description'],
+        'address': {
+            '@type': 'PostalAddress', 'postalCode': SITE['postal'], 'addressRegion': SITE['region'],
+            'addressLocality': SITE['locality'], 'streetAddress': f"{SITE['street']} {SITE['building']}",
+            'addressCountry': 'JP',
+        },
+        'openingHoursSpecification': [{
+            '@type': 'OpeningHoursSpecification',
+            'dayOfWeek': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+            'opens': SITE['open'], 'closes': SITE['close'],
+        }],
+        'hasMap': map_url(),
+        'amenityFeature': [{'@type': 'LocationFeatureSpecification', 'name': 'ダーツ', 'value': True}],
+    }
+    # 未確定の値（電話番号・料金）は、検索エンジンに渡すデータには入れない。
+    if not raw('phone')[1]:
+        data['telephone'] = raw('phone')[0]
+    if base:
+        data['url'] = base + '/' + ctx['path']
+        data['image'] = [f'{base}/assets/img/og.jpg', f'{base}/assets/img/backbar-1600.webp']
+    return '<script type="application/ld+json">' + json.dumps(data, ensure_ascii=False) + '</script>'
+
+
+def h_proposal(ctx):
+    if not PROPOSAL or not ctx.get('pattern'):
+        return ''
+    p = ctx['pattern']
+    i = [x['no'] for x in ALL_PATTERNS].index(p['no'])
+    prev = ALL_PATTERNS[i - 1]
+    nxt = ALL_PATTERNS[(i + 1) % len(ALL_PATTERNS)]
+    r = ctx['root']
+    items = []
+    for x in ALL_PATTERNS:
+        bg, fg = x['colors']
+        cur = ' aria-current="page"' if x['no'] == p['no'] else ''
+        items.append(
+            f'<li><a class="pp-item" href="{r}{x["slug"]}/index.html"{cur}>'
+            f'<span class="pp-item__swatch" style="background:{bg};color:{fg}" aria-hidden="true">{x["no"]}</span>'
+            f'<span class="pp-item__name">{x["no"]} {esc(x["name"])}<small lang="en">{esc(x["en"])}</small></span>'
+            f'<span class="pp-item__structure">{esc(x["structure"])}</span>'
+            f'<span class="pp-item__concept">{esc(x["concept"])}</span></a></li>')
+    return (f'<nav class="pp-bar" aria-label="デザイン案の切り替え">'
+            f'<span class="pp-bar__now"><span>デザイン案 </span>{p["no"]}／{len(ALL_PATTERNS)}<b>{esc(p["name"])}</b></span>'
+            f'<a class="pp-bar__step" href="{r}{prev["slug"]}/index.html" aria-label="前の案（{esc(prev["name"])}）">‹</a>'
+            f'<a class="pp-bar__step" href="{r}{nxt["slug"]}/index.html" aria-label="次の案（{esc(nxt["name"])}）">›</a>'
+            f'<details class="pp-switch"><summary>{len(ALL_PATTERNS)}案を切り替え</summary>'
+            f'<div class="pp-panel"><p class="pp-panel__head"><strong>デザイン案を選ぶ</strong>'
+            f'<span>中身は同じで、見た目と構成が違います</span></p>'
+            f'<ul class="pp-list">{"".join(items)}</ul></div></details></nav>')
+
+
+def h_menu(ctx, h='h3', cls='menu'):
+    out = [f'<div class="{esc(cls)}">']
+    for i, m in enumerate(SITE['menu'], 1):
+        items = ''.join(f'<li>{esc(x)}</li>' for x in m['items'])
+        mark = ' <span class="tbd tbd--only">品目は一例</span>' if m.get('items_tbd') else ''
+        out.append(f'<section class="{cls}__cat" id="{cls}-{i}"><{h} class="{cls}__title">{esc(m["cat"])}'
+                   f'<span class="{cls}__en" lang="en">{esc(m["en"])}</span></{h}>'
+                   f'<p class="{cls}__price">{show_value(m["price"], m["cat"] + "の価格")}{mark}</p>'
+                   f'<ul class="{cls}__items">{items}</ul></section>')
+    out.append('</div>')
+    out.append(f'<p class="{cls}__note">{esc(SITE["menu_note"])}</p>')
+    return ''.join(out)
+
+
+def h_food(ctx, cls='food'):
+    rows = ''.join(f'<li><span class="{cls}__name">{esc(f["name"])}</span>'
+                   f'<span class="{cls}__price">{show_value(f["price"], f["name"] + "の価格")}</span></li>'
+                   for f in SITE['food'])
+    return f'<ul class="{esc(cls)}">{rows}</ul><p class="{cls}__note">{esc(SITE["food_note"])}</p>'
+
+
+def h_faq(ctx, cls='faq', open=None):
+    out = [f'<div class="{esc(cls)}">']
+    for i, f in enumerate(SITE['faq']):
+        # open … 最初の1問だけ開く。open="all" … すべて開いておく（読み物として見せる案）。
+        o = ' open' if open == 'all' or (open is not None and i == 0) else ''
+        out.append(f'<details class="{cls}__item"{o}><summary class="{cls}__q">{esc(f["q"])}</summary>'
+                   f'<p class="{cls}__a">{fill(f["a"])}</p></details>')
+    out.append('</div>')
+    return ''.join(out)
+
+
+def h_access(ctx):
+    return f'{esc(SITE["lines"])}「{esc(SITE["station"])}」{show("exit")}から徒歩{show("walk")}分'
+
+
+def h_info(ctx, cls='info'):
+    rows = [
+        ('店名', f'{esc(SITE["full_name"])}<br><span lang="en">{esc(SITE["en"])}</span>'),
+        ('住所', f'〒{esc(SITE["postal"])}<br>{esc(SITE["region"] + SITE["locality"] + SITE["street"])}<br>{esc(SITE["building"])}'),
+        ('アクセス', h_access(ctx)),
+        ('営業時間', f'{esc(SITE["hours"])}<br><small>ラストオーダー {show("last_order")}</small>'),
+        ('定休日', f'{esc(SITE["closed"])}<br><small>{show("closed_note")}</small>'),
+        ('席数', show('seats')),
+        ('チャージ', show('charge')),
+        ('電話', show('phone')),
+        ('お支払い', show('payment')),
+        ('たばこ', show('smoking')),
+        ('Instagram', show('instagram')),
+    ]
+    body = ''.join(f'<div class="{cls}__row"><dt>{k}</dt><dd>{v}</dd></div>' for k, v in rows)
+    return f'<dl class="{esc(cls)}">{body}</dl>'
+
+
+def h_hours_table(ctx, cls='hours'):
+    rows = []
+    for ja, en in DAYS:
+        if en == 'Sun':
+            rows.append(f'<tr class="is-closed" data-day="{en}"><th scope="row">{ja}</th><td>定休日</td></tr>')
+        else:
+            rows.append(f'<tr data-day="{en}"><th scope="row">{ja}</th><td>{esc(SITE["open"])}〜翌{esc(SITE["close"].lstrip("0"))}</td></tr>')
+    return f'<table class="{esc(cls)}"><caption class="visually-hidden">営業時間</caption><tbody>{"".join(rows)}</tbody></table>'
+
+
+def h_map(ctx, cls='map', title=None):
+    src = 'https://maps.google.com/maps?q=' + urllib.parse.quote(addr_query()) + '&z=17&hl=ja&output=embed'
+    return (f'<iframe class="{esc(cls)}" src="{esc(src)}" title="{esc(title or SITE["full_name"] + "の地図")}" '
+            'loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>')
+
+
+def h_route(ctx, cls='route'):
+    items = ''.join(f'<li>{show_value(s, "道順")}</li>' for s in SITE['route'])
+    return f'<ol class="{esc(cls)}">{items}</ol>'
+
+
+def h_features(ctx, cls='features', h='h3'):
+    out = [f'<ul class="{esc(cls)}">']
+    for f in SITE['features']:
+        out.append(f'<li class="{cls}__item">{icon(f["icon"], cls + "__icon")}'
+                   f'<{h} class="{cls}__title">{esc(f["title"])}</{h}><p class="{cls}__body">{esc(f["body"])}</p></li>')
+    out.append('</ul>')
+    return ''.join(out)
+
+
+def h_icon(ctx, name, cls='icon', label=''):
+    return icon(name, cls, label)
+
+
+def h_addr(ctx):
+    return esc(full_address())
+
+
+def h_tel_href(ctx):
+    text, tbd = raw('phone')
+    if tbd or not SITE.get('tel'):
+        return '#tel'
+    return 'tel:' + SITE['tel']
+
+
+def h_insta_href(ctx):
+    return SITE.get('instagram_url') or '#instagram'
+
+
+def h_year(ctx):
+    return str(date.today().year)
+
+
+HELPERS = {
+    'head': h_head, 'fonts': h_fonts, 'jsonld': h_jsonld, 'proposal': h_proposal, 'img': h_img, 'logo': h_logo,
+    'menu': h_menu, 'food': h_food, 'faq': h_faq, 'info': h_info, 'hours_table': h_hours_table, 'map': h_map,
+    'route': h_route, 'features': h_features, 'icon': h_icon, 'access': h_access, 'addr': h_addr,
+    'tel_href': h_tel_href, 'insta_href': h_insta_href, 'year': h_year,
+    'map_url': lambda ctx: esc(map_url()), 'route_url': lambda ctx: esc(route_url()),
+    'root': lambda ctx: ctx['root'],
+}
+
+
+def render(text, ctx, where):
+    def sub(m):
+        name, argtext = m.group(1), m.group(2) or ''
+        args = {k.replace('-', '_'): (v if v is not None else '') for k, v in ARG.findall(argtext)}
+        if 'class' in args:
+            args['cls'] = args.pop('class')
+        if name in HELPERS:
+            return HELPERS[name](ctx, **args)
+        if name.startswith('pattern.'):
+            return esc(ctx['pattern'][name.split('.', 1)[1]])
+        # 未確定の値を属性の中（< … > の中）に入れると、印の span がタグを壊すので止める。
+        before = text[:m.start()]
+        v = lookup(name)
+        if isinstance(v, dict) and v.get('tbd') and before.rfind('<') > before.rfind('>'):
+            raise ValueError(f'{where}: 未確定の値 {name} を属性の中で使っています')
+        return show(name)
+
+    out = TOKEN.sub(sub, text)
+    left = re.findall(r'\{\{.*?\}\}', out)
+    if left:
+        raise ValueError(f'{where}: 置き換えられなかった印があります: {left[:3]}')
+    return out
+
+
+def build():
+    # 書き出し先の写真は残し、ページだけ作り直す。
+    for p in PATTERNS:
+        shutil.rmtree(OUT / p['slug'], ignore_errors=True)
+    (OUT / 'assets' / 'common').mkdir(parents=True, exist_ok=True)
+    for f in (SRC / '_common').glob('*'):
+        shutil.copy2(f, OUT / 'assets' / 'common' / f.name)
+
+    pages = 0
+    for p in PATTERNS:
+        src = SRC / p['slug']
+        dst = OUT / p['slug']
+        dst.mkdir(parents=True)
+        for f in src.iterdir():
+            if f.suffix == '.html':
+                ctx = {'pattern': p, 'root': '../', 'path': f'{p["slug"]}/{f.name}'}
+                (dst / f.name).write_text(render(f.read_text(encoding='utf-8'), ctx, f'{p["slug"]}/{f.name}'),
+                                          encoding='utf-8', newline='\n')
+                pages += 1
+            else:
+                shutil.copy2(f, dst / f.name)
+        missing = [x for x in p['pages'] if not (dst / x).exists()]
+        if missing:
+            raise FileNotFoundError(f'{p["slug"]}: ページが足りません {missing}')
+
+    # 入口（公開したアドレスそのもの）。開いたら最初の案を出す。切り替えは各案の上の帯で行う。
+    first = ALL_PATTERNS[0]['slug']
+    (OUT / 'index.html').write_text(
+        '<!doctype html>\n<html lang="ja">\n<head>\n<meta charset="utf-8">\n'
+        + ('<meta name="robots" content="noindex, nofollow">\n' if PROPOSAL else '')
+        + f'<title>{esc(SITE["full_name"])}</title>\n'
+        f'<meta http-equiv="refresh" content="0; url={first}/index.html">\n'
+        f'<script>location.replace("{first}/index.html" + location.hash)</script>\n'
+        f'</head>\n<body><p><a href="{first}/index.html">{esc(SITE["full_name"])} のページへ</a></p></body>\n</html>\n',
+        encoding='utf-8', newline='\n')
+
+    # GitHub Pages に Jekyll の加工をさせない（_ で始まるファイルを消されないように）。
+    (OUT / '.nojekyll').write_text('', encoding='utf-8')
+    print(f'{pages} ページを書き出しました → {OUT}')
+    if used_tbd:
+        print(f'未確定（仮）の値: {len(used_tbd)} 種類')
+        if not PROPOSAL:
+            print('本番の書き出しに未確定の値が残っています。site.json を埋めてください。')
+            sys.exit(1)
+
+
+if __name__ == '__main__':
+    # --only 01,02 … 作りかけのときに、できた案だけ書き出す。
+    if len(sys.argv) > 2 and sys.argv[1] == '--only':
+        keep = sys.argv[2].split(',')
+        PATTERNS[:] = [p for p in PATTERNS if p['no'] in keep]
+    build()

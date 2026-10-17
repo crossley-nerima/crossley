@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ja">
+<head>
+{{head theme="#090c1d"}}
+{{fonts f="M+PLUS+1:wght@400;500;700;800|Dela+Gothic+One|Monoton"}}
+<link rel="stylesheet" href="style.css">
+{{jsonld}}
+</head>
+<body>
+{{proposal}}
+<div class="wrap">
+  <header class="bar">
+    <a class="bar__brand" href="#"><span class="mark glow-red" aria-hidden="true">X-III</span><small>練馬駅のバー クロスリー</small></a>
+    <nav class="bar__links" aria-label="ページ内メニュー">
+      <a class="pill" href="#menu">{{icon name="glass"}}<span>MENU</span></a>
+      <a class="pill pill--red" href="#access">{{icon name="pin"}}<span>MAP</span></a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="bento" aria-label="お店の紹介">
+      <div class="tile tile--photo t-main">
+        {{img name="neon-counter" sizes="(min-width: 960px) 50vw, 100vw" eager pos="30% 50%" alt="窓辺の赤いネオンサインと、L字のカウンター"}}
+        <p class="sign glow-red flicker" aria-hidden="true">X-III</p>
+        <div>
+          <h1>練馬駅のバー X-III（クロスリー）</h1>
+          <p class="catch">今夜、<span class="nb">ちょっとだけ</span><span class="nb">寄り道しない？</span></p>
+          <p class="lead">{{lead1}}{{lead2}}<br>{{lead3}}</p>
+        </div>
+      </div>
+
+      <div class="tile t-hours">
+        <p class="tile__label c-cyan">OPEN TONIGHT</p>
+        <p class="clock"><span class="glow-cyan">19:00</span><span class="to" aria-hidden="true">→</span><span class="glow-pink">7:00</span><small>翌朝</small></p>
+        <span class="closed">{{closed}}</span>
+      </div>
+
+      <div class="tile tile--photo t-darts">
+        {{img name="darts" sizes="(min-width: 960px) 25vw, 50vw"}}
+        <p class="tile__label c-cyan">DARTS</p>
+        <h2 class="tile__title">ダーツも楽しめる</h2>
+        <p>{{darts_price}}</p>
+      </div>
+
+      <div class="tile tile--photo t-whisky">
+        {{img name="backbar" sizes="(min-width: 960px) 25vw, 50vw" pos="62% 50%"}}
+        <p class="tile__label c-red">WHISKY</p>
+        <h2 class="tile__title">豊富なお酒を、もっと自由に</h2>
+      </div>
+
+      <div class="tile t-one">
+        {{icon name="stool"}}
+        <p class="tile__label c-pink">SOLO OK</p>
+        <h2 class="tile__title">一人でも気軽に</h2>
+        <p>カウンターでゆっくり過ごせる、心地よい空間。</p>
+      </div>
+
+      <div class="tile t-cocktail">
+        {{icon name="cocktail"}}
+        <p class="tile__label c-cyan">COCKTAIL</p>
+        <h2 class="tile__title">カクテルも充実</h2>
+        <p>定番からオリジナルまで、気分に合わせて。</p>
+      </div>
+
+      <div class="tile t-access">
+        <div>
+          <p class="tile__label c-red">ACCESS</p>
+          <p class="walk">練馬駅から徒歩{{walk}}分</p>
+          <p class="addr">{{addr}}</p>
+        </div>
+        <div class="pills">
+          <a class="pill pill--red" href="{{route_url}}" target="_blank" rel="noopener">{{icon name="walk"}}道順を見る</a>
+          <a class="pill" href="{{insta_href}}">{{icon name="insta"}}Instagram</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="menu" aria-labelledby="menu-h">
+      <header class="head"><span class="head__en glow-pink" aria-hidden="true">MENU</span><h2 id="menu-h">メニュー</h2></header>
+      {{menu}}
+      <div class="duo">
+        <div class="box"><h3>フード</h3>{{food}}</div>
+        <div class="box">
+          <h3>料金</h3>
+          <ul class="prices">
+            <li><b>チャージ</b><span>{{charge}}</span></li>
+            <li><b>ダーツ</b><span>{{darts_price}}</span></li>
+            <li><b>お支払い</b><span>{{payment}}</span></li>
+            <li><b>たばこ</b><span>{{smoking}}</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="access" aria-labelledby="access-h">
+      <header class="head"><span class="head__en glow-cyan" aria-hidden="true">ACCESS</span><h2 id="access-h">アクセス・営業時間</h2></header>
+      <div class="access">
+        <div class="box box--map">
+          {{map}}
+          <div class="map-pills">
+            <a class="pill pill--red" href="{{route_url}}" target="_blank" rel="noopener">{{icon name="walk"}}今いる場所から道順</a>
+            <a class="pill" href="{{map_url}}" target="_blank" rel="noopener">{{icon name="map"}}Googleマップで開く</a>
+          </div>
+        </div>
+        <div class="box"><h3>練馬駅からの行き方</h3>{{route}}</div>
+        <div class="box"><h3>営業時間</h3>{{hours_table}}</div>
+      </div>
+      <div class="box" style="margin-top:14px"><h3>店舗情報</h3>{{info}}</div>
+    </section>
+
+    <section class="section" id="faq" aria-labelledby="faq-h">
+      <header class="head"><span class="head__en glow-red" aria-hidden="true">FAQ</span><h2 id="faq-h">よくある質問</h2></header>
+      {{faq}}
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p class="sign glow-red" aria-hidden="true">X-III</p>
+    <address>{{full_name}}<br>{{addr}}<br>{{hours}}／{{closed}}</address>
+    <small>&copy; {{year}} X-III CROSS THREE</small>
+  </footer>
+</div>
+</body>
+</html>

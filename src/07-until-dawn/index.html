@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ja">
+<head>
+{{head title="X-III（クロスリー）｜練馬駅のバー｜19時から朝7時まで営業" theme="#20163f"}}
+{{fonts f="Zen+Maru+Gothic:wght@400;500;700|Space+Grotesk:wght@400;500;700"}}
+<link rel="stylesheet" href="style.css">
+<script src="script.js" defer></script>
+{{jsonld}}
+</head>
+<body>
+{{proposal}}
+<div class="sky" aria-hidden="true"></div>
+<div class="clock" aria-hidden="true"><span class="clock__time">19:00</span><span class="clock__label">OPEN</span><span class="clock__bar"><span></span></span></div>
+
+<div class="wrap">
+  <header class="top">
+    <a class="top__brand" href="#"><b>X-III</b><span>クロスリー</span></a>
+    <nav aria-label="ページ内メニュー"><a href="#night">夜の過ごし方</a><a href="#info">ご来店の前に</a></nav>
+  </header>
+
+  <main>
+    <div class="timeline" id="night">
+      <section class="hour hour--open" aria-label="19時">
+        <div class="hour__time"><time>19:00</time><span>OPEN</span></div>
+        <div class="hour__body">
+          <h1>練馬駅のバー X-III（クロスリー）</h1>
+          <p class="h">夜7時、<br>灯りがともる。</p>
+          <p class="catch">今夜、<span class="nb">ちょっとだけ寄り道しない？</span></p>
+          <p>{{lead1}}{{lead2}}<br>朝7時まで、ゆるっと楽しめる大人のBAR。（{{closed}}）</p>
+          <figure class="hour__photo">{{img name="counter-dark" sizes="(min-width: 1080px) 820px, 100vw" eager}}</figure>
+        </div>
+      </section>
+
+      <section class="hour" aria-labelledby="h20">
+        <div class="hour__time"><time>20:00</time><span>AFTER WORK</span></div>
+        <div class="hour__body">
+          <h2 id="h20">仕事帰りに、<span class="nb">一杯だけ。</span></h2>
+          <p>まっすぐ帰るには、少しだけ早い夜に。背もたれ付きのスツールで、カウンターに一杯だけ、のつもりで。</p>
+          <figure class="hour__photo">{{img name="counter-wide" sizes="(min-width: 1080px) 820px, 100vw" pos="50% 60%"}}</figure>
+        </div>
+      </section>
+
+      <section class="hour" aria-labelledby="h22">
+        <div class="hour__time"><time>22:00</time><span>DRINK</span></div>
+        <div class="hour__body">
+          <h2 id="h22">ウイスキーか、<span class="nb">カクテルか。</span></h2>
+          <p>山崎、白州、マッカラン、ラフロイグ。テキーラのクラセアスールも。定番からオリジナルまでのカクテルを、気分に合わせて。</p>
+          <ul class="chips"><li>山崎 12年</li><li>白州 12年</li><li>ザ・マッカラン 12年</li><li>クラセアスール</li><li>カクテル {{menu.4.price}}</li></ul>
+          <figure class="hour__photo">{{img name="backbar" sizes="(min-width: 1080px) 820px, 100vw"}}</figure>
+        </div>
+      </section>
+
+      <section class="hour" aria-labelledby="h00">
+        <div class="hour__time"><time>0:00</time><span>DARTS</span></div>
+        <div class="hour__body">
+          <h2 id="h00">日付が変わる頃は、<span class="nb">ダーツで一勝負。</span></h2>
+          <p>奥にはダーツとテーブル席。友達とワイワイも、しっとり飲むのも、自由なスタイルで。</p>
+          <ul class="chips"><li>ダーツ {{darts_price}}</li></ul>
+          <figure class="hour__photo">{{img name="darts" sizes="(min-width: 1080px) 820px, 100vw" pos="50% 60%"}}</figure>
+        </div>
+      </section>
+
+      <section class="hour" aria-labelledby="h02">
+        <div class="hour__time"><time>2:00</time><span>ONE MORE</span></div>
+        <div class="hour__body">
+          <h2 id="h02">二軒目、三軒目の<span class="nb">飲み直しに。</span></h2>
+          <p>終電のあとも、まだ開いています。窓辺のネオンを目印に、もう一杯だけ。</p>
+          <figure class="hour__photo">{{img name="neon-counter" sizes="(min-width: 1080px) 820px, 100vw" pos="35% 50%"}}</figure>
+        </div>
+      </section>
+
+      <section class="hour" aria-labelledby="h04">
+        <div class="hour__time"><time>4:00</time><span>QUIET</span></div>
+        <div class="hour__body">
+          <h2 id="h04">静かな時間に、<span class="nb">ひとりで。</span></h2>
+          <p>夜の終わりの、いちばん静かな時間。一人でゆっくり過ごすのにも、ちょうどいい。</p>
+          <figure class="hour__photo">{{img name="tables" sizes="(min-width: 1080px) 820px, 100vw" pos="50% 75%"}}</figure>
+        </div>
+      </section>
+
+      <section class="hour" aria-labelledby="h0630">
+        <div class="hour__time"><time>6:30</time><span>LAST ORDER</span></div>
+        <div class="hour__body">
+          <h2 id="h0630">最後の一杯を、<span class="nb">どうぞ。</span></h2>
+          <p>ラストオーダーは {{last_order}}。</p>
+        </div>
+      </section>
+
+      <section class="hour hour--close" aria-labelledby="h07">
+        <div class="hour__time"><time>7:00</time><span>CLOSE</span></div>
+        <div class="hour__body">
+          <h2 id="h07" class="h">朝7時、<br>おやすみなさい。</h2>
+          <p>また今夜、寄り道しに来てください。</p>
+        </div>
+      </section>
+    </div>
+
+    <section class="morning" id="info" aria-labelledby="info-h">
+      <h2 class="morning__title" id="info-h"><small>BEFORE YOU COME</small>ご来店の前に</h2>
+      <div class="cards">
+        <div class="card"><h3>営業時間<small>HOURS</small></h3>{{hours_table}}<p style="margin:10px 0 0;font-size:13px">{{closed_note}}</p></div>
+        <div class="card"><h3>店舗情報<small>INFO</small></h3>{{info}}</div>
+        <div class="card card--wide">
+          <h3>アクセス<small>ACCESS</small></h3>
+          {{map}}
+          <div class="btns">
+            <a class="btn" href="{{route_url}}" target="_blank" rel="noopener">{{icon name="walk"}}今いる場所から道順</a>
+            <a class="btn btn--line" href="{{map_url}}" target="_blank" rel="noopener">Googleマップで開く</a>
+          </div>
+          {{route}}
+        </div>
+        <div class="card card--wide"><h3>メニュー<small>MENU</small></h3>{{menu}}<h3 style="margin-top:18px">フード<small>FOOD</small></h3>{{food}}</div>
+        <div class="card card--wide"><h3>よくある質問<small>FAQ</small></h3>{{faq}}</div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer class="footer">
+  <b>X-III</b>
+  <address>{{addr}}<br>{{hours}}／{{closed}}</address>
+  <small>&copy; {{year}} X-III CROSS THREE</small>
+</footer>
+</body>
+</html>

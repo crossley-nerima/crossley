@@ -1,0 +1,128 @@
+/* 案07 夜明けまで：19時から朝7時まで。スクロールで時計が進み、空の色が夜から朝焼けへ変わる。 */
+:root {
+  --ink: #f4f1fb;
+  --muted: #b9b3cf;
+  --line: rgba(244, 241, 251, .16);
+  --dawn: #f6b48f;
+  --peach: #ffd8bd;
+  --card: #fff8f1;
+  --card-ink: #2a2236;
+  --card-muted: #6f6680;
+  --ja: "Zen Maru Gothic", system-ui, sans-serif;
+  --num: "Space Grotesk", "Zen Maru Gothic", sans-serif;
+  --sky-top: #20163f;
+  --sky-bottom: #0a0b1d;
+  --stars: 1;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+body { margin: 0; background: #0a0b1d; color: var(--ink); font-family: var(--ja); font-size: 16px; line-height: 1.95; letter-spacing: .04em; -webkit-font-smoothing: antialiased; }
+img { max-width: 100%; height: auto; display: block; }
+a { color: inherit; }
+.nb { display: inline-block; }
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.wrap { width: min(1080px, 100% - 40px); margin-inline: auto; }
+
+/* 空（スクロールに合わせて JavaScript が色を変える。JavaScript が無ければ夜の色のまま） */
+.sky { position: fixed; inset: 0; z-index: -1; background: linear-gradient(180deg, var(--sky-top), var(--sky-bottom)); }
+.sky::before {
+  content: ""; position: absolute; inset: 0; opacity: var(--stars);
+  background-image:
+    radial-gradient(1.2px 1.2px at 12% 18%, #fff, transparent), radial-gradient(1px 1px at 28% 62%, #fff, transparent),
+    radial-gradient(1.4px 1.4px at 44% 12%, #fff, transparent), radial-gradient(1px 1px at 63% 38%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 78% 22%, #fff, transparent), radial-gradient(1px 1px at 88% 70%, #fff, transparent),
+    radial-gradient(1px 1px at 8% 82%, #fff, transparent), radial-gradient(1.3px 1.3px at 55% 88%, #fff, transparent),
+    radial-gradient(1px 1px at 35% 35%, #fff, transparent), radial-gradient(1px 1px at 93% 45%, #fff, transparent);
+  background-size: 520px 520px;
+}
+
+/* 時計 */
+.clock { position: fixed; right: max(20px, env(safe-area-inset-right)); bottom: max(20px, env(safe-area-inset-bottom)); z-index: 60; display: grid; justify-items: center; width: 116px; padding: 14px 0 12px; border-radius: 22px; background: rgba(10, 11, 29, .55); border: 1px solid var(--line); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.clock__time { font-family: var(--num); font-weight: 500; font-size: 32px; line-height: 1; letter-spacing: .02em; font-variant-numeric: tabular-nums; }
+.clock__label { margin-top: 6px; font-family: var(--num); font-size: 10px; letter-spacing: .3em; color: var(--muted); }
+.clock__bar { width: 76px; height: 3px; margin-top: 8px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.clock__bar span { display: block; height: 100%; width: var(--p, 0%); background: linear-gradient(90deg, #8f7cff, var(--dawn)); }
+@media (max-width: 600px) { .clock { width: 96px; padding: 10px 0 9px; right: 12px; bottom: 12px; } .clock__time { font-size: 24px; } }
+
+/* ---- ヘッダー ---- */
+.top { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 22px 0; }
+.top__brand { text-decoration: none; display: flex; align-items: baseline; gap: 10px; }
+.top__brand b { font-family: var(--num); font-weight: 700; font-size: 22px; letter-spacing: .04em; }
+.top__brand span { font-size: 12px; color: var(--muted); }
+.top nav { display: flex; gap: 22px; font-size: 14px; }
+.top nav a { text-decoration: none; }
+.top nav a:hover { color: var(--peach); }
+
+/* ---- 時間の流れ ---- */
+.timeline { position: relative; }
+.timeline::before { content: ""; position: absolute; left: 92px; top: 0; bottom: 0; width: 1px; background: linear-gradient(var(--line), rgba(246, 180, 143, .6)); }
+.hour { position: relative; display: grid; grid-template-columns: 184px 1fr; gap: clamp(20px, 4vw, 56px); padding: clamp(80px, 15vh, 160px) 0; }
+.hour__time { position: sticky; top: calc(var(--pp-h, 0px) + 40px); align-self: start; display: grid; justify-items: end; padding-right: 22px; }
+.hour__time::after { content: ""; position: absolute; right: -6px; top: 18px; width: 11px; height: 11px; border-radius: 50%; background: var(--peach); box-shadow: 0 0 0 5px rgba(255, 216, 189, .15), 0 0 18px rgba(255, 216, 189, .6); }
+.hour__time time { font-family: var(--num); font-weight: 500; font-size: 40px; line-height: 1.1; }
+.hour__time span { font-family: var(--num); font-size: 11px; letter-spacing: .3em; color: var(--muted); }
+.hour__body h2, .hour__body .h { margin: 0 0 18px; font-size: clamp(26px, 3.4vw, 40px); line-height: 1.5; font-weight: 700; letter-spacing: .08em; }
+.hour__body p { margin: 0 0 1em; color: #ddd8ea; max-width: 34em; }
+.hour__photo { margin: 30px 0 0; border-radius: 24px; overflow: hidden; box-shadow: 0 30px 70px rgba(0, 0, 0, .45); }
+.hour__photo img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 18px 0 0; }
+.chips li { padding: 4px 14px; border-radius: 999px; background: rgba(255, 255, 255, .08); border: 1px solid var(--line); font-size: 14px; }
+
+.hour--open h1 { margin: 0 0 6px; font-size: 14px; font-weight: 500; letter-spacing: .24em; color: var(--peach); }
+.hour--open .h { font-size: clamp(34px, 5.6vw, 66px); line-height: 1.35; color: #fff; }
+.hour--open .catch { font-size: clamp(18px, 2.2vw, 24px); font-weight: 700; color: var(--ink); margin-bottom: 18px; }
+.hour--close .h { color: #fff; }
+@media (max-width: 720px) {
+  .timeline::before { left: 8px; }
+  .hour { grid-template-columns: 1fr; gap: 10px; padding-left: 30px; }
+  .hour__time { position: relative; top: 0; justify-items: start; padding: 0; }
+  .hour__time::after { left: -27px; right: auto; top: 16px; }
+  .hour__time time { font-size: 30px; }
+}
+
+/* ---- 朝の案内（明るいカード。空の色に関わらず読めるように） ---- */
+.morning { padding: clamp(60px, 9vw, 110px) 0 120px; }
+.morning__title { text-align: center; margin: 0 0 30px; font-size: clamp(24px, 3vw, 34px); color: var(--card-ink); }
+.morning__title small { display: block; font-family: var(--num); font-size: 12px; letter-spacing: .3em; color: #8a5b4a; }
+.cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.card { background: var(--card); color: var(--card-ink); border-radius: 24px; padding: clamp(22px, 3vw, 34px); box-shadow: 0 20px 50px rgba(120, 70, 60, .18); }
+.card--wide { grid-column: 1 / -1; }
+.card h3 { margin: 0 0 12px; font-size: 19px; }
+.card h3 small { font-family: var(--num); font-size: 11px; letter-spacing: .24em; color: #b0705a; margin-left: 10px; }
+.info { margin: 0; }
+.info__row { display: grid; grid-template-columns: 6.5em 1fr; gap: 10px; padding: 9px 0; border-bottom: 1px solid #efe1d6; }
+.info dt { color: var(--card-muted); font-size: 14px; }
+.info dd { margin: 0; }
+.info small { color: var(--card-muted); }
+.hours { width: 100%; border-collapse: collapse; }
+.hours th, .hours td { text-align: left; padding: 8px 4px; border-bottom: 1px solid #efe1d6; font-weight: 400; }
+.hours th { width: 3em; color: #b0705a; }
+.hours .is-closed td { color: var(--card-muted); }
+.map { width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: 16px; }
+.btns { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0 6px; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border-radius: 999px; background: linear-gradient(90deg, #7d6bf0, #f08f6c); color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; }
+.btn .icon { width: 18px; height: 18px; }
+.btn--line { background: transparent; color: var(--card-ink); border: 1px solid #e3cfc2; }
+.route { counter-reset: r; list-style: none; padding: 0; margin: 0; }
+.route li { counter-increment: r; display: grid; grid-template-columns: 30px 1fr; gap: 8px; padding: 6px 0; }
+.route li::before { content: counter(r); width: 24px; height: 24px; border-radius: 50%; background: #f6d6c4; color: #8a4b35; display: grid; place-items: center; font-family: var(--num); font-weight: 700; font-size: 12px; margin-top: 4px; }
+.menu { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 26px; }
+.menu__title { margin: 0; font-size: 16px; display: grid; }
+.menu__en { order: -1; font-family: var(--num); font-size: 10px; letter-spacing: .2em; color: #b0705a; }
+.menu__price { margin: 0 0 4px; font-size: 13px; color: var(--card-muted); }
+.menu__items { list-style: none; padding: 0; margin: 0 0 12px; font-size: 14px; }
+.menu__note, .food__note { font-size: 12px; color: var(--card-muted); }
+.food { list-style: none; padding: 0; margin: 0; }
+.food li { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid #efe1d6; }
+.food__price { font-family: var(--num); }
+.faq__item { border-bottom: 1px solid #efe1d6; }
+.faq__q { list-style: none; cursor: pointer; padding: 14px 30px 14px 0; position: relative; font-weight: 700; }
+.faq__q::-webkit-details-marker { display: none; }
+.faq__q::after { content: "+"; position: absolute; right: 4px; top: 10px; font-size: 22px; color: #b0705a; }
+.faq__item[open] .faq__q::after { content: "−"; }
+.faq__a { margin: 0 0 14px; color: #4e4560; }
+@media (max-width: 760px) { .cards { grid-template-columns: 1fr; } .menu { grid-template-columns: 1fr 1fr; } }
+
+.footer { text-align: center; padding: 0 0 130px; color: #6f5262; font-size: 13px; }
+.footer b { display: block; font-family: var(--num); font-size: 40px; color: #3b2a3f; }
+.footer address { font-style: normal; }

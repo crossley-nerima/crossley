@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ja">
+<head>
+{{head theme="#0e0e0e"}}
+{{fonts f="Zen+Kaku+Gothic+Antique:wght@400;500;700|Cinzel:wght@500;700"}}
+<link rel="stylesheet" href="style.css">
+{{jsonld}}
+</head>
+<body>
+{{proposal}}
+<header class="site-header">
+  <div class="wrap site-header__in">
+    <a class="brand" href="index.html">X-III</a>
+    <nav class="gnav" aria-label="メインメニュー">
+      <a href="drink.html"><span class="en">I</span>飲む</a>
+      <a href="stay.html"><span class="en">II</span>過ごす</a>
+      <a href="play.html"><span class="en">III</span>遊ぶ</a>
+      <a class="gnav__access" href="#access"><span class="en">·</span>アクセス</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero" aria-label="お店の紹介">
+    {{img name="counter-dark" sizes="100vw" eager alt=""}}
+    <div>
+      {{logo alt="X-III（クロスリー）"}}
+      <h1>練馬駅のバー X-III（クロスリー）</h1>
+      <p class="hero__catch">3つの夜の、<span class="nb">楽しみ方。</span></p>
+      <ul class="doors">
+        <li><a href="drink.html"><span class="en">I</span><span>飲む</span></a></li>
+        <li><a href="stay.html"><span class="en">II</span><span>過ごす</span></a></li>
+        <li><a href="play.html"><span class="en">III</span><span>遊ぶ</span></a></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="chapters" aria-label="3つの楽しみ方">
+    <a class="chapter is-drink" href="drink.html">
+      {{img name="backbar" sizes="(min-width: 820px) 40vw, 100vw" alt=""}}
+      <p class="chapter__num" aria-hidden="true">I</p>
+      <p class="chapter__en">DRINK</p>
+      <h2 class="chapter__title">飲む</h2>
+      <p>ジャパニーズウイスキーからテキーラ、カクテルまで。今夜の一杯を選ぶ楽しみ。</p>
+      <span class="chapter__go">お酒を見る {{icon name="arrow"}}</span>
+    </a>
+    <a class="chapter is-stay" href="stay.html">
+      {{img name="counter-wide" sizes="(min-width: 820px) 40vw, 100vw" alt=""}}
+      <p class="chapter__num" aria-hidden="true">II</p>
+      <p class="chapter__en">STAY</p>
+      <h2 class="chapter__title">過ごす</h2>
+      <p>木のカウンターで、一人の時間を。夜7時から朝7時まで、自分のペースで。</p>
+      <span class="chapter__go">過ごし方を見る {{icon name="arrow"}}</span>
+    </a>
+    <a class="chapter is-play" href="play.html">
+      {{img name="darts" sizes="(min-width: 820px) 40vw, 100vw" alt=""}}
+      <p class="chapter__num" aria-hidden="true">III</p>
+      <p class="chapter__en">PLAY</p>
+      <h2 class="chapter__title">遊ぶ</h2>
+      <p>ダーツとテーブル席で、仲間とにぎやかに。飲み直しの二軒目にも。</p>
+      <span class="chapter__go">遊び方を見る {{icon name="arrow"}}</span>
+    </a>
+  </section>
+
+  <section class="section" aria-labelledby="name-h">
+    <div class="wrap name">
+      <p class="name__marks" aria-hidden="true"><span>I</span><span>II</span><span>III</span></p>
+      <header class="head"><span class="en">ABOUT THE NAME</span><h2 id="name-h">店名について</h2></header>
+      <p><span class="tbd">店名「X-III（クロスリー）」に込めた思いを、ここに書きます</span></p>
+    </div>
+  </section>
+
+  <section class="section section--alt" id="access" aria-labelledby="access-h">
+    <div class="wrap">
+      <header class="head"><span class="en">ACCESS</span><h2 id="access-h">アクセス・営業時間</h2></header>
+      <div class="visit">
+        <div>
+          {{map}}
+          <div class="btns">
+            <a class="btn" href="{{route_url}}" target="_blank" rel="noopener">{{icon name="walk"}}今いる場所から道順</a>
+            <a class="btn btn--line" href="{{map_url}}" target="_blank" rel="noopener">Googleマップ</a>
+          </div>
+          <p class="sub-h">練馬駅からの行き方</p>
+          {{route}}
+        </div>
+        <div>{{info}}</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="faq-h">
+    <div class="wrap">
+      <header class="head"><span class="en">Q &amp; A</span><h2 id="faq-h">よくある質問</h2></header>
+      {{faq}}
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <p class="marks" aria-hidden="true"><span>I DRINK</span> · <span>II STAY</span> · <span>III PLAY</span></p>
+  <address>{{full_name}}<br>{{addr}}<br>{{hours}}／{{closed}}</address>
+  <small>&copy; {{year}} X-III CROSS THREE</small>
+</footer>
+</body>
+</html>

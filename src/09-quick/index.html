@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ja">
+<head>
+{{head title="X-III（クロスリー）｜練馬駅のバー｜営業時間・アクセス・メニュー" theme="#0f0f10"}}
+<link rel="stylesheet" href="style.css">
+<script src="script.js" defer></script>
+{{jsonld}}
+</head>
+<body>
+{{proposal}}
+<header class="top">
+  {{img name="counter-dark" sizes="100vw" eager alt=""}}
+  <div class="wrap top__grid">
+    <div>
+      <p class="top__brand">{{logo class="logo" alt=""}}</p>
+      <h1><small>練馬駅のバー</small>X-III（クロスリー）</h1>
+      <p class="catch">ウイスキー・カクテル・ダーツ。朝7時まで営業。</p>
+    </div>
+    <div>
+      <p class="status" data-state="unknown" role="status">
+        <span class="status__dot" aria-hidden="true"></span>
+        <span class="status__text"><b>営業時間 {{hours}}</b><span>{{closed}}</span></span>
+      </p>
+      <p class="where">{{icon name="pin"}}<span>{{addr}}<br>練馬駅から徒歩{{walk}}分</span></p>
+    </div>
+  </div>
+  <div class="wrap">
+    <nav class="actions" aria-label="すぐにできること">
+      <a class="act act--primary" href="{{route_url}}" target="_blank" rel="noopener">{{icon name="walk"}}<span>今いる場所から道順を見る<small>Googleマップが開きます</small></span></a>
+      <a class="act" href="{{tel_href}}">{{icon name="phone"}}<span>電話する<small>{{phone}}</small></span></a>
+      <a class="act" href="{{insta_href}}">{{icon name="insta"}}<span>Instagram<small>{{instagram}}</small></span></a>
+      <a class="act" href="#hours">{{icon name="clock"}}<span>営業時間<small>今日の営業を見る</small></span></a>
+      <a class="act" href="#menu">{{icon name="glass"}}<span>メニュー・料金<small>お酒とフード</small></span></a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="cols">
+    <div>
+      <section class="block" id="access" aria-labelledby="access-h">
+        <h2 id="access-h">{{icon name="train"}}練馬駅からの行き方</h2>
+        {{route}}
+        {{map}}
+        <p class="addr-row"><span>〒{{postal}} {{addr}}</span><button class="copy" type="button" data-text="{{addr}}">住所をコピー</button></p>
+      </section>
+
+      <section class="block" id="hours" aria-labelledby="hours-h">
+        <h2 id="hours-h">{{icon name="clock"}}営業時間</h2>
+        {{hours_table}}
+        <p class="note">ラストオーダー {{last_order}}<br>{{closed_note}}</p>
+      </section>
+    </div>
+
+    <div>
+      <section class="block" id="menu" aria-labelledby="menu-h">
+        <h2 id="menu-h">{{icon name="glass"}}メニュー・料金</h2>
+        <div class="price-grid">
+          <div><b>チャージ</b>{{charge}}</div>
+          <div><b>ダーツ</b>{{darts_price}}</div>
+          <div><b>お支払い</b>{{payment}}</div>
+          <div><b>たばこ</b>{{smoking}}</div>
+        </div>
+        {{menu}}
+        {{food}}
+      </section>
+
+      <section class="block" aria-labelledby="photo-h">
+        <h2 id="photo-h">{{icon name="map"}}店内の様子</h2>
+        <div class="strip">
+          {{img name="backbar" sizes="(min-width: 960px) 360px, 76vw"}}
+          {{img name="neon-counter" sizes="(min-width: 960px) 360px, 76vw"}}
+          {{img name="darts" sizes="(min-width: 960px) 360px, 76vw" pos="50% 60%"}}
+          {{img name="tables" sizes="(min-width: 960px) 360px, 76vw" pos="50% 70%"}}
+        </div>
+      </section>
+
+      <section class="block" aria-labelledby="about-h">
+        <h2 id="about-h">{{icon name="stool"}}X-IIIについて</h2>
+        <p style="margin:0 0 14px;color:var(--muted);font-size:15px">{{catch}} {{lead1}}{{lead2}}{{lead3}}</p>
+        {{features}}
+      </section>
+    </div>
+  </div>
+
+  <section class="block" aria-labelledby="faq-h">
+    <h2 id="faq-h">{{icon name="calendar"}}よくある質問</h2>
+    {{faq}}
+  </section>
+</main>
+
+<footer class="footer">
+  <address>{{full_name}}　{{addr}}<br>{{hours}}／{{closed}}</address>
+  <small>&copy; {{year}} X-III CROSS THREE</small>
+</footer>
+
+<nav class="dock" aria-label="すぐにできること（画面の下）">
+  <a href="{{route_url}}" target="_blank" rel="noopener">{{icon name="walk"}}道順</a>
+  <a href="{{tel_href}}">{{icon name="phone"}}電話</a>
+  <a href="#hours">{{icon name="clock"}}営業時間</a>
+</nav>
+</body>
+</html>
