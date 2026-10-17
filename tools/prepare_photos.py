@@ -181,17 +181,35 @@ mono = Image.new('RGBA', logo.size, (255, 255, 255, 0))
 mono.putalpha(logo.getchannel('A'))
 mono.save(OUT / 'logo-x-iii-white.png', optimize=True)
 
-# ブラウザのタブとホーム画面のアイコン（黒地にロゴ。32px は小さいので「X」だけ）。
-icon = Image.new('RGBA', (180, 180), (11, 11, 11, 255))
-il = logo.resize((150, round(logo.height * 150 / logo.width)), Image.LANCZOS)
-icon.paste(il, (15, (180 - il.height) // 2), il)
+# ホーム画面のアイコン（金の地に黒のロゴ）。黒地に白い X だと、X（旧 Twitter）のアプリのアイコンと似て見えるため。
+GOLD = (201, 164, 98)
+icon = Image.new('RGBA', (180, 180), GOLD + (255,))
+dark = Image.new('RGBA', logo.size, (14, 12, 10, 0))
+dark.putalpha(logo.getchannel('A'))
+il = dark.resize((146, round(logo.height * 146 / logo.width)), Image.LANCZOS)
+icon.alpha_composite(il, (17, (180 - il.height) // 2))
 icon.convert('RGB').save(OUT / 'icon-180.png', optimize=True)
-x_only = logo.crop((0, 40, 160, logo.height - 30))
-x_only = x_only.crop(x_only.getbbox())
-small = Image.new('RGBA', (32, 32), (11, 11, 11, 255))
-xs = x_only.resize((26, round(x_only.height * 26 / x_only.width)), Image.LANCZOS)
-small.paste(xs, (3, (32 - xs.height) // 2), xs)
-small.convert('RGB').save(OUT / 'icon-32.png', optimize=True)
+# 32px（タブ）は、金の丸に黒で「XIII」。白い「X」だけだと X（旧 Twitter）のマークと見分けが付かないため（利用者の指摘）。
+# ロゴの大きな文字から X と III を切り出し、ハイフンを抜いて詰める。8倍の大きさで描いてから縮める。
+alpha = logo.getchannel('A')
+big_rows = (44, 196)  # 大きな文字の行（上の「クロスリー」と下の行を除く）
+cols = [x for x in range(logo.width) if any(alpha.getpixel((x, y)) > 60 for y in range(*big_rows, 2))]
+letters = runs(cols)  # X・ハイフン・I・I・I
+glyph_x = logo.crop((letters[0][0], big_rows[0], letters[0][1] + 1, big_rows[1]))
+glyph_iii = logo.crop((letters[2][0], big_rows[0], letters[-1][1] + 1, big_rows[1]))
+mark = Image.new('RGBA', (glyph_x.width + glyph_iii.width + 14, glyph_x.height), (0, 0, 0, 0))
+mark.alpha_composite(glyph_x, (0, 0))
+mark.alpha_composite(glyph_iii, (glyph_x.width + 14, 0))
+mark = mark.crop(mark.getbbox())
+ink = Image.new('RGBA', mark.size, (14, 12, 10, 0))
+ink.putalpha(mark.getchannel('A'))
+big = 32 * 8
+coin = Image.new('RGBA', (big, big), (0, 0, 0, 0))
+ImageDraw.Draw(coin).ellipse((0, 0, big - 1, big - 1), fill=GOLD + (255,))
+k = min(big * 0.74 / ink.width, big * 0.52 / ink.height)
+ink = ink.resize((round(ink.width * k), round(ink.height * k)), Image.LANCZOS)
+coin.alpha_composite(ink, ((big - ink.width) // 2, (big - ink.height) // 2))
+coin.resize((32, 32), Image.LANCZOS).save(OUT / 'icon-32.png', optimize=True)
 
 lw = 560
 lg = logo.resize((lw, round(logo.height * lw / logo.width)), Image.LANCZOS)

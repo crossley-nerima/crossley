@@ -10,6 +10,7 @@ src/ のひな形に site.json（店の情報）を差し込んで docs/ に置�
 使い方: python -I -X utf8 build.py
 """
 import base64
+import hashlib
 import html
 import json
 import re
@@ -192,6 +193,10 @@ def h_img(ctx, name, sizes='100vw', alt=None, cls=None, eager=None, pos=None, sc
     return '<img ' + ' '.join(attrs) + '>'
 
 
+def file_tag(name):
+    return hashlib.sha256((IMG_DIR / name).read_bytes()).hexdigest()[:8]
+
+
 def h_logo(ctx, cls='logo', variant='color', alt=None):
     file = 'logo-x-iii.png' if variant == 'color' else 'logo-x-iii-white.png'
     return (f'<img class="{esc(cls)}" src="{ctx["root"]}assets/img/{file}" width="444" height="234" '
@@ -229,8 +234,9 @@ def h_head(ctx, title=None, desc=None, theme='#0b0b0b', page=None):
         lines.append(f'<meta property="og:url" content="{esc(base + "/" + ctx["path"])}">')
         lines.append(f'<meta property="og:image" content="{esc(base)}/assets/img/og.jpg">')
     lines += [
-        f'<link rel="icon" href="{ctx["root"]}assets/img/icon-32.png" sizes="32x32">',
-        f'<link rel="apple-touch-icon" href="{ctx["root"]}assets/img/icon-180.png">',
+        # ?v= は画像の中身から作る目印。ブラウザが古いアイコンを覚えていても、変わったら読み直す。
+        f'<link rel="icon" href="{ctx["root"]}assets/img/icon-32.png?v={file_tag("icon-32.png")}" sizes="32x32">',
+        f'<link rel="apple-touch-icon" href="{ctx["root"]}assets/img/icon-180.png?v={file_tag("icon-180.png")}">',
     ]
     lines += [
         f'<link rel="stylesheet" href="{ctx["root"]}assets/parts.css">',
