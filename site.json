@@ -49,6 +49,13 @@
   "close": "07:00",
   "hours": "19:00〜翌朝7:00",
   "closed": "日曜定休",
+  "closed_weekdays": [0],
+  "_notices_説明": "お知らせ。from（と、何日も続くときは until）は 2026-11-03 の形。type は closed（臨時休業）/ open（臨時営業）/ info（そのほか）。open は営業時間がいつもと違えば \"open\": \"20:00\", \"close\": \"05:00\" を足す。日付が過ぎると自動で出なくなる。sample: true は提案用の見本（本番の書き出しでは止まる）。",
+  "notices": [
+    {"from": "2026-11-03", "type": "closed", "text": "店主都合により、臨時休業いたします。", "sample": true},
+    {"from": "2026-11-08", "type": "open", "text": "日曜日ですが、特別に営業します。", "sample": true},
+    {"from": "2026-12-30", "until": "2027-01-03", "type": "closed", "text": "年末年始のお休みをいただきます。", "sample": true}
+  ],
   "closed_note": {"v": "土曜の夜は日曜の朝7時まで営業／祝日は〇〇", "tbd": true},
   "last_order": {"v": "翌朝6:30", "tbd": true},
 

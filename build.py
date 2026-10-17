@@ -16,7 +16,7 @@ import re
 import shutil
 import sys
 import urllib.parse
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 from PIL import Image
@@ -232,6 +232,12 @@ def h_head(ctx, title=None, desc=None, theme='#0b0b0b', page=None):
         f'<link rel="icon" href="{ctx["root"]}assets/img/icon-32.png" sizes="32x32">',
         f'<link rel="apple-touch-icon" href="{ctx["root"]}assets/img/icon-180.png">',
     ]
+    lines += [
+        f'<link rel="stylesheet" href="{ctx["root"]}assets/parts.css">',
+        '<script type="application/json" id="hours-data">'
+        + json.dumps(hours_data(), ensure_ascii=False).replace('</', '<\\/') + '</script>',
+        f'<script src="{ctx["root"]}assets/notices.js" defer></script>',
+    ]
     if PROPOSAL:
         lines.append(f'<link rel="stylesheet" href="{ctx["root"]}assets/common/proposal.css">')
         lines.append(f'<script src="{ctx["root"]}assets/common/proposal.js" defer></script>')
@@ -271,6 +277,19 @@ def h_jsonld(ctx):
     }
     if not raw('smoking')[1]:
         data['smokingAllowed'] = SITE['smoking_allowed']
+    # 臨時休業・臨時営業（見本は入れない）。休みは opens と closes を 00:00 にする決まり。
+    special = []
+    for n in notices():
+        if n.get('sample') or n['type'] == 'info':
+            continue
+        sp = {'@type': 'OpeningHoursSpecification', 'validFrom': n['from'].isoformat(), 'validThrough': n['until'].isoformat()}
+        if n['type'] == 'closed':
+            sp.update(opens='00:00', closes='00:00')
+        else:
+            sp.update(opens=n.get('open', SITE['open']), closes=n.get('close', SITE['close']))
+        special.append(sp)
+    if special:
+        data['specialOpeningHoursSpecification'] = special
     # 未確定の値（電話番号・料金）は、検索エンジンに渡すデータには入れない。
     if not raw('phone')[1]:
         data['telephone'] = raw('phone')[0]
@@ -403,17 +422,82 @@ def h_streetview(ctx, cls='streetview'):
 
 
 ROUTE_MAP = SRC / '_parts' / 'route-map.svg'
-ROUTE_MAP_CSS = SRC / '_parts' / 'route-map.css'
 
 
 def h_route_map(ctx, cls='route-map'):
     """駅から店までの道順の図（tools/make_route_map.py で作る）。色は各案の CSS の --rm-… で変える。"""
-    css = re.sub(r'\s+', ' ', re.sub(r'/\*.*?\*/', '', ROUTE_MAP_CSS.read_text(encoding='utf-8'), flags=re.S)).strip()
-    svg = ROUTE_MAP.read_text(encoding='utf-8').strip().replace('</svg>', f'<style>{css}</style></svg>')
+    svg = ROUTE_MAP.read_text(encoding='utf-8').strip()
     return (f'<figure class="{esc(cls)}">{svg}'
             '<figcaption>道順の図（縮尺はおおよそ）。地図データ © '
             '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
             '</figcaption></figure>')
+
+
+# ---- お知らせ（臨時休業・臨時営業など） -----------------------------------------------
+NOTICE_TYPES = {'closed': '臨時休業', 'open': '臨時営業', 'info': 'お知らせ'}
+WEEK_JA = '月火水木金土日'
+
+
+def notices():
+    """site.json の notices を日付の順に返す。書き出す時点で終わっているものは除く。until が無ければ from の1日だけ。"""
+    out = []
+    for n in SITE.get('notices', []):
+        if n.get('type') not in NOTICE_TYPES:
+            raise ValueError(f'お知らせの type は {list(NOTICE_TYPES)} のどれか: {n}')
+        f = date.fromisoformat(n['from'])
+        u = date.fromisoformat(n.get('until', n['from']))
+        if u < f:
+            raise ValueError(f'お知らせの until が from より前です: {n}')
+        if u < date.today() - timedelta(days=1):
+            continue
+        out.append({**n, 'from': f, 'until': u})
+    return sorted(out, key=lambda n: n['from'])
+
+
+def hours_data():
+    """notices.js に渡す営業時間とお知らせ（見本は渡さない。「営業中」の表示を見本で変えないため）。"""
+    real = []
+    for n in notices():
+        if n.get('sample'):
+            continue
+        real.append({k: v for k, v in (('from', n['from'].isoformat()), ('until', n['until'].isoformat()),
+                                         ('type', n['type']), ('open', n.get('open')), ('close', n.get('close'))) if v})
+    return {'open': SITE['open'], 'close': SITE['close'], 'closedDays': SITE['closed_weekdays'], 'notices': real}
+
+
+def jp_date(d):
+    return f'{d.month}月{d.day}日（{WEEK_JA[d.weekday()]}）'
+
+
+def jp_time(t):
+    h, m = t.split(':')
+    return f'{int(h)}:{m}'
+
+
+def h_notices(ctx, cls='notices', h='h2', title='お知らせ'):
+    """お知らせの欄。終わった日の分は notices.js が隠し、1つも残らなければ欄ごと隠す。"""
+    ns = notices()
+    if not ns:
+        return ''
+    items = []
+    for n in ns:
+        # 日付の途中では折り返さない（何日も続くときは「〜」のところで折り返せる）
+        when = f'<span>{jp_date(n["from"])}</span>' + ('' if n['until'] == n['from'] else f'〜<span>{jp_date(n["until"])}</span>')
+        hours = ''
+        if n['type'] == 'open':
+            o, c = n.get('open', SITE['open']), n.get('close', SITE['close'])
+            hours = f'<span class="{cls}__hours">{jp_time(o)}〜{"翌" if c <= o else ""}{jp_time(c)}</span>'
+        text = esc(n['text'])
+        if n.get('sample'):
+            used_tbd.add('お知らせの見本')
+            text = tbd_span(n['text'])
+        items.append(f'<li class="{cls}__item {cls}__item--{n["type"]}" data-until="{n["until"].isoformat()}">'
+                     f'<span class="{cls}__tag">{NOTICE_TYPES[n["type"]]}</span>'
+                     f'<time class="{cls}__date" datetime="{n["from"].isoformat()}">{when}</time>{hours}'
+                     f'<p class="{cls}__text">{text}</p></li>')
+    return (f'<section class="{esc(cls)}" aria-labelledby="{cls}-h" data-notices><div class="{cls}__in">'
+            f'<{h} class="{cls}__title" id="{cls}-h">{esc(title)}</{h}>'
+            f'<ul class="{cls}__list">{"".join(items)}</ul></div></section>')
 
 
 def h_features(ctx, cls='features', h='h3'):
@@ -451,7 +535,7 @@ def h_year(ctx):
 HELPERS = {
     'head': h_head, 'fonts': h_fonts, 'jsonld': h_jsonld, 'proposal': h_proposal, 'img': h_img, 'logo': h_logo,
     'menu': h_menu, 'food': h_food, 'faq': h_faq, 'info': h_info, 'hours_table': h_hours_table, 'map': h_map,
-    'route': h_route, 'route_map': h_route_map, 'streetview': h_streetview, 'features': h_features, 'icon': h_icon, 'access': h_access, 'addr': h_addr,
+    'route': h_route, 'route_map': h_route_map, 'streetview': h_streetview, 'notices': h_notices, 'features': h_features, 'icon': h_icon, 'access': h_access, 'addr': h_addr,
     'tel_href': h_tel_href, 'insta_href': h_insta_href, 'year': h_year,
     'map_url': lambda ctx: esc(map_url()), 'route_url': lambda ctx: esc(route_url()),
     'root': lambda ctx: ctx['root'],
@@ -489,6 +573,8 @@ def build():
     (OUT / 'assets' / 'common').mkdir(parents=True, exist_ok=True)
     for f in (SRC / '_common').glob('*'):
         shutil.copy2(f, OUT / 'assets' / 'common' / f.name)
+    for name in ('parts.css', 'notices.js'):
+        shutil.copy2(SRC / '_parts' / name, OUT / 'assets' / name)
 
     pages = 0
     for p in PATTERNS:

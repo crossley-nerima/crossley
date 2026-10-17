@@ -145,7 +145,8 @@ a { color: inherit; }
   html { scroll-behavior: auto; }
 }
 
-/* 道順の図（共通の見た目は src/_parts/route-map.css） */
+/* 全案共通の部品（見た目は src/_parts/parts.css）: 道順の図・入口のようす・お知らせ */
 .route-map { --rm-paper: var(--panel); --rm-ink: var(--ink); --rm-accent: var(--lime); --rm-on-accent: #0b1406; --rm-radius: 18px; }
 .route-map .rm { border: 1px solid var(--line); }
 .streetview { --rm-radius: 18px; }
+.notices { --nt-bg: var(--bg); --nt-card: var(--panel); --nt-line: var(--line); --nt-ink: var(--ink); --nt-muted: var(--muted); --nt-closed: #e5604f; --nt-open: var(--lime); --nt-on-open: #0b1406; --nt-radius: 14px; }

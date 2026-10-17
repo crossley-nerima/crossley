@@ -122,6 +122,7 @@ h1 small { display: block; font-size: 14px; font-weight: 600; color: var(--gold)
   h1 { font-size: 32px; }
 }
 
-/* 道順の図（共通の見た目は src/_parts/route-map.css） */
+/* 全案共通の部品（見た目は src/_parts/parts.css）: 道順の図・入口のようす・お知らせ */
 .route-map { margin: 0 0 14px; --rm-paper: var(--card); --rm-ink: var(--ink); --rm-accent: var(--gold); --rm-on-accent: #1d1503; --rm-radius: 14px; }
 .streetview { --rm-radius: 14px; margin: 4px 0 14px; }
+.notices { --nt-bg: transparent; --nt-card: var(--card); --nt-line: var(--line); --nt-ink: var(--ink); --nt-muted: var(--muted); --nt-closed: var(--red); --nt-open: var(--green); --nt-on-open: #062b12; --nt-radius: var(--r); --nt-width: 100%; --nt-pad: 18px 0 4px; }

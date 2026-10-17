@@ -1,5 +1,5 @@
-/* 道順の図の見た目。色は各案の CSS で .route-map に --rm-… を決めて変える。
-   --rm-paper 図の地の色 / --rm-ink 文字と線 / --rm-accent 歩く道・店・番号 / --rm-on-accent 番号と札の文字 */
+/* 全案に差し込む部品（道順の図・入口のようす・お知らせ）の見た目。docs/assets/parts.css に写して各ページで読む。
+   色は各案の CSS で決める。道順の図: .route-map に --rm-… ／ お知らせ: .notices に --nt-… */
 :where(.route-map) { margin: 0 0 18px; max-width: 460px; }
 :where(.route-map .rm) { display: block; width: 100%; height: auto; border-radius: var(--rm-radius, 12px); font-family: inherit; }
 :where(.route-map figcaption) { margin-top: 6px; font-size: 11px; line-height: 1.6; opacity: .7; }
@@ -40,3 +40,22 @@
 :where(.streetview figcaption) { margin-top: 8px; font-size: 13px; line-height: 1.7; }
 :where(.streetview figcaption small) { display: block; font-size: 11px; opacity: .7; }
 @media (max-width: 600px) { :where(.streetview__view) { aspect-ratio: 1 / 1; } }
+/* お知らせ（臨時休業・臨時営業など）。日付が過ぎたものは notices.js が hidden にする */
+.notices[hidden], .notices [hidden] { display: none !important; }
+:where(.notices) { padding: var(--nt-pad, 28px 0); background: var(--nt-bg, transparent); color: var(--nt-ink, inherit); }
+:where(.notices__in) { width: var(--nt-width, min(1120px, 100% - 40px)); margin: 0 auto; }
+:where(.notices__title) { margin: 0 0 12px; font-size: 15px; font-weight: 700; letter-spacing: .14em; color: var(--nt-title, var(--nt-ink, inherit)); }
+:where(.notices__list) { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+:where(.notices__item) { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 12px 16px;
+  border-radius: var(--nt-radius, 10px); background: var(--nt-card, rgba(127, 127, 127, .12)); border: 1px solid var(--nt-line, transparent); color: var(--nt-ink, inherit); }
+:where(.notices__tag) { font-size: 12px; font-weight: 700; line-height: 1.6; padding: 1px 10px; border-radius: 999px; white-space: nowrap;
+  background: var(--nt-info, rgba(127, 127, 127, .35)); color: var(--nt-on-info, inherit); }
+:where(.notices__item--closed .notices__tag) { background: var(--nt-closed, #d64545); color: var(--nt-on-closed, #fff); }
+:where(.notices__item--open .notices__tag) { background: var(--nt-open, #2f9e5b); color: var(--nt-on-open, #fff); }
+:where(.notices__date) { font-weight: 700; }
+:where(.notices__date > span, .notices__hours) { white-space: nowrap; }
+:where(.notices__hours) { font-size: 13px; color: var(--nt-muted, inherit); }
+:where(.notices__text) { flex: 1 1 100%; margin: 0; font-size: 14px; line-height: 1.7; color: var(--nt-muted, inherit); }
+@media (min-width: 760px) {
+  :where(.notices__text) { flex: 1 1 16em; }
+}

@@ -164,6 +164,7 @@ a { color: inherit; }
 
 @media (prefers-reduced-motion: reduce) { .flicker { animation: none; } .tile--photo > img { transition: none; } }
 
-/* 道順の図（共通の見た目は src/_parts/route-map.css） */
+/* 全案共通の部品（見た目は src/_parts/parts.css）: 道順の図・入口のようす・お知らせ */
 .route-map { margin: 4px 0 16px; --rm-paper: var(--bg); --rm-ink: var(--ink); --rm-accent: var(--red); --rm-on-accent: #fff; --rm-radius: 14px; }
 .streetview { --rm-radius: 14px; }
+.notices { --nt-bg: transparent; --nt-card: var(--card); --nt-line: var(--line); --nt-ink: var(--ink); --nt-muted: var(--muted); --nt-closed: var(--red); --nt-open: var(--cyan); --nt-on-open: #071019; --nt-radius: var(--r); --nt-width: 100%; --nt-pad: 4px 0 18px; }
