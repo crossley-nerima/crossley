@@ -5,10 +5,10 @@
 
   "name": "XⅢ",
   "kana": "クロスリー",
-  "en": "CROSS THREE",
+  "en": "CROSSLEY",
   "full_name": "ダイニングバー XⅢ クロスリー",
-  "_alt_names_説明": "検索エンジンに「同じ店の別の書き方」として渡す（チラシ・ロゴ・Instagram は X-III）。",
-  "alt_names": ["XⅢ クロスリー", "X-III", "BAR X-III クロスリー", "クロスリー", "CROSS THREE"],
+  "_alt_names_説明": "検索エンジンに「同じ店の別の書き方」として渡す（チラシ・ロゴ・Instagram は X-III、食べログは CROSSLEY）。",
+  "alt_names": ["XⅢ クロスリー", "CROSSLEY", "CROSSLEY（クロスリー）", "X-III", "BAR X-III クロスリー", "クロスリー"],
   "catch": "今夜、ちょっとだけ寄り道しない？",
   "lead1": "仕事帰りに。飲み直しに。",
   "lead2": "一人でも、誰かとでも。",
@@ -72,6 +72,7 @@
   "darts_price": {"v": "1ゲーム ¥〇〇〇", "tbd": true},
   "instagram": "@xiii.nerima.2026",
   "instagram_url": "https://www.instagram.com/xiii.nerima.2026/",
+  "tabelog_url": "https://tabelog.com/tokyo/A1321/A132102/13324964/",
 
   "features": [
     {"icon": "glass", "title": "豊富なお酒をもっと自由に", "body": "ウイスキーやスピリッツ、カクテルなど豊富にご用意。"},
@@ -110,6 +111,7 @@
     {"q": "ダーツはできますか？", "a": "はい、ダーツマシンがあります。料金は {darts_price} です。"},
     {"q": "チャージ（席料）はかかりますか？", "a": "{charge} をいただいています。"},
     {"q": "予約はできますか？", "a": "{reservation}"},
+    {"q": "個室はありますか？", "a": "個室はありません。カウンター席と、ダーツのそばのテーブル席があります。"},
     {"q": "たばこは吸えますか？", "a": "{smoking}"},
     {"q": "支払い方法を教えてください。", "a": "{payment} がご利用いただけます。"},
     {"q": "駅からの行き方を教えてください。", "a": "{station}{exit}から徒歩{walk}分、エクセル豊玉の3階です。{floor_note}。"}

@@ -273,7 +273,7 @@ def h_jsonld(ctx):
         'amenityFeature': [{'@type': 'LocationFeatureSpecification', 'name': 'ダーツ', 'value': True}],
         'geo': {'@type': 'GeoCoordinates', 'latitude': SITE['gmap']['pin'][0], 'longitude': SITE['gmap']['pin'][1]},
         # 同じ店の Instagram と Google マップの登録。検索エンジンが同じ店だと結びつけやすくなる。
-        'sameAs': [u for u in (SITE.get('instagram_url'), 'https://maps.google.com/?cid=' + str(int(SITE['gmap']['ftid'].split(':')[1], 16))) if u],
+        'sameAs': [u for u in (SITE.get('instagram_url'), SITE.get('tabelog_url'), 'https://maps.google.com/?cid=' + str(int(SITE['gmap']['ftid'].split(':')[1], 16))) if u],
     }
     if not raw('smoking')[1]:
         data['smokingAllowed'] = SITE['smoking_allowed']
