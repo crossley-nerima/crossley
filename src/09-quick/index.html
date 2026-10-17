@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ja">
 <head>
-{{head title="X-III（クロスリー）｜練馬駅のバー｜営業時間・アクセス・メニュー" theme="#0f0f10"}}
+{{head title="ダイニングバー XⅢ クロスリー｜練馬駅のバー｜営業時間・アクセス・メニュー" theme="#0f0f10"}}
 <link rel="stylesheet" href="style.css">
 <script src="script.js" defer></script>
 {{jsonld}}
@@ -13,7 +13,7 @@
   <div class="wrap top__grid">
     <div>
       <p class="top__brand">{{logo class="logo" alt=""}}</p>
-      <h1><small>練馬駅のバー</small>X-III（クロスリー）</h1>
+      <h1><small>練馬駅のダイニングバー</small>XⅢ クロスリー</h1>
       <p class="catch">ウイスキー・カクテル・ダーツ。朝7時まで営業。</p>
     </div>
     <div>
@@ -28,7 +28,7 @@
     <nav class="actions" aria-label="すぐにできること">
       <a class="act act--primary" href="{{route_url}}" target="_blank" rel="noopener">{{icon name="walk"}}<span>今いる場所から道順を見る<small>Googleマップが開きます</small></span></a>
       <a class="act" href="{{tel_href}}">{{icon name="phone"}}<span>電話する<small>{{phone}}</small></span></a>
-      <a class="act" href="{{insta_href}}">{{icon name="insta"}}<span>Instagram<small>{{instagram}}</small></span></a>
+      <a class="act" href="{{insta_href}}" target="_blank" rel="noopener">{{icon name="insta"}}<span>Instagram<small>{{instagram}}</small></span></a>
       <a class="act" href="#hours">{{icon name="clock"}}<span>営業時間<small>今日の営業を見る</small></span></a>
       <a class="act" href="#menu">{{icon name="glass"}}<span>メニュー・料金<small>お酒とフード</small></span></a>
     </nav>
@@ -40,7 +40,7 @@
     <div>
       <section class="block" id="access" aria-labelledby="access-h">
         <h2 id="access-h">{{icon name="train"}}練馬駅からの行き方</h2>
-        <div class="route-guide"><div class="route-guide__in">{{route_map}}{{route}}</div></div>
+        <div class="route-guide"><div class="route-guide__in">{{route_map}}{{route}}</div></div>{{streetview}}
         {{map}}
         <p class="addr-row"><span>〒{{postal}} {{addr}}</span><button class="copy" type="button" data-text="{{addr}}">住所をコピー</button></p>
       </section>
@@ -76,7 +76,7 @@
       </section>
 
       <section class="block" aria-labelledby="about-h">
-        <h2 id="about-h">{{icon name="stool"}}X-IIIについて</h2>
+        <h2 id="about-h">{{icon name="stool"}}XⅢについて</h2>
         <p style="margin:0 0 14px;color:var(--muted);font-size:15px">{{catch}} {{lead1}}{{lead2}}{{lead3}}</p>
         {{features}}
       </section>
@@ -91,7 +91,7 @@
 
 <footer class="footer">
   <address>{{full_name}}　{{addr}}<br>{{hours}}／{{closed}}</address>
-  <small>&copy; {{year}} X-III CROSS THREE</small>
+  <small>&copy; {{year}} ダイニングバー XⅢ クロスリー</small>
 </footer>
 
 <nav class="dock" aria-label="すぐにできること（画面の下）">

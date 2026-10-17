@@ -124,3 +124,4 @@ h1 small { display: block; font-size: 14px; font-weight: 600; color: var(--gold)
 
 /* 道順の図（共通の見た目は src/_parts/route-map.css） */
 .route-map { margin: 0 0 14px; --rm-paper: var(--card); --rm-ink: var(--ink); --rm-accent: var(--gold); --rm-on-accent: #1d1503; --rm-radius: 14px; }
+.streetview { --rm-radius: 14px; margin: 4px 0 14px; }

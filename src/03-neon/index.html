@@ -10,7 +10,7 @@
 {{proposal}}
 <div class="wrap">
   <header class="bar">
-    <a class="bar__brand" href="#"><span class="mark glow-red" aria-hidden="true">X-III</span><small>練馬駅のバー クロスリー</small></a>
+    <a class="bar__brand" href="#" aria-label="ダイニングバー XⅢ クロスリー"><span class="mark glow-red" aria-hidden="true">X-III</span><small>練馬駅のバー クロスリー</small></a>
     <nav class="bar__links" aria-label="ページ内メニュー">
       <a class="pill" href="#menu">{{icon name="glass"}}<span>MENU</span></a>
       <a class="pill pill--red" href="#access">{{icon name="pin"}}<span>MAP</span></a>
@@ -23,7 +23,7 @@
         {{img name="neon-counter" sizes="(min-width: 960px) 50vw, 100vw" eager pos="30% 50%" alt="窓辺の赤いネオンサインと、L字のカウンター"}}
         <p class="sign glow-red flicker" aria-hidden="true">X-III</p>
         <div>
-          <h1>練馬駅のバー X-III（クロスリー）</h1>
+          <h1>練馬駅のダイニングバー XⅢ クロスリー</h1>
           <p class="catch">今夜、<span class="nb">ちょっとだけ</span><span class="nb">寄り道しない？</span></p>
           <p class="lead">{{lead1}}{{lead2}}<br>{{lead3}}</p>
         </div>
@@ -70,7 +70,7 @@
         </div>
         <div class="pills">
           <a class="pill pill--red" href="{{route_url}}" target="_blank" rel="noopener">{{icon name="walk"}}道順を見る</a>
-          <a class="pill" href="{{insta_href}}">{{icon name="insta"}}Instagram</a>
+          <a class="pill" href="{{insta_href}}" target="_blank" rel="noopener">{{icon name="insta"}}Instagram</a>
         </div>
       </div>
     </section>
@@ -102,7 +102,7 @@
             <a class="pill" href="{{map_url}}" target="_blank" rel="noopener">{{icon name="map"}}Googleマップで開く</a>
           </div>
         </div>
-        <div class="box"><h3>練馬駅からの行き方</h3><div class="route-guide"><div class="route-guide__in">{{route_map}}{{route}}</div></div></div>
+        <div class="box"><h3>練馬駅からの行き方</h3><div class="route-guide"><div class="route-guide__in">{{route_map}}{{route}}</div></div>{{streetview}}</div>
         <div class="box"><h3>営業時間</h3>{{hours_table}}</div>
       </div>
       <div class="box" style="margin-top:14px"><h3>店舗情報</h3>{{info}}</div>
@@ -117,7 +117,7 @@
   <footer class="footer">
     <p class="sign glow-red" aria-hidden="true">X-III</p>
     <address>{{full_name}}<br>{{addr}}<br>{{hours}}／{{closed}}</address>
-    <small>&copy; {{year}} X-III CROSS THREE</small>
+    <small>&copy; {{year}} ダイニングバー XⅢ クロスリー</small>
   </footer>
 </div>
 </body>

@@ -161,7 +161,7 @@ def main():
              f'aria-labelledby="rm-title rm-desc" overflow="hidden">')
     o.append('<title id="rm-title">練馬駅からの道順の図</title>')
     o.append('<desc id="rm-desc">練馬駅の南側から千川通りを渡り、マクドナルドの角を南へ。'
-             'ファミリーマートと七輪焼肉 牛繁のあいだを進み、斜めの通りを渡ってすぐ右の角のビルの3階。</desc>')
+             'ファミリーマートと七輪焼肉 牛繁のあいだを進み、斜めの通りを渡ってすぐ右の青いビルの3階。</desc>')
     o.append('<rect class="rm-bg" x="0" y="0" width="100%" height="100%"/>')
     # 道（1つのまとまりにして、重なっても濃くならないように透かす）
     o.append('<g class="rm-roads" fill="none" stroke-linecap="round" stroke-linejoin="round">')
@@ -202,7 +202,7 @@ def main():
     o.append(f'<g class="rm-pin" transform="translate({bx} {by})">'
              f'<path class="rm-pin__lead" d="M0 0 L-18 22"/>'
              f'<rect class="rm-pin__box" x="-112" y="20" width="98" height="40" rx="8"/>'
-             f'<text class="rm-pin__name" x="-63" y="39" text-anchor="middle">X-III</text>'
+             f'<text class="rm-pin__name" x="-63" y="39" text-anchor="middle">XⅢ</text>'
              f'<text class="rm-pin__sub" x="-63" y="53" text-anchor="middle">エクセル豊玉 3F</text></g>')
     # 番号
     for i, p in enumerate(STEPS[:-1], 1):

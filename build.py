@@ -110,7 +110,7 @@ def photo_size(name):
 
 
 ALT = {
-    'counter-dark': '照明を落としたX-IIIのカウンター。緑に光る酒棚と、山崎・白州のボトル',
+    'counter-dark': '照明を落としたXⅢのカウンター。緑に光る酒棚と、山崎・白州のボトル',
     'backbar': 'カウンターに並ぶ山崎・白州とクラセアスール。奥に緑に光る酒棚',
     'counter-wide': '木のカウンターと、背もたれ付きのハイスツール',
     'neon-counter': 'L字のカウンターと、窓辺の赤いネオンサイン',
@@ -195,7 +195,7 @@ def h_img(ctx, name, sizes='100vw', alt=None, cls=None, eager=None, pos=None, sc
 def h_logo(ctx, cls='logo', variant='color', alt=None):
     file = 'logo-x-iii.png' if variant == 'color' else 'logo-x-iii-white.png'
     return (f'<img class="{esc(cls)}" src="{ctx["root"]}assets/img/{file}" width="444" height="234" '
-            f'alt="{esc(alt or "X-III クロスリー CROSS THREE")}">')
+            f'alt="{esc(alt or SITE["full_name"])}">')
 
 
 def h_head(ctx, title=None, desc=None, theme='#0b0b0b', page=None):
@@ -251,7 +251,7 @@ def h_jsonld(ctx):
         '@context': 'https://schema.org',
         '@type': 'BarOrPub',
         'name': SITE['full_name'],
-        'alternateName': [SITE['name'], SITE['kana'], SITE['en']],
+        'alternateName': SITE['alt_names'],
         'description': SITE['description'],
         'address': {
             '@type': 'PostalAddress', 'postalCode': SITE['postal'], 'addressRegion': SITE['region'],
@@ -266,6 +266,8 @@ def h_jsonld(ctx):
         'hasMap': map_url(),
         'amenityFeature': [{'@type': 'LocationFeatureSpecification', 'name': 'ダーツ', 'value': True}],
         'geo': {'@type': 'GeoCoordinates', 'latitude': SITE['gmap']['pin'][0], 'longitude': SITE['gmap']['pin'][1]},
+        # 同じ店の Instagram と Google マップの登録。検索エンジンが同じ店だと結びつけやすくなる。
+        'sameAs': [u for u in (SITE.get('instagram_url'), 'https://maps.google.com/?cid=' + str(int(SITE['gmap']['ftid'].split(':')[1], 16))) if u],
     }
     if not raw('smoking')[1]:
         data['smokingAllowed'] = SITE['smoking_allowed']
@@ -387,6 +389,19 @@ def h_route(ctx, cls='route'):
     return f'<ol class="{esc(cls)}">{items}</ol>'
 
 
+def h_streetview(ctx, cls='streetview'):
+    """入口のようす（Google ストリートビューの埋め込み）。画像を切り取って載せず、Google の正式な埋め込みで出す。"""
+    sv = SITE['streetview']
+    lat, lng = sv['pos']
+    src = (f"https://www.google.com/maps/embed?pb=!4v1792247389433!6m8!1m7!1s{sv['pano']}!2m2!1d{lat}!2d{lng}"
+           f"!3f{sv['heading']}!4f{sv['pitch']}!5f0.7820865974627469")
+    return (f'<figure class="{esc(cls)}"><iframe class="{esc(cls)}__view" src="{esc(src)}" '
+            f'title="{esc(SITE["full_name"])}の入口のようす（Google ストリートビュー）" loading="lazy" '
+            'referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>'
+            f'<figcaption><b>入口のようす</b>　1階に「PUB J」がある青いビル。右のガラス扉から入ります。'
+            f'<small>Google ストリートビュー（{esc(sv["date"])}撮影。看板は当時のものです）</small></figcaption></figure>')
+
+
 ROUTE_MAP = SRC / '_parts' / 'route-map.svg'
 ROUTE_MAP_CSS = SRC / '_parts' / 'route-map.css'
 
@@ -436,7 +451,7 @@ def h_year(ctx):
 HELPERS = {
     'head': h_head, 'fonts': h_fonts, 'jsonld': h_jsonld, 'proposal': h_proposal, 'img': h_img, 'logo': h_logo,
     'menu': h_menu, 'food': h_food, 'faq': h_faq, 'info': h_info, 'hours_table': h_hours_table, 'map': h_map,
-    'route': h_route, 'route_map': h_route_map, 'features': h_features, 'icon': h_icon, 'access': h_access, 'addr': h_addr,
+    'route': h_route, 'route_map': h_route_map, 'streetview': h_streetview, 'features': h_features, 'icon': h_icon, 'access': h_access, 'addr': h_addr,
     'tel_href': h_tel_href, 'insta_href': h_insta_href, 'year': h_year,
     'map_url': lambda ctx: esc(map_url()), 'route_url': lambda ctx: esc(route_url()),
     'root': lambda ctx: ctx['root'],

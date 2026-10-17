@@ -34,3 +34,9 @@
   :where(.route-guide__in) { display: grid; grid-template-columns: minmax(0, 440px) minmax(0, 1fr); gap: 36px; align-items: center; }
   :where(.route-guide__in) > .route-map { margin: 0; }
 }
+/* 入口のようす（Google ストリートビューの埋め込み）。写真なので、各案の地図にかけている色の加工はかけない */
+:where(.streetview) { margin: 22px 0 0; max-width: 640px; }
+:where(.streetview__view) { display: block; width: 100%; aspect-ratio: 4 / 3; border: 0; border-radius: var(--rm-radius, 12px); filter: none; }
+:where(.streetview figcaption) { margin-top: 8px; font-size: 13px; line-height: 1.7; }
+:where(.streetview figcaption small) { display: block; font-size: 11px; opacity: .7; }
+@media (max-width: 600px) { :where(.streetview__view) { aspect-ratio: 1 / 1; } }

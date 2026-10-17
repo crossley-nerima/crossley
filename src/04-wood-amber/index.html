@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ja">
 <head>
-{{head title="X-III（クロスリー）｜練馬駅のウイスキーとカクテルのバー｜朝7時まで" theme="#2a190e"}}
+{{head title="ダイニングバー XⅢ クロスリー｜練馬駅のウイスキーとカクテルのバー｜朝7時まで" theme="#2a190e"}}
 {{fonts f="Zen+Old+Mincho:wght@400;700;900|Playfair+Display:ital,wght@0,600;1,400"}}
 <link rel="stylesheet" href="style.css">
 {{jsonld}}
@@ -10,7 +10,7 @@
 {{proposal}}
 <header class="site-header">
   <div class="wrap site-header__in">
-    <a class="brand" href="index.html"><b>X-III</b><span>クロスリー</span></a>
+    <a class="brand" href="index.html" aria-label="ダイニングバー XⅢ クロスリー"><b>X-III</b><span>クロスリー</span></a>
     <nav class="gnav" aria-label="メインメニュー">
       <a href="index.html" aria-current="page">ホーム</a>
       <a href="menu.html">お酒の棚</a>
@@ -24,7 +24,7 @@
     <div class="wrap hero__in">
       <div>
         <p class="hero__kicker it">Whisky &amp; Cocktail Bar in Nerima</p>
-        <h1>練馬駅のウイスキーとカクテルのバー<b>X-III<small>クロスリー</small></b></h1>
+        <h1>練馬駅のウイスキーとカクテルのバー<span class="visually-hidden">「ダイニングバー XⅢ クロスリー」</span><b aria-hidden="true">X-III<small>クロスリー</small></b></h1>
         <p class="hero__catch">今夜、<span class="nb">ちょっとだけ</span><span class="nb">寄り道しない？</span></p>
         <p class="hero__lead">ジャパニーズウイスキーからスコッチ、テキーラまで。木のカウンターで、琥珀色の一杯をゆっくりと。{{lead3}}</p>
         <div class="btns">
@@ -101,7 +101,7 @@
             <a class="btn btn--line" href="{{map_url}}" target="_blank" rel="noopener">Googleマップ</a>
           </div>
           <p class="sub-h">練馬駅からの行き方</p>
-          <div class="route-guide"><div class="route-guide__in">{{route_map}}{{route}}</div></div>
+          <div class="route-guide"><div class="route-guide__in">{{route_map}}{{route}}</div></div>{{streetview}}
         </div>
         <div>{{info}}</div>
       </div>
@@ -118,9 +118,9 @@
 
 <footer class="site-footer">
   <div class="wrap">
-    <a class="brand" href="index.html"><b>X-III</b><span>クロスリー</span></a>
+    <a class="brand" href="index.html" aria-label="ダイニングバー XⅢ クロスリー"><b>X-III</b><span>クロスリー</span></a>
     <address>{{addr}}<br>{{hours}}／{{closed}}</address>
-    <small>&copy; {{year}} X-III CROSS THREE</small>
+    <small>&copy; {{year}} ダイニングバー XⅢ クロスリー</small>
   </div>
 </footer>
 </body>

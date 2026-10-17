@@ -129,3 +129,4 @@ a { color: inherit; }
 
 /* 道順の図（共通の見た目は src/_parts/route-map.css） */
 .route-map { margin: 16px 0; --rm-paper: #fff; --rm-ink: var(--card-ink); --rm-accent: #d0643f; --rm-on-accent: #fff; --rm-radius: 16px; --rm-road-opacity: .16; }
+.streetview { --rm-radius: 16px; }

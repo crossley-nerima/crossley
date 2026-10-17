@@ -12,14 +12,14 @@
   <section class="hero" aria-label="お店の紹介">
     <div class="hero__bg">{{img name="backbar" sizes="100vw" eager alt=""}}</div>
     <header class="top">
-      <a class="top__brand" href="#">X-III <small>クロスリー</small></a>
+      <a class="top__brand" href="#" aria-label="ダイニングバー XⅢ クロスリー">X-III <small>クロスリー</small></a>
       <nav class="top__nav" aria-label="ページ内メニュー">
         <a href="#story">STORY</a><a href="#menu">MENU</a><a href="#info">ACCESS</a><a href="#faq">FAQ</a>
       </nav>
     </header>
     <div class="hero__body">
       <p class="hero__kicker">OPEN 19:00 — 7:00 ／ {{closed}}</p>
-      <h1 class="hero__title"><span class="hero__name">X-III</span><span class="hero__sub">クロスリー ｜ 練馬駅のバー</span></h1>
+      <h1 class="hero__title"><span class="visually-hidden">練馬駅のダイニングバー XⅢ クロスリー</span><span class="hero__name" aria-hidden="true">X-III</span><span class="hero__sub" aria-hidden="true">クロスリー ｜ 練馬駅のダイニングバー</span></h1>
       <p class="hero__catch">今夜、<span class="nb">ちょっとだけ寄り道しない？</span></p>
     </div>
     <a class="hero__scroll" href="#story">SCROLL</a>
@@ -103,7 +103,7 @@
             <a class="btn btn--line" href="{{map_url}}" target="_blank" rel="noopener">{{icon name="map"}}Googleマップ</a>
           </div>
           <p class="sub-h">練馬駅からの行き方</p>
-          <div class="route-guide"><div class="route-guide__in">{{route_map}}{{route}}</div></div>
+          <div class="route-guide"><div class="route-guide__in">{{route_map}}{{route}}</div></div>{{streetview}}
         </div>
       </div>
     </div>
@@ -120,7 +120,7 @@
 <footer class="footer">
   <p class="footer__name" aria-hidden="true">X-III</p>
   <address>{{full_name}}<br>{{addr}}<br>{{hours}}／{{closed}}</address>
-  <small>&copy; {{year}} X-III CROSS THREE</small>
+  <small>&copy; {{year}} ダイニングバー XⅢ クロスリー</small>
 </footer>
 </body>
 </html>

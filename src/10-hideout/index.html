@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ja">
 <head>
-{{head title="X-III（クロスリー）｜練馬駅の隠れ家バー｜朝7時まで" theme="#050505"}}
+{{head title="ダイニングバー XⅢ クロスリー｜練馬駅の隠れ家バー｜朝7時まで" theme="#050505"}}
 {{fonts f="Hina+Mincho|Italiana"}}
 <link rel="stylesheet" href="style.css">
 <script src="script.js" defer></script>
@@ -21,7 +21,7 @@
 
 <div class="wrap">
   <header class="top">
-    <a class="top__name" href="#">X-III</a>
+    <a class="top__name" href="#" aria-label="ダイニングバー XⅢ クロスリー">X-III</a>
     <nav aria-label="ページ内メニュー"><a href="#shelf">酒棚</a><a href="#door">扉</a><a href="#night">過ごし方</a><a href="#guide">ご案内</a></nav>
   </header>
 
@@ -29,7 +29,7 @@
     <section class="scene" data-scene="s1" aria-label="お店の紹介">
       <div class="opening">
         <div>
-          <h1>練馬駅の隠れ家バー<br>{{logo class="logo" alt="X-III（クロスリー）"}}</h1>
+          <h1>練馬駅の隠れ家バー<br>{{logo class="logo" alt="ダイニングバー XⅢ クロスリー"}}</h1>
           <p class="catch">今夜、ちょっとだけ寄り道しない？</p>
           <p>{{lead1}}{{lead2}}<br>{{lead3}}</p>
           <p class="hint">画面をなぞると、店内が見えます</p>
@@ -80,7 +80,7 @@
               <a class="link" href="{{route_url}}" target="_blank" rel="noopener">{{icon name="walk"}}今いる場所から道順</a>
               <a class="link" href="{{map_url}}" target="_blank" rel="noopener">Googleマップ</a>
             </div>
-            {{route_map}}
+            {{route_map}}{{streetview}}
             <p class="sub">営業時間</p>
             {{hours_table}}
           </div>
@@ -96,9 +96,9 @@
 </div>
 
 <footer class="footer">
-  <span class="en">X-III</span>
+  <span class="en" aria-hidden="true">X-III</span>
   <address>{{full_name}}　{{addr}}<br>{{hours}}／{{closed}}</address>
-  <small>&copy; {{year}} X-III CROSS THREE</small>
+  <small>&copy; {{year}} ダイニングバー XⅢ クロスリー</small>
 </footer>
 </body>
 </html>
