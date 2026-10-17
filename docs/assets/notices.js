@@ -70,8 +70,9 @@
   var bd = businessDate(jstNow());
   Array.prototype.forEach.call(document.querySelectorAll('[data-notices]'), function (box) {
     var left = 0;
-    Array.prototype.forEach.call(box.querySelectorAll('[data-until]'), function (li) {
-      if (li.getAttribute('data-until') < bd) li.hidden = true; else left++;
+    Array.prototype.forEach.call(box.querySelectorAll('li'), function (li) {
+      var until = li.getAttribute('data-until');  // 見本には付いていないので、消えない
+      if (until && until < bd) li.hidden = true; else left++;
     });
     if (!left) box.hidden = true;
   });

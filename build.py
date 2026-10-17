@@ -448,7 +448,7 @@ def notices():
         u = date.fromisoformat(n.get('until', n['from']))
         if u < f:
             raise ValueError(f'お知らせの until が from より前です: {n}')
-        if u < date.today() - timedelta(days=1):
+        if u < date.today() - timedelta(days=1) and not n.get('sample'):
             continue
         out.append({**n, 'from': f, 'until': u})
     return sorted(out, key=lambda n: n['from'])
@@ -491,12 +491,17 @@ def h_notices(ctx, cls='notices', h='h2', title='お知らせ'):
         if n.get('sample'):
             used_tbd.add('お知らせの見本')
             text = tbd_span(n['text'])
-        items.append(f'<li class="{cls}__item {cls}__item--{n["type"]}" data-until="{n["until"].isoformat()}">'
+        until = '' if n.get('sample') else f' data-until="{n["until"].isoformat()}"'
+        items.append(f'<li class="{cls}__item {cls}__item--{n["type"]}"{until}>'
                      f'<span class="{cls}__tag">{NOTICE_TYPES[n["type"]]}</span>'
                      f'<time class="{cls}__date" datetime="{n["from"].isoformat()}">{when}</time>{hours}'
                      f'<p class="{cls}__text">{text}</p></li>')
+    note = ''
+    if PROPOSAL and any(n.get('sample') for n in ns):
+        note = (f'<p class="{cls}__note"><b>見本</b>　お店からお知らせが届いたら、このように表示します。'
+                '臨時休業・臨時営業の日付を書くと、日付が過ぎたものは自動で消えます。</p>')
     return (f'<section class="{esc(cls)}" aria-labelledby="{cls}-h" data-notices><div class="{cls}__in">'
-            f'<{h} class="{cls}__title" id="{cls}-h">{esc(title)}</{h}>'
+            f'<{h} class="{cls}__title" id="{cls}-h">{esc(title)}</{h}>{note}'
             f'<ul class="{cls}__list">{"".join(items)}</ul></div></section>')
 
 

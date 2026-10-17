@@ -45,6 +45,7 @@
 :where(.notices) { padding: var(--nt-pad, 28px 0); background: var(--nt-bg, transparent); color: var(--nt-ink, inherit); }
 :where(.notices__in) { width: var(--nt-width, min(1120px, 100% - 40px)); margin: 0 auto; }
 :where(.notices__title) { margin: 0 0 12px; font-size: 15px; font-weight: 700; letter-spacing: .14em; color: var(--nt-title, var(--nt-ink, inherit)); }
+:where(.notices__note) { margin: -4px 0 12px; font-size: 12px; line-height: 1.7; color: var(--nt-title, var(--nt-ink, inherit)); opacity: .8; }
 :where(.notices__list) { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 :where(.notices__item) { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 12px 16px;
   border-radius: var(--nt-radius, 10px); background: var(--nt-card, rgba(127, 127, 127, .12)); border: 1px solid var(--nt-line, transparent); color: var(--nt-ink, inherit); }
