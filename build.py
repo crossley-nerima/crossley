@@ -398,7 +398,7 @@ def h_streetview(ctx, cls='streetview'):
     return (f'<figure class="{esc(cls)}"><iframe class="{esc(cls)}__view" src="{esc(src)}" '
             f'title="{esc(SITE["full_name"])}の入口のようす（Google ストリートビュー）" loading="lazy" '
             'referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>'
-            f'<figcaption><b>入口のようす</b>　1階に「PUB J」がある青いビル。右のガラス扉から入ります。'
+            f'<figcaption><b>入口のようす</b>　青いビルの角。木の扉の右にあるガラスの扉から入り、エレベーターで3階へ。'
             f'<small>Google ストリートビュー（{esc(sv["date"])}撮影。看板は当時のものです）</small></figcaption></figure>')
 
 
