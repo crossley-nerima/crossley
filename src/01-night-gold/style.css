@@ -171,7 +171,9 @@ a { color: inherit; }
 .crumbs a { text-decoration: none; }
 
 /* ---- メニュー ---- */
-.menu { display: grid; grid-template-columns: 1fr 1fr; gap: 56px clamp(32px, 6vw, 80px); }
+.menu { columns: 2; column-gap: clamp(32px, 6vw, 80px); }
+.menu__cat { break-inside: avoid; margin-bottom: 56px; }
+#menu-cocktail .menu__items { columns: 2; column-gap: 28px; }  /* カクテルは品目が多いので2列に */
 .menu__title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 6px; padding-bottom: 12px; border-bottom: 1px solid var(--gold); font-size: 19px; font-weight: 600; color: var(--gold-2); }
 .menu__en { font-family: var(--en); font-size: 12px; letter-spacing: .24em; color: var(--muted); font-weight: 600; }
 .menu__price { margin: 0 0 10px; font-size: 13px; color: var(--muted); text-align: right; }
@@ -187,7 +189,7 @@ a { color: inherit; }
 .chip { border: 1px solid var(--line); padding: 22px; text-align: center; }
 .chip .icon { width: 30px; height: 30px; color: var(--gold); margin: 0 auto 10px; }
 .chip b { display: block; font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: .24em; }
-@media (max-width: 760px) { .menu { grid-template-columns: 1fr; } .chips { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { .menu { columns: 1; } .chips { grid-template-columns: 1fr; } }
 
 /* ---- アクセス ---- */
 .map-frame { position: relative; border: 1px solid var(--line); padding: 10px; }
@@ -233,5 +235,3 @@ a { color: inherit; }
 .route-map .rm { border: 1px solid var(--line); }
 .streetview { --rm-radius: 0; margin: 40px auto 0; }
 .notices { --nt-bg: var(--bg-2); --nt-card: rgba(201, 164, 92, .07); --nt-line: var(--line); --nt-ink: var(--ink); --nt-muted: var(--muted); --nt-closed: #b8473a; --nt-open: var(--gold); --nt-on-open: var(--bg); --nt-radius: 0; --nt-width: var(--wrap); }
-/* メニューの最後の段に1つだけ余ったときは、横いっぱいに広げる（2列の並び） */
-.menu > .menu__cat:last-child:nth-child(2n+1) { grid-column: 1 / -1; }

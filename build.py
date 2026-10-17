@@ -44,7 +44,8 @@ def lookup(key):
     cur = SITE
     for part in key.split('.'):
         if isinstance(cur, list):
-            cur = cur[int(part)]
+            # menu.cocktail.price のように、番号の代わりに項目の id で参照できる（並べ替えても表示がずれない）
+            cur = cur[int(part)] if part.isdigit() else next(x for x in cur if isinstance(x, dict) and x.get('id') == part)
         elif isinstance(cur, dict) and part in cur:
             cur = cur[part]
         else:
@@ -335,16 +336,22 @@ def h_proposal(ctx):
 
 def h_menu(ctx, h='h3', cls='menu'):
     out = [f'<div class="{esc(cls)}">']
-    for i, m in enumerate(SITE['menu'], 1):
+    for m in SITE['menu']:
         items = ''.join(f'<li>{esc(x)}</li>' for x in m['items'])
         mark = ' <span class="tbd tbd--only">品目は一例</span>' if m.get('items_tbd') else ''
-        out.append(f'<section class="{cls}__cat" id="{cls}-{i}"><{h} class="{cls}__title">{esc(m["cat"])}'
+        lead = f'<p class="{cls}__lead">{esc(m["lead"])}</p>' if m.get('lead') else ''
+        out.append(f'<section class="{cls}__cat" id="{cls}-{m["id"]}"><{h} class="{cls}__title">{esc(m["cat"])}'
                    f'<span class="{cls}__en" lang="en">{esc(m["en"])}</span></{h}>'
-                   f'<p class="{cls}__price">{show_value(m["price"], m["cat"] + "の価格")}{mark}</p>'
+                   f'<p class="{cls}__price">{show_value(m["price"], m["cat"] + "の価格")}{mark}</p>{lead}'
                    f'<ul class="{cls}__items">{items}</ul></section>')
     out.append('</div>')
     out.append(f'<p class="{cls}__note">{esc(SITE["menu_note"])}</p>')
     return ''.join(out)
+
+
+def h_menu_nav(ctx, cls='menu'):
+    """メニューの種類へ飛ぶ目次の項目（<li>）。メニューの並びから作るので、種類を足しても直さなくてよい。"""
+    return ''.join(f'<li><a href="#{cls}-{m["id"]}">{esc(m["cat"])}</a></li>' for m in SITE['menu'])
 
 
 def h_food(ctx, cls='food'):
@@ -554,7 +561,7 @@ def h_year(ctx):
 
 HELPERS = {
     'head': h_head, 'fonts': h_fonts, 'jsonld': h_jsonld, 'proposal': h_proposal, 'img': h_img, 'logo': h_logo,
-    'menu': h_menu, 'food': h_food, 'faq': h_faq, 'info': h_info, 'hours_table': h_hours_table, 'map': h_map,
+    'menu': h_menu, 'menu_nav': h_menu_nav, 'food': h_food, 'faq': h_faq, 'info': h_info, 'hours_table': h_hours_table, 'map': h_map,
     'route': h_route, 'route_map': h_route_map, 'streetview': h_streetview, 'notices': h_notices, 'features': h_features, 'icon': h_icon, 'access': h_access, 'addr': h_addr,
     'tel_href': h_tel_href, 'insta_href': h_insta_href, 'year': h_year,
     'map_url': lambda ctx: esc(map_url()), 'route_url': lambda ctx: esc(route_url()),
