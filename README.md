@@ -16,7 +16,8 @@
 | `src/_parts/` | 全案に差し込む部品。`route-map.svg`（道順の図）、`parts.css`（道順の図・入口のようす・お知らせの見た目）、`notices.js`（お知らせと「いま営業中か」の計算） |
 | `docs/` | 書き出したサイト（GitHub Pages はここを公開する） |
 | `build.py` | `site.json` をひな形に差し込んで `docs/` に書き出す |
-| `tools/prepare_photos.py` | 写真を Web 用に縮め、撮影情報を消し、テレビの画面をぼかす。チラシからロゴを抜き出す |
+| `tools/prepare_photos.py` | 写真を Web 用に縮め、撮影情報を消し、テレビの画面をぼかす。チラシからロゴを抜き出し、下の「CROSS THREE」を「CROSSLEY」に描き直す |
+| `tools/fonts/` | ロゴの「CROSSLEY」に使う書体 Barlow（SIL Open Font License。`OFL.txt`） |
 | `tools/shoot.py` | 書き出したページを画面なしの Edge で撮って、崩れを確かめる |
 | `tools/make_route_map.py` | 練馬駅から店までの道順の図を、OpenStreetMap の地図データから作る（歩く道・番号の位置はこの中に書く） |
 

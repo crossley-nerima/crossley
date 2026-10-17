@@ -4,13 +4,14 @@
 - 撮影情報（EXIF。撮った場所が入っていることがある）は書き出さない。
 - テレビに映っている人の顔はぼかす（写っているのは番組の出演者で、使ってよいか分からないため）。
 - チラシの「X-III」ロゴを、黒い背景を抜いた PNG にする（元データが届いたら差し替える）。
+  ロゴの下の「CROSS THREE」は「CROSSLEY」に描き直す（書体は Barlow。tools/fonts）。
 
 使い方: python -I -X utf8 tools/prepare_photos.py <写真のフォルダ> <書き出し先>
 """
 import sys
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFilter, ImageOps
+from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
 
 SRC = Path(sys.argv[1])
 OUT = Path(sys.argv[2])
@@ -86,7 +87,92 @@ def extract_logo(box, threshold=48, full=170):
     return out.crop(out.getbbox())
 
 
+TAGLINE_TEXT = 'CROSSLEY'
+TAGLINE_FONT = Path(__file__).resolve().parent / 'fonts' / 'Barlow-Regular.ttf'  # SIL Open Font License（tools/fonts/OFL.txt）
+
+
+def runs(xs):
+    """並んだ x の集まりを、続いている区間 [(始め, 終わり), …] に分ける。"""
+    out = []
+    for x in xs:
+        if out and x == out[-1][1] + 1:
+            out[-1][1] = x
+        else:
+            out.append([x, x])
+    return out
+
+
+def replace_tagline(logo, text):
+    """チラシのロゴの下の行（左右の金の線と「CROSS THREE」）を消し、同じ色・高さ・文字間隔で text と線を描き直す。
+    英語の店名は CROSSLEY（利用者の指摘。食べログも CROSSLEY。チラシには CROSS THREE と印刷されている）。"""
+    W, H = logo.size
+    alpha = logo.getchannel('A')
+    px = logo.load()
+
+    def opaque(y):
+        return [x for x in range(W) if alpha.getpixel((x, y)) > 60]
+
+    # 下の行の範囲: いちばん下から上へ、何も無い行に当たるまで
+    top = H - 1
+    while top > 0 and opaque(top - 1):
+        top -= 1
+    rows = list(range(top, H))
+    line_rows = [y for y in rows if len(opaque(y)) > W * 0.5]
+    text_px = [(x, y) for y in rows if y not in line_rows for x in opaque(y)]
+    tx0, tx1 = min(x for x, _ in text_px), max(x for x, _ in text_px)
+    ty0, ty1 = min(y for _, y in text_px), max(y for _, y in text_px)
+    line = runs(opaque(line_rows[0]))
+    gap_l, gap_r = tx0 - line[0][1] - 1, line[-1][0] - tx1 - 1
+    # 文字の色（不透明さで重みを付けた平均）
+    tot = [0, 0, 0, 0]
+    for x, y in text_px:
+        r, g, b, a = px[x, y]
+        tot[0] += r * a; tot[1] += g * a; tot[2] += b * a; tot[3] += a
+    color = tuple(round(c / tot[3]) for c in tot[:3])
+    # 線の1列（縦の色と不透明さ）を、元の左の線の真ん中から写し取る
+    line_col = logo.crop((line[0][1] // 2, top, line[0][1] // 2 + 1, H))
+
+    # 元の文字と同じ高さ（H の高さ）になる大きさを探し、元の幅になる文字間隔を求めて、新しい文字に使う
+    scale = 4
+    cap = ty1 - ty0  # O や S のはみ出し（約1px）を除いた高さ
+    size = 8.0
+    while True:
+        font = ImageFont.truetype(str(TAGLINE_FONT), round(size * scale))
+        hb = font.getbbox('H')
+        if hb[3] - hb[1] >= cap * scale:
+            break
+        size += 0.25
+
+    def draw(s, track):
+        adv = [font.getlength(c) for c in s]
+        w = int(sum(adv) + track * (len(s) - 1)) + 8 * scale
+        m = Image.new('L', (w, (cap + 8) * scale), 0)
+        d = ImageDraw.Draw(m)
+        x, y = 0, 4 * scale - hb[1]
+        for c, a in zip(s, adv):
+            d.text((x, y), c, font=font, fill=255)
+            x += a + track
+        return m.crop(m.getbbox())
+
+    natural = draw('CROSS THREE', 0).width
+    track = ((tx1 - tx0 + 1) * scale - natural) / len('CROSS THRE')
+    m = draw(text, track)
+    m = m.resize((round(m.width / scale), round(m.height / scale)), Image.LANCZOS)
+
+    # 下の行を消して、描き直す
+    clear = Image.new('RGBA', (W, H - top), (0, 0, 0, 0))
+    logo.paste(clear, (0, top))
+    nx0 = round((tx0 + tx1 + 1) / 2 - m.width / 2)
+    for x in list(range(0, nx0 - gap_l)) + list(range(nx0 + m.width + gap_r, W)):
+        logo.paste(line_col, (x, top))
+    glyphs = Image.new('RGBA', m.size, color + (0,))
+    glyphs.putalpha(m)
+    logo.alpha_composite(glyphs, (nx0, ty0 + round((ty1 - ty0 + 1 - m.height) / 2)))
+    return logo
+
+
 logo = extract_logo((55, 772, 525, 1028))
+logo = replace_tagline(logo, TAGLINE_TEXT)
 logo.save(OUT / 'logo-x-iii.png', optimize=True)
 print('logo', logo.size)
 
