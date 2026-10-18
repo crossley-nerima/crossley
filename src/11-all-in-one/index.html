@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="ja">
+<head>
+{{head title="ダイニングバー XⅢ クロスリー｜練馬駅のバー｜朝7時まで営業・ダーツあり" theme="#0d0f14"}}
+{{fonts f="Noto+Sans+JP:wght@400;500;700|Cormorant+Garamond:wght@500;600"}}
+<link rel="stylesheet" href="style.css">
+<script src="script.js" defer></script>
+{{jsonld}}
+</head>
+<body>
+{{proposal}}
+<header class="bar" id="top">
+  <div class="wrap bar__in">
+    <a class="bar__brand" href="#top" aria-label="ダイニングバー XⅢ クロスリー">{{logo class="bar__logo" variant="white" alt=""}}</a>
+    <nav class="bar__nav" aria-label="ページ内の目次">
+      <a href="#bartender">マスター</a><a href="#finder">一杯診断</a><a href="#menu">メニュー</a><a href="#calendar">営業日</a>
+      <a href="#reserve">予約</a><a href="#access">アクセス</a><a href="#english" lang="en">English</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero" aria-label="お店の紹介">
+    <div class="hero__bg">{{img name="counter-dark" sizes="100vw" eager alt=""}}</div>
+    <div class="wrap hero__in">
+      {{feature id="status"}}
+      <p class="status" data-state="unknown" role="status"><span class="status__dot" aria-hidden="true"></span><span class="status__text"><b>営業時間 {{hours}}</b><span>{{closed}}</span></span></p>
+      <h1><span class="hero__kicker">練馬駅のダイニングバー</span>XⅢ クロスリー</h1>
+      <p class="hero__catch">{{catch}}</p>
+      <p class="hero__lead">{{lead1}}{{lead2}}<br>{{master_short}}</p>
+      <div class="hero__acts">
+        <a class="btn btn--gold" href="#reserve">{{icon name="calendar"}}予約リクエスト</a>
+        <a class="btn" href="{{route_url}}" target="_blank" rel="noopener">{{icon name="walk"}}今いる場所から道順</a>
+        <a class="btn" href="{{tel_href}}">{{icon name="phone"}}{{phone}}</a>
+      </div>
+    </div>
+  </section>
+
+  {{feature_list}}
+
+  <div class="wrap">{{feature id="notices"}}</div>
+  {{notices}}
+
+  <section class="sec" id="bartender" aria-labelledby="bartender-h">
+    <div class="wrap">
+      {{feature id="bartender"}}
+      <header class="head"><span class="head__en">BARTENDER</span><h2 id="bartender-h">マスターの紹介</h2></header>
+      <div class="tender">
+        <figure class="tender__photo">
+          {{img name="sample-bartender" sizes="(min-width: 860px) 360px, 80vw"}}
+          <figcaption>{{credit name="sample-bartender"}}<br>お店の写真が届いたら差し替えます。</figcaption>
+        </figure>
+        <div class="tender__body">
+          <p class="tender__role">MASTER BARTENDER</p>
+          <p class="tender__name">{{bartender.name}}</p>
+          <p class="tender__career">{{master}}</p>
+          <dl class="tender__facts">
+            <div><dt>経歴</dt><dd>銀座・麻布のバー</dd></div>
+            <div><dt>得意なお酒</dt><dd>{{bartender.specialty}}</dd></div>
+          </dl>
+          <blockquote class="tender__msg"><p>{{bartender.message}}</p></blockquote>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec sec--alt" id="finder" aria-labelledby="finder-h">
+    <div class="wrap">
+      {{feature id="finder"}}
+      <header class="head"><span class="head__en">TONIGHT'S GLASS</span><h2 id="finder-h">今夜の一杯診断</h2>
+        <p>お酒に詳しくなくても大丈夫。好みを2つ選ぶと、おすすめのカクテルが出ます。</p></header>
+      <div class="finder">
+        <figure class="finder__photo">{{img name="sample-cocktail" sizes="(min-width: 860px) 420px, 90vw"}}<figcaption>{{credit name="sample-cocktail"}}</figcaption></figure>
+        <form class="finder__form" aria-describedby="finder-h">
+          <fieldset><legend>味の好みは？</legend>
+            <label><input type="radio" name="taste" value="sweet" checked><span>甘め</span></label>
+            <label><input type="radio" name="taste" value="dry"><span>すっきり</span></label>
+            <label><input type="radio" name="taste" value="bitter"><span>ほろ苦い</span></label>
+          </fieldset>
+          <fieldset><legend>お酒の強さは？</legend>
+            <label><input type="radio" name="strength" value="light" checked><span>軽め</span></label>
+            <label><input type="radio" name="strength" value="strong"><span>しっかり</span></label>
+          </fieldset>
+          <div class="finder__result" aria-live="polite"></div>
+          <p class="finder__note">迷ったら、マスターに「甘めで軽いもの」のように伝えるだけでも作ってもらえます。</p>
+        </form>
+      </div>
+      {{data name="cocktail_guide"}}
+    </div>
+  </section>
+
+  <section class="sec" id="menu" aria-labelledby="menu-h">
+    <div class="wrap">
+      {{feature id="menu"}}
+      <header class="head"><span class="head__en">MENU</span><h2 id="menu-h">メニュー</h2></header>
+      <div class="menu-tools">
+        <label class="menu-search"><span class="visually-hidden">お酒の名前で探す</span><input type="search" placeholder="お酒の名前で探す（例：山崎、ジン）"></label>
+        <div class="menu-tabs" role="group" aria-label="お酒の種類で絞り込む"></div>
+      </div>
+      {{menu}}
+      <p class="menu-empty" hidden>見つかりませんでした。マスターに聞いてみてください。</p>
+      <h3 class="sub-h">フード</h3>
+      {{food}}
+    </div>
+  </section>
+
+  <section class="sec sec--alt" id="price" aria-labelledby="price-h">
+    <div class="wrap">
+      {{feature id="price"}}
+      <header class="head"><span class="head__en">PRICE</span><h2 id="price-h">料金のめやす</h2><p>初めての方でも安心して来られるように。</p></header>
+      <div class="prices">
+        <div class="price"><span>チャージ</span><b>{{charge}}</b></div>
+        <div class="price"><span>ウイスキー</span><b>{{menu.japanese.price}}</b></div>
+        <div class="price"><span>カクテル</span><b>{{menu.cocktail.price}}</b></div>
+        <div class="price"><span>焼酎</span><b>{{menu.shochu.price}}</b></div>
+        <div class="price"><span>ダーツ</span><b>{{darts_price}}</b></div>
+        <div class="price"><span>フード</span><b>{{food.0.price}}〜</b></div>
+      </div>
+      <p class="budget">ご予算のめやす：{{budget}}</p>
+      <p class="pay">お支払い：{{payment}}</p>
+    </div>
+  </section>
+
+  <section class="sec" id="calendar" aria-labelledby="calendar-h">
+    <div class="wrap">
+      {{feature id="calendar"}}
+      <header class="head"><span class="head__en">CALENDAR</span><h2 id="calendar-h">営業カレンダー</h2><p>{{hours}}（{{closed}}）</p></header>
+      <div class="cal" aria-live="polite">
+        <div class="cal__bar"><button type="button" class="cal__prev" aria-label="前の月">‹</button><p class="cal__title"></p><button type="button" class="cal__next" aria-label="次の月">›</button></div>
+        <table class="cal__grid"><thead><tr><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th><th>土</th><th class="is-sun">日</th></tr></thead><tbody></tbody></table>
+        <ul class="cal__legend"><li class="is-open">営業</li><li class="is-closed">定休日</li><li class="is-off">臨時休業</li><li class="is-extra">臨時営業</li></ul>
+        <p class="cal__note"></p>
+      </div>
+      {{data name="notices"}}
+    </div>
+  </section>
+
+  <section class="sec sec--alt" id="reserve" aria-labelledby="reserve-h">
+    <div class="wrap">
+      {{feature id="reserve"}}
+      <header class="head"><span class="head__en">RESERVATION</span><h2 id="reserve-h">予約リクエスト</h2>
+        <p>日にち・時間・人数を入れると、お店に送る文面を作ります。{{reserve_note}}</p></header>
+      <form class="reserve">
+        <label>日にち<input type="date" name="date" required></label>
+        <label>時間<select name="time"></select></label>
+        <label>人数<select name="people"><option>1名</option><option selected>2名</option><option>3名</option><option>4名</option><option>5名</option><option>6名</option><option>7名以上</option></select></label>
+        <label>お名前<input type="text" name="name" autocomplete="name" placeholder="例：練馬 太郎"></label>
+        <label class="reserve__wide">ご要望<input type="text" name="note" placeholder="例：カウンター希望、ダーツをしたい"></label>
+        <p class="reserve__day" aria-live="polite"></p>
+        <textarea class="reserve__msg" readonly aria-label="お店に送る文面" rows="7"></textarea>
+        <div class="reserve__acts">
+          <a class="btn btn--gold reserve__sms" href="#">SMSで送る</a>
+          <button class="btn reserve__copy" type="button">文面をコピー（InstagramのDMなどに）</button>
+          <a class="btn" href="{{tel_href}}">{{icon name="phone"}}電話で予約</a>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="sec" aria-label="貸切・ダーツ">
+    <div class="wrap duo">
+      <div class="duo__card" id="party">
+        {{feature id="party"}}
+        <h2 class="duo__h"><span class="head__en">PARTY</span>貸切・グループ</h2>
+        <p>二次会や仲間の集まりに。人数やご予算に合わせてご相談ください。</p>
+        <dl class="kv"><div><dt>貸切</dt><dd>{{private_hire}}</dd></div><div><dt>飲み放題</dt><dd>{{party_plan}}</dd></div><div><dt>ご予約</dt><dd>{{reservation}}</dd></div></dl>
+      </div>
+      <div class="duo__card" id="darts">
+        {{feature id="darts"}}
+        <h2 class="duo__h"><span class="head__en">DARTS</span>ダーツ</h2>
+        {{img name="darts" sizes="(min-width: 860px) 480px, 90vw" cls="duo__img" pos="50% 55%"}}
+        <p>ダーツマシンがあります。初めての方も、仲間とのゲームもどうぞ。</p>
+        <p class="duo__price">{{darts_price}}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec sec--alt" id="gallery" aria-labelledby="gallery-h">
+    <div class="wrap">
+      {{feature id="gallery"}}
+      <header class="head"><span class="head__en">GALLERY</span><h2 id="gallery-h">店内の写真</h2><p>写真を押すと大きく見られます。</p></header>
+      <div class="gallery">
+        <button type="button" class="gallery__item">{{img name="backbar" sizes="(min-width: 860px) 360px, 45vw"}}</button>
+        <button type="button" class="gallery__item">{{img name="counter-wide" sizes="(min-width: 860px) 360px, 45vw"}}</button>
+        <button type="button" class="gallery__item">{{img name="neon-counter" sizes="(min-width: 860px) 360px, 45vw"}}</button>
+        <button type="button" class="gallery__item">{{img name="tables" sizes="(min-width: 860px) 360px, 45vw" pos="50% 70%"}}</button>
+        <button type="button" class="gallery__item">{{img name="darts" sizes="(min-width: 860px) 360px, 45vw"}}</button>
+        <button type="button" class="gallery__item">{{img name="counter-dark" sizes="(min-width: 860px) 360px, 45vw"}}</button>
+      </div>
+      <dialog class="lightbox" aria-label="写真を大きく表示"><img alt=""><button type="button" class="lightbox__close" aria-label="閉じる">×</button></dialog>
+    </div>
+  </section>
+
+  <section class="sec" id="access" aria-labelledby="access-h">
+    <div class="wrap">
+      {{feature id="access"}}
+      <header class="head"><span class="head__en">ACCESS</span><h2 id="access-h">アクセス</h2><p>{{access}}</p></header>
+      <div class="route-guide"><div class="route-guide__in">{{route_map}}{{route}}</div></div>
+      <div class="access2">
+        {{streetview}}
+        <div>
+          {{map}}
+          <div class="access2__acts">
+            <a class="btn btn--gold" href="{{route_url}}" target="_blank" rel="noopener">{{icon name="walk"}}今いる場所から道順</a>
+            <button class="btn copy" type="button" data-text="{{addr}}">住所をコピー</button>
+          </div>
+          {{info}}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec sec--alt" id="sns" aria-labelledby="sns-h">
+    <div class="wrap">
+      {{feature id="instagram"}}
+      {{feature id="share"}}
+      <header class="head"><span class="head__en">SNS</span><h2 id="sns-h">Instagram・友だちに送る</h2></header>
+      <div class="sns">
+        <div class="sns__insta">
+          <blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/p/DcTuifaSV63/" data-instgrm-version="14"><a href="https://www.instagram.com/p/DcTuifaSV63/" target="_blank" rel="noopener">Instagram の投稿を見る</a></blockquote>
+          <a class="btn btn--gold" href="{{insta_href}}" target="_blank" rel="noopener">{{icon name="insta"}}{{instagram}} をフォロー</a>
+        </div>
+        <div class="sns__share">
+          <p>飲み会のお店決めに。このページを友だちに送れます。</p>
+          <a class="btn share-line" href="https://social-plugins.line.me/lineit/share" target="_blank" rel="noopener">LINEで送る</a>
+          <button class="btn share-copy" type="button">リンクをコピー</button>
+          <button class="btn share-native" type="button" hidden>ほかのアプリで送る</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="english" aria-labelledby="english-h" lang="en">
+    <div class="wrap">
+      {{feature id="english"}}
+      <header class="head"><span class="head__en">FOR VISITORS</span><h2 id="english-h">English Guide</h2></header>
+      <div class="en-guide">
+        <dl class="kv">
+          <div><dt>Name</dt><dd>Dining Bar XⅢ CROSSLEY</dd></div>
+          <div><dt>Hours</dt><dd>7 pm – 7 am (closed on Sundays)</dd></div>
+          <div><dt>Address</dt><dd>3F Excel Toyotama, 5-30-12 Toyotamakita, Nerima-ku, Tokyo 176-0012</dd></div>
+          <div><dt>Station</dt><dd>About 5 minutes on foot from Nerima Station (Seibu Ikebukuro Line / Toei Oedo Line)</dd></div>
+          <div><dt>Darts</dt><dd>¥100 per game</dd></div>
+          <div><dt>Smoking</dt><dd>Smoking is allowed inside. Guests under 20 cannot enter.</dd></div>
+          <div><dt>Phone</dt><dd>+81 70-9065-1559</dd></div>
+        </dl>
+        <ol class="en-route">
+          <li>Leave Nerima Station on the south side and go to the “Nerima-eki-mae” crossing.</li>
+          <li>Cross Senkawa-dori and turn right. Turn left at the McDonald’s corner.</li>
+          <li>Walk straight about 120 m, passing FamilyMart on your left.</li>
+          <li>Cross the diagonal street. The blue building on your right is Excel Toyotama. Take the glass door and the elevator to the 3rd floor.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec sec--alt" id="faq" aria-labelledby="faq-h">
+    <div class="wrap">
+      {{feature id="faq"}}
+      <header class="head"><span class="head__en">FAQ</span><h2 id="faq-h">よくある質問</h2></header>
+      {{faq}}
+    </div>
+  </section>
+</main>
+
+<footer class="footer" id="footer">
+  <div class="wrap">
+    {{feature id="seo"}}
+    {{logo class="footer__logo" variant="white" alt=""}}
+    <address>{{full_name}}<br>{{addr}}<br>{{hours}}／{{closed}}</address>
+    <p class="footer__note">20歳未満の方の飲酒は法律で禁止されています。</p>
+    <small>&copy; {{year}} ダイニングバー XⅢ クロスリー</small>
+  </div>
+</footer>
+
+<nav class="dock" aria-label="すぐにできること（画面の下）">
+  <a href="{{tel_href}}">{{icon name="phone"}}電話</a>
+  <a href="{{route_url}}" target="_blank" rel="noopener">{{icon name="walk"}}道順</a>
+  <a href="#reserve">{{icon name="calendar"}}予約</a>
+  <a href="#menu">{{icon name="glass"}}メニュー</a>
+</nav>
+<script async src="https://www.instagram.com/embed.js"></script>
+</body>
+</html>

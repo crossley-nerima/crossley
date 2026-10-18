@@ -118,6 +118,11 @@ ALT = {
     'neon-counter': 'L字のカウンターと、窓辺の赤いネオンサイン',
     'tables': '丸いハイテーブルの席と、奥のカウンター',
     'darts': 'ダーツマシンと、青い壁のテーブル席',
+    # 案11の見本の写真（フリー素材。お店の写真ではない）
+    'sample-bartender': '見本の写真：カウンターでカクテルを作るバーテンダー',
+    'sample-cocktail': '見本の写真：オレンジの皮を添えた赤いカクテル',
+    'sample-stir': '見本の写真：バースプーンでカクテルを混ぜる手元',
+    'sample-julep': '見本の写真：銅のカップに入ったミントのカクテル',
 }
 
 # ---- アイコン（線画。色は文字の色に合わせる） -------------------------------------------
@@ -527,6 +532,50 @@ def h_notices(ctx, cls='notices', h='h2', title='お知らせ'):
             f'<ul class="{cls}__list">{"".join(items)}</ul></div></section>')
 
 
+# ---- 案11（機能モリモリ版）の部品 ------------------------------------------------------
+def h_feature(ctx, id):
+    """提案中だけ出す「機能○：何ができるか」の札。機能の名前と説明は patterns.json の features。本番では出さない。"""
+    if not PROPOSAL:
+        return ''
+    feats = ctx['pattern']['features']
+    i, f = next((i, f) for i, f in enumerate(feats, 1) if f['id'] == id)
+    return (f'<p class="ft"><span class="ft__no">機能 {i}</span><b class="ft__name">{esc(f["name"])}</b>'
+            f'<span class="ft__desc">{esc(f["desc"])}</span></p>')
+
+
+def h_feature_list(ctx):
+    """提案中だけ出す、この案に入っている機能の一覧（押すとその場所へ飛ぶ）。"""
+    if not PROPOSAL:
+        return ''
+    items = ''.join(f'<li><a href="#{esc(f["anchor"])}"><span class="ft__no">機能 {i}</span><b>{esc(f["name"])}</b>'
+                    f'<small>{esc(f["desc"])}</small></a></li>' for i, f in enumerate(ctx['pattern']['features'], 1))
+    return (f'<section class="ft-list" aria-labelledby="ft-list-h"><div class="wrap"><h2 id="ft-list-h">この案に入っている機能（{len(ctx["pattern"]["features"])}個）</h2>'
+            '<p>バーのホームページでよく使われる機能を、ひととおり入れた見本です。気に入った機能を、ほかの案に足すこともできます。'
+            '<br>この説明の札は提案用で、本番のページには出ません。</p>'
+            f'<ul>{items}</ul></div></section>')
+
+
+def h_data(ctx, name):
+    """ページの JavaScript に渡すデータ（今夜の一杯診断・営業カレンダー用のお知らせ）。"""
+    if name == 'cocktail_guide':
+        data = SITE['cocktail_guide']
+    elif name == 'notices':
+        data = [{'from': n['from'].isoformat(), 'until': n['until'].isoformat(), 'type': n['type'], 'text': n['text'],
+                 'sample': bool(n.get('sample'))} for n in notices()]
+    else:
+        raise KeyError(name)
+    return (f'<script type="application/json" id="data-{esc(name)}">'
+            + json.dumps(data, ensure_ascii=False).replace('</', '<\\/') + '</script>')
+
+
+def h_credit(ctx, name):
+    """見本の写真の作者と条件（CC0 は作者名がいらないが、出どころとして書く）。"""
+    c = SITE['sample_photos'][name]
+    return (f'見本の写真（フリー素材）：{esc(c["artist"])} ／ '
+            f'<a href="{esc(c["page"])}" target="_blank" rel="noopener">Wikimedia Commons</a> '
+            f'（<a href="{esc(c["license_url"])}" target="_blank" rel="noopener">{esc(c["license"])}</a>）')
+
+
 def h_features(ctx, cls='features', h='h3'):
     out = [f'<ul class="{esc(cls)}">']
     for f in SITE['features']:
@@ -562,7 +611,7 @@ def h_year(ctx):
 HELPERS = {
     'head': h_head, 'fonts': h_fonts, 'jsonld': h_jsonld, 'proposal': h_proposal, 'img': h_img, 'logo': h_logo,
     'menu': h_menu, 'menu_nav': h_menu_nav, 'food': h_food, 'faq': h_faq, 'info': h_info, 'hours_table': h_hours_table, 'map': h_map,
-    'route': h_route, 'route_map': h_route_map, 'streetview': h_streetview, 'notices': h_notices, 'features': h_features, 'icon': h_icon, 'access': h_access, 'addr': h_addr,
+    'route': h_route, 'route_map': h_route_map, 'streetview': h_streetview, 'notices': h_notices, 'feature': h_feature, 'feature_list': h_feature_list, 'data': h_data, 'credit': h_credit, 'features': h_features, 'icon': h_icon, 'access': h_access, 'addr': h_addr,
     'tel_href': h_tel_href, 'insta_href': h_insta_href, 'year': h_year,
     'map_url': lambda ctx: esc(map_url()), 'route_url': lambda ctx: esc(route_url()),
     'root': lambda ctx: ctx['root'],
