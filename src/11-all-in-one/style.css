@@ -248,6 +248,22 @@ h1, h2, h3 { line-height: 1.4; }
 .faq__q::before { content: "Q"; margin-right: 10px; font-family: var(--en); color: var(--gold); font-size: 18px; }
 .faq__a { margin: 0; padding: 0 20px 16px 44px; color: var(--muted); }
 
+/* お店に確認したいこと（提案のときだけ） */
+.qs { padding: clamp(56px, 8vw, 88px) 0; background: #f6f1e6; color: #1d1a14; }
+.qs__tag { display: inline-block; margin: 0 0 10px; padding: 2px 12px; border-radius: 999px; background: #1d1a14; color: #f6f1e6; font-size: 12px; font-weight: 700; }
+.qs h2 { margin: 0 0 8px; font-size: clamp(24px, 3.2vw, 32px); }
+.qs__lead { margin: 0 0 6px; color: #5c5446; max-width: 46em; }
+.qs__count { margin: 0 0 22px; font-weight: 700; }
+.qs__groups { columns: 2 380px; column-gap: 28px; }
+.qs__group { break-inside: avoid; margin: 0 0 22px; padding: 18px 20px; border-radius: 14px; background: #fff; border: 1px solid #e3d9c4; }
+.qs__group h3 { margin: 0 0 8px; font-size: 16px; color: #8a6a2c; }
+.qs__group ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.qs__group label { display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: start; padding: 6px 0; cursor: pointer; font-size: 14px; line-height: 1.7; }
+.qs__group input { width: 18px; height: 18px; margin: 4px 0 0; accent-color: #8a6a2c; }
+.qs__group input:checked + span { color: #a39a88; text-decoration: line-through; }
+.qs__acts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+.qs .btn:not(.btn--gold) { background: #fff; color: #1d1a14; border-color: #d8ccb2; }
+
 /* フッター・画面の下のボタン */
 .footer { padding: 56px 0 120px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
 .footer__logo { width: 120px; height: auto; margin: 0 0 16px; opacity: .9; }

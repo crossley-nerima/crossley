@@ -551,8 +551,32 @@ def h_feature_list(ctx):
                     f'<small>{esc(f["desc"])}</small></a></li>' for i, f in enumerate(ctx['pattern']['features'], 1))
     return (f'<section class="ft-list" aria-labelledby="ft-list-h"><div class="wrap"><h2 id="ft-list-h">この案に入っている機能（{len(ctx["pattern"]["features"])}個）</h2>'
             '<p>バーのホームページでよく使われる機能を、ひととおり入れた見本です。気に入った機能を、ほかの案に足すこともできます。'
-            '<br>この説明の札は提案用で、本番のページには出ません。</p>'
+            '<br>この説明の札は提案用で、本番のページには出ません。お店に確認したいことは'
+            '<a href="#questions">ページのいちばん下</a>にまとめています。</p>'
             f'<ul>{items}</ul></div></section>')
+
+
+def h_shop_questions(ctx):
+    """提案中だけ出す「お店に確認したいこと」（site.json の shop_questions）。チェックを付けられ、まだの項目を文面にしてコピーできる。"""
+    if not PROPOSAL:
+        return ''
+    groups, n = [], 0
+    for g in SITE['shop_questions']:
+        items = []
+        for q in g['items']:
+            n += 1
+            items.append(f'<li><label><input type="checkbox" data-q="{n}"><span>{esc(q)}</span></label></li>')
+        groups.append(f'<div class="qs__group"><h3>{esc(g["group"])}</h3><ul>{"".join(items)}</ul></div>')
+    return ('<section class="qs" id="questions" aria-labelledby="questions-h"><div class="wrap">'
+            '<p class="qs__tag">提案用（本番のページには出ません）</p>'
+            '<h2 id="questions-h">お店に確認したいこと</h2>'
+            '<p class="qs__lead">ホームページを仕上げるために、お店に聞いておきたいことです。聞けたらチェックを付けてください'
+            '（チェックはこの端末に残ります）。答えをもらえれば、サイトの「仮」のところに入れます。</p>'
+            f'<p class="qs__count" aria-live="polite">全{n}項目</p>'
+            f'<div class="qs__groups">{"".join(groups)}</div>'
+            '<div class="qs__acts"><button type="button" class="btn btn--gold qs__copy">まだの項目を文面にしてコピー（LINEなどでお店に送る）</button>'
+            '<button type="button" class="btn qs__reset">チェックを外す</button></div>'
+            '</div></section>')
 
 
 def h_data(ctx, name):
@@ -636,7 +660,7 @@ def h_year(ctx):
 HELPERS = {
     'head': h_head, 'fonts': h_fonts, 'jsonld': h_jsonld, 'proposal': h_proposal, 'img': h_img, 'logo': h_logo,
     'menu': h_menu, 'menu_nav': h_menu_nav, 'food': h_food, 'faq': h_faq, 'info': h_info, 'hours_table': h_hours_table, 'map': h_map,
-    'route': h_route, 'route_map': h_route_map, 'streetview': h_streetview, 'notices': h_notices, 'feature': h_feature, 'feature_list': h_feature_list, 'data': h_data, 'credit': h_credit, 'features': h_features, 'icon': h_icon, 'access': h_access, 'addr': h_addr,
+    'route': h_route, 'route_map': h_route_map, 'streetview': h_streetview, 'notices': h_notices, 'feature': h_feature, 'feature_list': h_feature_list, 'shop_questions': h_shop_questions, 'data': h_data, 'credit': h_credit, 'features': h_features, 'icon': h_icon, 'access': h_access, 'addr': h_addr,
     'tel_href': h_tel_href, 'line_add_href': h_line_add_href, 'line_qr': h_line_qr, 'line_msg_base': h_line_msg_base, 'insta_href': h_insta_href, 'year': h_year,
     'map_url': lambda ctx: esc(map_url()), 'route_url': lambda ctx: esc(route_url()),
     'root': lambda ctx: ctx['root'],

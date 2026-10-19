@@ -197,6 +197,37 @@
   // LINE 公式アカウントの ID が決まるまでは、ボタンはページの中の LINE の欄へ（別のタブでは開かない）
   $$('a[href="#line"]').forEach(function (a) { a.removeAttribute('target'); a.removeAttribute('rel'); });
 
+  // お店に確認したいこと（提案のときだけある）: チェックをこの端末に残し、まだの項目を文面にしてコピー
+  var qs = $('.qs');
+  if (qs) {
+    var KEY = 'xiii-shop-questions', boxes = $$('input[type=checkbox]', qs), countEl = $('.qs__count', qs);
+    var saved = {};
+    try { saved = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { saved = {}; }
+    var save = function () { try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) { /* 残せなくても使える */ } };
+    var count = function () {
+      var done = boxes.filter(function (b) { return b.checked; }).length;
+      countEl.textContent = '全' + boxes.length + '項目のうち、聞けたもの ' + done + '／まだ ' + (boxes.length - done);
+    };
+    boxes.forEach(function (b) {
+      b.checked = !!saved[b.getAttribute('data-q')];
+      b.addEventListener('change', function () { saved[b.getAttribute('data-q')] = b.checked; save(); count(); });
+    });
+    count();
+    $('.qs__copy', qs).addEventListener('click', function () {
+      var btn = this, lines = ['【ホームページのために教えてほしいこと】'];
+      $$('.qs__group', qs).forEach(function (g) {
+        var left = $$('input', g).filter(function (b) { return !b.checked; });
+        if (!left.length) return;
+        lines.push('', '■ ' + $('h3', g).textContent);
+        left.forEach(function (b) { lines.push('・' + b.parentNode.textContent.trim()); });
+      });
+      if (navigator.clipboard) navigator.clipboard.writeText(lines.join('\n')).then(function () {
+        btn.textContent = 'コピーしました'; setTimeout(function () { btn.textContent = 'まだの項目を文面にしてコピー（LINEなどでお店に送る）'; }, 2000);
+      });
+    });
+    $('.qs__reset', qs).addEventListener('click', function () { saved = {}; save(); boxes.forEach(function (b) { b.checked = false; }); count(); });
+  }
+
   // 8. 住所をコピー
   $$('.copy').forEach(function (b) {
     if (!navigator.clipboard) { b.hidden = true; return; }

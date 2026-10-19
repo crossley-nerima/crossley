@@ -115,6 +115,81 @@
   "cocktail_guide": [{"name": "カシスオレンジ", "taste": "sweet", "strength": "light", "base": "カシス（ルジェ）", "note": "甘酸っぱく飲みやすい、最初の一杯の定番。"}, {"name": "ディタ・グレープフルーツ", "taste": "sweet", "strength": "light", "base": "ライチ（ディタ）", "note": "ライチの華やかな香りと、グレープフルーツのさわやかさ。"}, {"name": "カルーアミルク", "taste": "sweet", "strength": "light", "base": "コーヒー（カルーア）", "note": "コーヒーとミルクのやさしい甘さ。デザートのように。"}, {"name": "バイオレットフィズ", "taste": "sweet", "strength": "light", "base": "すみれ（パルフェ・タムール）", "note": "すみれ色の見た目と、花のような香り。"}, {"name": "マンハッタン", "taste": "sweet", "strength": "strong", "base": "ウイスキー＋ベルモット", "note": "カクテルの女王。ウイスキーのコクと、ほのかな甘み。"}, {"name": "ゴッドファーザー", "taste": "sweet", "strength": "strong", "base": "ウイスキー＋アマレット", "note": "杏仁のような甘い香り。食後にゆっくり。"}, {"name": "ジントニック", "taste": "dry", "strength": "light", "base": "ジン（ビーフィーター）", "note": "すっきり、さわやか。バーテンダーの腕が出る一杯。"}, {"name": "マティーニ", "taste": "dry", "strength": "strong", "base": "ジン＋ドライベルモット", "note": "カクテルの王様。キリッとした辛口。"}, {"name": "マルガリータ", "taste": "dry", "strength": "strong", "base": "テキーラ＋オレンジリキュール", "note": "塩をまぶしたグラスで、甘酸っぱく。"}, {"name": "カンパリソーダ", "taste": "bitter", "strength": "light", "base": "カンパリ", "note": "ほろ苦さとソーダの爽快さ。食前に。"}, {"name": "スーズトニック", "taste": "bitter", "strength": "light", "base": "スーズ", "note": "ハーブのほろ苦さ。さっぱり飲みたい夜に。"}, {"name": "ネグローニ", "taste": "bitter", "strength": "strong", "base": "ジン＋カンパリ＋ベルモット", "note": "ほろ苦く、しっかり。大人のための一杯。"}],
   "_sample_photos_説明": "案11で使う見本の写真（ウィキメディア・コモンズ。誰でも使ってよい条件のもの）。作者名と条件をページに表示する。tools/get_sample_photos.py で取得。",
   "sample_photos": {"sample-bartender": {"title": "Bartenders serving cocktail (Unsplash).jpg", "artist": "Crew crew", "license": "CC0", "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en", "page": "https://commons.wikimedia.org/wiki/File:Bartenders_serving_cocktail_(Unsplash).jpg"}, "sample-cocktail": {"title": "Elegant cocktail garnished with citrus twist presented in a stylish glass on a wooden bar.jpg", "artist": "Shixart1985", "license": "CC BY 2.0", "license_url": "https://creativecommons.org/licenses/by/2.0", "page": "https://commons.wikimedia.org/wiki/File:Elegant_cocktail_garnished_with_citrus_twist_presented_in_a_stylish_glass_on_a_wooden_bar.jpg"}, "sample-stir": {"title": "Stirring with a bar spoon.jpg", "artist": "SKopp", "license": "CC BY 4.0", "license_url": "https://creativecommons.org/licenses/by/4.0", "page": "https://commons.wikimedia.org/wiki/File:Stirring_with_a_bar_spoon.jpg"}, "sample-julep": {"title": "Bartender making a cocktail (Unsplash).jpg", "artist": "Adam Jaime arobj", "license": "CC0", "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en", "page": "https://commons.wikimedia.org/wiki/File:Bartender_making_a_cocktail_(Unsplash).jpg"}},
+  "_shop_questions_説明": "案11の「お店に確認したいこと」（提案中だけ出る）。聞けたら答えを site.json に入れて、その項目を消す。",
+  "shop_questions": [
+      {
+          "group": "営業・お店のきまり",
+          "items": [
+              "土曜の夜は、日曜の朝7時まで営業しているか",
+              "祝日は営業するか",
+              "ラストオーダーの時刻（お酒・フードそれぞれ）",
+              "席数（カウンター○席・テーブル○席）",
+              "支払い方法（現金・クレジットカード・QR決済のどれが使えるか）",
+              "チャージ（席料）はいくらか。お通しはあるか",
+              "予約の受け方（電話・SMS・Instagram の DM・LINE のどれで受けるか）",
+              "貸切は何名からできるか。飲み放題のプランはあるか",
+              "たばこ：入口に貼っている喫煙の標識の種類。保健所に確認済みか（新しく開いた店は条件があるため）"
+          ]
+      },
+      {
+          "group": "メニュー・料金",
+          "items": [
+              "お酒の値段のめやす（ウイスキー・カクテル・テキーラ・焼酎・ビールなど「○○円〜」）",
+              "だいたいの予算（2〜3杯とチャージでいくらくらいか）",
+              "カクテル：実際に出しているもの、看板やオリジナルのカクテルの名前",
+              "焼酎の銘柄（茜霧島・だいやめ のほかに何があるか）",
+              "ビールの銘柄（生ビールか瓶か）",
+              "写真で読めなかったボトル：茜霧島の左右の焼酎2本／I.W.ハーパーの隣の赤いラベルのバーボン／首に白い飾りのリキュール2本／奏 Kanade の味",
+              "黒板のほかに、いつも出している定番のフードはあるか。黒板は日替わりか",
+              "フードは何時まで頼めるか"
+          ]
+      },
+      {
+          "group": "マスター",
+          "items": [
+              "名前をサイトに出してよいか（出すなら、お名前）",
+              "銀座・麻布の経歴をサイトに出してよいか。何年くらいやっていたか",
+              "得意なお酒・カクテル",
+              "お客さんへのひとこと",
+              "マスターの写真を載せてよいか（載せるなら写真をもらう）",
+              "店名「XⅢ（クロスリー）」の由来",
+              "サイトの紹介文（キャッチコピー以外は仮の文章）を読んでもらう"
+          ]
+      },
+      {
+          "group": "アクセス",
+          "items": [
+              "駅の出口の名前（西武線は「南口」でよいか。大江戸線は何番出口が近いか）",
+              "入口の右の案内板の3階に、いま XⅢ の看板が出ているか",
+              "窓の赤いネオンは、外から見えるか",
+              "道順の写真（駅を出たところ・曲がり角・ビルの入口・3階の扉）を撮れるか"
+          ]
+      },
+      {
+          "group": "SNS・地図・連絡",
+          "items": [
+              "LINE 公式アカウントを作るか（作るなら LINE ID と QR コードの画像）",
+              "Instagram の表示名（いまは「BAR X-III クロスリー」）を、サイトや Google マップの店名にそろえるか",
+              "Google マップの店の情報（営業時間・特別営業時間）を、お店で直せるか",
+              "電話番号（Google マップに載っている 070-9065-1559）をサイトに載せてよいか",
+              "イベント（ダーツ大会など）・ボトルキープ・スタッフ募集はやっているか"
+          ]
+      },
+      {
+          "group": "写真・素材",
+          "items": [
+              "ロゴの元データ（チラシを作ったときのデータ）があるか",
+              "お店の写真（マスター・カクテル・料理・入口・看板）をもらえるか"
+          ]
+      },
+      {
+          "group": "決めること",
+          "items": [
+              "11案のうち、どの案にするか（ほかの案の機能を足すこともできる）",
+              "独自ドメイン（○○.com など）を使うか"
+          ]
+      }
+  ],
   "menu_note": "棚に並ぶお酒の一例です（写真より）。品ぞろえは変わることがあります。",
 
   "food": [
