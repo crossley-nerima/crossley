@@ -137,7 +137,7 @@
       sel.appendChild(o);
     }
     rf.elements.date.min = today.date;
-    var msgEl = $('.reserve__msg', rf), dayEl = $('.reserve__day', rf), sms = $('.reserve__sms', rf);
+    var msgEl = $('.reserve__msg', rf), dayEl = $('.reserve__day', rf), sms = $('.reserve__sms', rf), lineBtn = $('.reserve__line', rf);
     var build = function () {
       var dv = rf.elements.date.value, e = rf.elements;
       var day = '';
@@ -151,6 +151,8 @@
         '\nお名前：' + (e.name.value || '') + '\nご要望：' + (e.note.value || 'なし') + '\n\nダイニングバー XⅢ クロスリー 様';
       msgEl.value = msg;
       sms.href = tel ? 'sms:' + tel + '?&body=' + encodeURIComponent(msg) : '#';
+      // LINE 公式アカウントの ID が決まっていれば、文面を入れた状態で LINE のトークを開く
+      if (lineBtn && lineBtn.getAttribute('data-base')) lineBtn.href = lineBtn.getAttribute('data-base') + encodeURIComponent(msg);
     };
     rf.addEventListener('input', build);
     rf.addEventListener('change', build);
@@ -191,6 +193,9 @@
     sn.hidden = false;
     sn.addEventListener('click', function () { navigator.share({ title: document.title, url: url }).catch(function () {}); });
   }
+
+  // LINE 公式アカウントの ID が決まるまでは、ボタンはページの中の LINE の欄へ（別のタブでは開かない）
+  $$('a[href="#line"]').forEach(function (a) { a.removeAttribute('target'); a.removeAttribute('rel'); });
 
   // 8. 住所をコピー
   $$('.copy').forEach(function (b) {

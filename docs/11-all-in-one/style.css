@@ -223,6 +223,17 @@ h1, h2, h3 { line-height: 1.4; }
 .sns__share { display: flex; flex-wrap: wrap; gap: 10px; align-content: start; padding: 24px; border-radius: var(--r); background: var(--panel); border: 1px solid var(--line); }
 .sns__share p { width: 100%; margin: 0 0 4px; }
 .share-line { background: #06c755; border-color: #06c755; color: #fff; }
+.sns__side { display: grid; gap: 16px; }
+.line-oa { padding: 24px; border-radius: var(--r); background: var(--panel); border: 1px solid rgba(6, 199, 85, .45); }
+.line-oa__h { margin: 0 0 6px; font-size: 18px; }
+.line-oa > p { margin: 0 0 14px; color: var(--muted); font-size: 14px; }
+.line-oa__row { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.line-oa__qr { width: 120px; height: 120px; border-radius: 10px; background: #fff; }
+.line-oa__qr--empty { display: grid; place-content: center; text-align: center; background: transparent; border: 2px dashed rgba(6, 199, 85, .6); color: var(--muted); font-size: 13px; line-height: 1.5; }
+.line-oa__qr--empty small { display: block; font-size: 10px; }
+.line-oa__add, .reserve__line { background: #06c755; border-color: #06c755; color: #fff; }
+.line-oa__add:hover, .reserve__line:hover { border-color: #fff; }
+.line-oa__id { margin: 8px 0 0; font-size: 13px; color: var(--muted); }
 
 /* 英語の案内 */
 .en-guide { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(20px, 4vw, 48px); }

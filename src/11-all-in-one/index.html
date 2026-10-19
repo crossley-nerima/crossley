@@ -150,6 +150,7 @@
         <textarea class="reserve__msg" readonly aria-label="お店に送る文面" rows="7"></textarea>
         <div class="reserve__acts">
           <a class="btn btn--gold reserve__sms" href="#">SMSで送る</a>
+          <a class="btn reserve__line" href="{{line_add_href}}" data-base="{{line_msg_base}}" target="_blank" rel="noopener">LINEで送る</a>
           <button class="btn reserve__copy" type="button">文面をコピー（InstagramのDMなどに）</button>
           <a class="btn" href="{{tel_href}}">{{icon name="phone"}}電話で予約</a>
         </div>
@@ -220,11 +221,25 @@
           <blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/p/DcTuifaSV63/" data-instgrm-version="14"><a href="https://www.instagram.com/p/DcTuifaSV63/" target="_blank" rel="noopener">Instagram の投稿を見る</a></blockquote>
           <a class="btn btn--gold" href="{{insta_href}}" target="_blank" rel="noopener">{{icon name="insta"}}{{instagram}} をフォロー</a>
         </div>
-        <div class="sns__share">
-          <p>飲み会のお店決めに。このページを友だちに送れます。</p>
-          <a class="btn share-line" href="https://social-plugins.line.me/lineit/share" target="_blank" rel="noopener">LINEで送る</a>
-          <button class="btn share-copy" type="button">リンクをコピー</button>
-          <button class="btn share-native" type="button" hidden>ほかのアプリで送る</button>
+        <div class="sns__side">
+          <div class="sns__share">
+            <p>飲み会のお店決めに。このページを友だちに送れます。</p>
+            <a class="btn share-line" href="https://social-plugins.line.me/lineit/share" target="_blank" rel="noopener">LINEで友だちに送る</a>
+            <button class="btn share-copy" type="button">リンクをコピー</button>
+            <button class="btn share-native" type="button" hidden>ほかのアプリで送る</button>
+          </div>
+          <div class="line-oa" id="line">
+            {{feature id="line"}}
+            <h3 class="line-oa__h">LINE 公式アカウント</h3>
+            <p>友だち追加すると、臨時休業や営業のお知らせ、クーポンなどを LINE で受け取れます。予約のご相談も LINE でどうぞ。</p>
+            <div class="line-oa__row">
+              {{line_qr}}
+              <div>
+                <a class="btn line-oa__add" href="{{line_add_href}}" target="_blank" rel="noopener">LINEで友だち追加</a>
+                <p class="line-oa__id">LINE ID：{{line_oa}}</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

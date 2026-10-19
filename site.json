@@ -75,6 +75,8 @@
   "darts_price": "1ゲーム ¥100",
   "instagram": "@xiii.nerima.2026",
   "instagram_url": "https://www.instagram.com/xiii.nerima.2026/",
+  "_line_oa_説明": "LINE 公式アカウントの ID（@ から始まる）。お店がアカウントを作ったら書いて tbd を消す。友だち追加のボタンと、予約の文面を LINE で送るボタンに使う。",
+  "line_oa": {"v": "@〇〇〇〇", "tbd": true},
   "tabelog_url": "https://tabelog.com/tokyo/A1321/A132102/13324964/",
 
   "features": [

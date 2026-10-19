@@ -600,6 +600,31 @@ def h_tel_href(ctx):
     return 'tel:' + SITE['tel']
 
 
+def h_line_add_href(ctx):
+    """LINE 公式アカウントの友だち追加のリンク（LINE の決まった形）。ID が決まるまでは、ページの中の LINE の欄へ。"""
+    text, tbd = raw('line_oa')
+    return '#line' if tbd else 'https://line.me/R/ti/p/' + urllib.parse.quote(text)
+
+
+def h_line_qr(ctx, cls='line-oa__qr'):
+    """友だち追加の QR コード。ID が決まるまでは見本の枠。決まったら、お店の管理画面から出せる QR の画像を
+    docs/assets/img/line-qr.png に置き、site.json の line_qr に "line-qr.png" と書く。"""
+    text, tbd = raw('line_oa')
+    if tbd:
+        used_tbd.add('LINE の QR コード')
+        return f'<div class="{esc(cls)} {esc(cls)}--empty" aria-hidden="true">QRコード<small>アカウントができたら表示</small></div>'
+    if SITE.get('line_qr'):
+        return (f'<img class="{esc(cls)}" src="{ctx["root"]}assets/img/{esc(SITE["line_qr"])}" width="120" height="120" '
+                f'alt="LINE 公式アカウント {esc(text)} の友だち追加の QR コード">')
+    return ''
+
+
+def h_line_msg_base(ctx):
+    """LINE 公式アカウントに、文面を入れた状態でメッセージを送るリンクの前半（後ろに文面を足す）。ID が決まるまでは空。"""
+    text, tbd = raw('line_oa')
+    return '' if tbd else 'https://line.me/R/oaMessage/' + urllib.parse.quote(text) + '/?'
+
+
 def h_insta_href(ctx):
     return SITE.get('instagram_url') or '#instagram'
 
@@ -612,7 +637,7 @@ HELPERS = {
     'head': h_head, 'fonts': h_fonts, 'jsonld': h_jsonld, 'proposal': h_proposal, 'img': h_img, 'logo': h_logo,
     'menu': h_menu, 'menu_nav': h_menu_nav, 'food': h_food, 'faq': h_faq, 'info': h_info, 'hours_table': h_hours_table, 'map': h_map,
     'route': h_route, 'route_map': h_route_map, 'streetview': h_streetview, 'notices': h_notices, 'feature': h_feature, 'feature_list': h_feature_list, 'data': h_data, 'credit': h_credit, 'features': h_features, 'icon': h_icon, 'access': h_access, 'addr': h_addr,
-    'tel_href': h_tel_href, 'insta_href': h_insta_href, 'year': h_year,
+    'tel_href': h_tel_href, 'line_add_href': h_line_add_href, 'line_qr': h_line_qr, 'line_msg_base': h_line_msg_base, 'insta_href': h_insta_href, 'year': h_year,
     'map_url': lambda ctx: esc(map_url()), 'route_url': lambda ctx: esc(route_url()),
     'root': lambda ctx: ctx['root'],
 }
