@@ -551,13 +551,14 @@ def h_feature_list(ctx):
                     f'<small>{esc(f["desc"])}</small></a></li>' for i, f in enumerate(ctx['pattern']['features'], 1))
     return (f'<section class="ft-list" aria-labelledby="ft-list-h"><div class="wrap"><h2 id="ft-list-h">この案に入っている機能（{len(ctx["pattern"]["features"])}個）</h2>'
             '<p>バーのホームページでよく使われる機能を、ひととおり入れた見本です。気に入った機能を、ほかの案に足すこともできます。'
-            '<br>この説明の札は提案用で、本番のページには出ません。お店に確認したいことは'
-            '<a href="#questions">ページのいちばん下</a>にまとめています。</p>'
+            '<br>この説明の札は提案用で、本番のページには出ません。お店の方に答えてもらう質問は'
+            '<a href="#questions">ページのいちばん下</a>にあります（答えを LINE で送ってもらえます）。</p>'
             f'<ul>{items}</ul></div></section>')
 
 
 def h_shop_questions(ctx):
-    """提案中だけ出す「お店に確認したいこと」（site.json の shop_questions）。チェックを付けられ、まだの項目を文面にしてコピーできる。"""
+    """提案中だけ出す「お店の方へ：教えてほしいこと」（site.json の shop_questions）。
+    お店の人がスマホで答えを書き（書いた内容はその端末に残る）、まとめた文面を LINE などで送ってもらう。"""
     if not PROPOSAL:
         return ''
     groups, n = [], 0
@@ -565,17 +566,32 @@ def h_shop_questions(ctx):
         items = []
         for q in g['items']:
             n += 1
-            items.append(f'<li><label><input type="checkbox" data-q="{n}"><span>{esc(q)}</span></label></li>')
-        groups.append(f'<div class="qs__group"><h3>{esc(g["group"])}</h3><ul>{"".join(items)}</ul></div>')
+            head = f'<p class="qs__q" id="qs-{n}"><span class="qs__no">{n}</span>{esc(q["q"])}</p>'
+            if q['type'] == 'text':
+                ph = f' placeholder="{esc(q["placeholder"])}"' if q.get('placeholder') else ''
+                field = (f'<textarea name="q{n}" rows="3" aria-labelledby="qs-{n}"{ph}></textarea>' if q.get('long')
+                         else f'<input type="text" name="q{n}" aria-labelledby="qs-{n}"{ph}>')
+            else:
+                kind = 'radio' if q['type'] == 'choice' else 'checkbox'
+                opts = ''.join(f'<label><input type="{kind}" name="q{n}" value="{esc(o)}"><span>{esc(o)}</span></label>' for o in q['options'])
+                field = f'<div class="qs__opts" role="group" aria-labelledby="qs-{n}">{opts}</div>'
+                if q.get('note'):
+                    field += f'<input type="text" class="qs__note" name="q{n}note" placeholder="{esc(q["note"])}" aria-label="{esc(q["note"])}">'
+            items.append(f'<div class="qs__item" data-q="{n}">{head}{field}</div>')
+        groups.append(f'<fieldset class="qs__group"><legend>{esc(g["group"])}</legend>{"".join(items)}</fieldset>')
     return ('<section class="qs" id="questions" aria-labelledby="questions-h"><div class="wrap">'
-            '<p class="qs__tag">提案用（本番のページには出ません）</p>'
-            '<h2 id="questions-h">お店に確認したいこと</h2>'
-            '<p class="qs__lead">ホームページを仕上げるために、お店に聞いておきたいことです。聞けたらチェックを付けてください'
-            '（チェックはこの端末に残ります）。答えをもらえれば、サイトの「仮」のところに入れます。</p>'
-            f'<p class="qs__count" aria-live="polite">全{n}項目</p>'
-            f'<div class="qs__groups">{"".join(groups)}</div>'
-            '<div class="qs__acts"><button type="button" class="btn btn--gold qs__copy">まだの項目を文面にしてコピー（LINEなどでお店に送る）</button>'
-            '<button type="button" class="btn qs__reset">チェックを外す</button></div>'
+            '<p class="qs__tag">お店の方へ</p>'
+            '<h2 id="questions-h">ホームページのために、教えてください</h2>'
+            '<p class="qs__lead">わかるところだけで大丈夫です。選ぶか、書き込んでください。書いた内容はこのスマホ（パソコン）に残るので、'
+            'あとから続きを書けます。書き終わったら、いちばん下の「LINEで送る」で送ってください。</p>'
+            f'<p class="qs__count" aria-live="polite">全{n}問</p>'
+            f'<form class="qs__form" autocomplete="off">{"".join(groups)}</form>'
+            '<div class="qs__send"><p class="qs__send-h">書き終わったら、送ってください</p>'
+            '<div class="qs__acts"><a class="btn qs__line" href="#" target="_blank" rel="noopener">LINEで送る</a>'
+            '<button type="button" class="btn qs__copy">回答をコピー</button></div>'
+            '<p class="qs__hint">「LINEで送る」を押すと、答えをまとめた文面で LINE が開きます。送る相手を選んで送ってください。'
+            'うまく開かないときは「回答をコピー」を押して、LINE のトークに貼り付けてください。</p>'
+            '<button type="button" class="qs__clear">書いた内容をすべて消す</button></div>'
             '</div></section>')
 
 

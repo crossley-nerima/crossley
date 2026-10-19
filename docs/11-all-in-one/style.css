@@ -248,21 +248,37 @@ h1, h2, h3 { line-height: 1.4; }
 .faq__q::before { content: "Q"; margin-right: 10px; font-family: var(--en); color: var(--gold); font-size: 18px; }
 .faq__a { margin: 0; padding: 0 20px 16px 44px; color: var(--muted); }
 
-/* お店に確認したいこと（提案のときだけ） */
+/* お店の方へ：教えてほしいこと（提案のときだけ。お店の人がスマホで答える） */
 .qs { padding: clamp(56px, 8vw, 88px) 0; background: #f6f1e6; color: #1d1a14; }
 .qs__tag { display: inline-block; margin: 0 0 10px; padding: 2px 12px; border-radius: 999px; background: #1d1a14; color: #f6f1e6; font-size: 12px; font-weight: 700; }
-.qs h2 { margin: 0 0 8px; font-size: clamp(24px, 3.2vw, 32px); }
+.qs h2 { margin: 0 0 8px; font-size: clamp(22px, 3vw, 30px); }
 .qs__lead { margin: 0 0 6px; color: #5c5446; max-width: 46em; }
-.qs__count { margin: 0 0 22px; font-weight: 700; }
-.qs__groups { columns: 2 380px; column-gap: 28px; }
-.qs__group { break-inside: avoid; margin: 0 0 22px; padding: 18px 20px; border-radius: 14px; background: #fff; border: 1px solid #e3d9c4; }
-.qs__group h3 { margin: 0 0 8px; font-size: 16px; color: #8a6a2c; }
-.qs__group ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
-.qs__group label { display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: start; padding: 6px 0; cursor: pointer; font-size: 14px; line-height: 1.7; }
-.qs__group input { width: 18px; height: 18px; margin: 4px 0 0; accent-color: #8a6a2c; }
-.qs__group input:checked + span { color: #a39a88; text-decoration: line-through; }
-.qs__acts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
-.qs .btn:not(.btn--gold) { background: #fff; color: #1d1a14; border-color: #d8ccb2; }
+.qs__count { position: sticky; top: calc(var(--top) + 60px); z-index: 5; margin: 0 0 18px; padding: 8px 14px; border-radius: 999px; display: inline-block;
+  background: #1d1a14; color: #f6f1e6; font-weight: 700; font-size: 13px; }
+.qs__form { display: grid; gap: 18px; max-width: 760px; }
+.qs__group { margin: 0; padding: 18px 20px 8px; border-radius: 14px; background: #fff; border: 1px solid #e3d9c4; }
+.qs__group legend { padding: 0 6px; font-weight: 700; color: #8a6a2c; }
+.qs__item { padding: 12px 0 14px; border-bottom: 1px solid #efe7d6; }
+.qs__item:last-child { border-bottom: 0; }
+.qs__q { margin: 0 0 8px; font-size: 15px; font-weight: 700; line-height: 1.6; }
+.qs__no { display: inline-grid; place-items: center; min-width: 24px; height: 24px; margin-right: 8px; padding: 0 6px; border-radius: 999px; background: #efe7d6; color: #8a6a2c; font-size: 12px; }
+.qs input[type=text], .qs textarea { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #d8ccb2; background: #fffdf8; color: #1d1a14; font: 16px/1.6 var(--ja); }
+.qs textarea { resize: vertical; }
+.qs input[type=text]:focus, .qs textarea:focus { outline: 2px solid #c9a45c; border-color: #c9a45c; }
+.qs__opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.qs__opts label { cursor: pointer; }
+.qs__opts input { position: absolute; opacity: 0; }
+.qs__opts span { display: inline-block; padding: 9px 16px; border-radius: 999px; border: 1px solid #d8ccb2; background: #fffdf8; font-size: 14px; }
+.qs__opts input:checked + span { background: #1d1a14; color: #f6f1e6; border-color: #1d1a14; font-weight: 700; }
+.qs__opts input:focus-visible + span { outline: 2px solid #c9a45c; outline-offset: 2px; }
+.qs__note { margin-top: 8px; }
+.qs__send { max-width: 760px; margin-top: 24px; padding: 22px; border-radius: 14px; background: #1d1a14; color: #f6f1e6; }
+.qs__send-h { margin: 0 0 12px; font-weight: 700; font-size: 17px; }
+.qs__acts { display: flex; flex-wrap: wrap; gap: 10px; }
+.qs__line { background: #06c755; border-color: #06c755; color: #fff; font-size: 16px; padding: 14px 26px; }
+.qs__copy { background: #fff; color: #1d1a14; border-color: #fff; }
+.qs__hint { margin: 12px 0 0; font-size: 13px; color: #cfc6b4; }
+.qs__clear { margin-top: 14px; padding: 0; border: 0; background: none; color: #cfc6b4; font: 12px var(--ja); text-decoration: underline; cursor: pointer; }
 
 /* フッター・画面の下のボタン */
 .footer { padding: 56px 0 120px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }

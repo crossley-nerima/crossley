@@ -197,35 +197,78 @@
   // LINE 公式アカウントの ID が決まるまでは、ボタンはページの中の LINE の欄へ（別のタブでは開かない）
   $$('a[href="#line"]').forEach(function (a) { a.removeAttribute('target'); a.removeAttribute('rel'); });
 
-  // お店に確認したいこと（提案のときだけある）: チェックをこの端末に残し、まだの項目を文面にしてコピー
+  // お店の方へ：教えてほしいこと（提案のときだけある）。書いた答えをこの端末に残し、まとめた文面を LINE で送ってもらう。
   var qs = $('.qs');
   if (qs) {
-    var KEY = 'xiii-shop-questions', boxes = $$('input[type=checkbox]', qs), countEl = $('.qs__count', qs);
+    var KEY = 'xiii-shop-answers', form = $('.qs__form', qs), items = $$('.qs__item', qs);
+    var countEl = $('.qs__count', qs), lineA = $('.qs__line', qs);
+    var fields = function () { return $$('input, textarea', form); };
+    // 1問ぶんの答え（選んだもの＋書き足し、または書いた文）。答えていなければ空。
+    var answerOf = function (item) {
+      var n = item.getAttribute('data-q');
+      var picked = $$('input[name="q' + n + '"]:checked', item).map(function (x) { return x.value; });
+      var text = $$('input[name="q' + n + '"][type=text], textarea[name="q' + n + '"]', item).map(function (x) { return x.value.trim(); }).join('');
+      var note = $$('input[name="q' + n + 'note"]', item).map(function (x) { return x.value.trim(); }).join('');
+      return [picked.join('・'), text, note].filter(Boolean).join('／');
+    };
+    var message = function () {
+      var lines = ['【XⅢ クロスリー ホームページ 確認事項の回答】'], done = 0;
+      $$('.qs__group', form).forEach(function (g) {
+        var part = [];
+        $$('.qs__item', g).forEach(function (item) {
+          var a = answerOf(item);
+          if (!a) return;
+          done++;
+          var q = $('.qs__q', item).cloneNode(true);
+          $('.qs__no', q).remove();
+          part.push('Q' + item.getAttribute('data-q') + '. ' + q.textContent.trim(), 'A. ' + a);
+        });
+        if (part.length) {
+          lines.push('', '■ ' + $('legend', g).textContent);
+          Array.prototype.push.apply(lines, part);
+        }
+      });
+      lines.push('', '（' + items.length + '問のうち ' + done + '問に回答）');
+      return { text: lines.join('\n'), done: done };
+    };
+    var refresh = function () {
+      var m = message();
+      countEl.textContent = '全' + items.length + '問のうち、答えたもの ' + m.done + '問';
+      lineA.href = 'https://line.me/R/share?text=' + encodeURIComponent(m.text);
+      return m;
+    };
+    var save = function () {
+      var data = {};
+      fields().forEach(function (x) {
+        if (x.type === 'radio' || x.type === 'checkbox') { if (x.checked) (data[x.name] = data[x.name] || []).push(x.value); }
+        else if (x.value) data[x.name] = x.value;
+      });
+      try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) { /* 残せなくても送れる */ }
+    };
     var saved = {};
     try { saved = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { saved = {}; }
-    var save = function () { try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) { /* 残せなくても使える */ } };
-    var count = function () {
-      var done = boxes.filter(function (b) { return b.checked; }).length;
-      countEl.textContent = '全' + boxes.length + '項目のうち、聞けたもの ' + done + '／まだ ' + (boxes.length - done);
-    };
-    boxes.forEach(function (b) {
-      b.checked = !!saved[b.getAttribute('data-q')];
-      b.addEventListener('change', function () { saved[b.getAttribute('data-q')] = b.checked; save(); count(); });
+    fields().forEach(function (x) {
+      var v = saved[x.name];
+      if (v === undefined) return;
+      if (x.type === 'radio' || x.type === 'checkbox') x.checked = v.indexOf(x.value) >= 0;
+      else x.value = v;
     });
-    count();
+    form.addEventListener('input', function () { save(); refresh(); });
+    form.addEventListener('change', function () { save(); refresh(); });
+    form.addEventListener('submit', function (e) { e.preventDefault(); });
     $('.qs__copy', qs).addEventListener('click', function () {
-      var btn = this, lines = ['【ホームページのために教えてほしいこと】'];
-      $$('.qs__group', qs).forEach(function (g) {
-        var left = $$('input', g).filter(function (b) { return !b.checked; });
-        if (!left.length) return;
-        lines.push('', '■ ' + $('h3', g).textContent);
-        left.forEach(function (b) { lines.push('・' + b.parentNode.textContent.trim()); });
-      });
-      if (navigator.clipboard) navigator.clipboard.writeText(lines.join('\n')).then(function () {
-        btn.textContent = 'コピーしました'; setTimeout(function () { btn.textContent = 'まだの項目を文面にしてコピー（LINEなどでお店に送る）'; }, 2000);
+      var btn = this;
+      if (navigator.clipboard) navigator.clipboard.writeText(refresh().text).then(function () {
+        btn.textContent = 'コピーしました'; setTimeout(function () { btn.textContent = '回答をコピー'; }, 2000);
       });
     });
-    $('.qs__reset', qs).addEventListener('click', function () { saved = {}; save(); boxes.forEach(function (b) { b.checked = false; }); count(); });
+    $('.qs__clear', qs).addEventListener('click', function () {
+      if (!window.confirm('書いた内容をすべて消しますか？')) return;
+      form.reset();
+      try { localStorage.removeItem(KEY); } catch (e) { /* 何もしない */ }
+      refresh();
+    });
+    refresh();
   }
 
   // 8. 住所をコピー
