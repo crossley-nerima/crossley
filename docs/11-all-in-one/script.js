@@ -200,15 +200,15 @@
   // お店の方へ：教えてほしいこと（提案のときだけある）。書いた答えをこの端末に残し、まとめた文面を LINE で送ってもらう。
   var qs = $('.qs');
   if (qs) {
-    var KEY = 'xiii-shop-answers', form = $('.qs__form', qs), items = $$('.qs__item', qs);
+    var KEY = 'xiii-shop-answers-v2', form = $('.qs__form', qs), items = $$('.qs__item', qs);
     var countEl = $('.qs__count', qs), lineA = $('.qs__line', qs);
     var fields = function () { return $$('input, textarea', form); };
     // 1問ぶんの答え（選んだもの＋書き足し、または書いた文）。答えていなければ空。
     var answerOf = function (item) {
-      var n = item.getAttribute('data-q');
-      var picked = $$('input[name="q' + n + '"]:checked', item).map(function (x) { return x.value; });
-      var text = $$('input[name="q' + n + '"][type=text], textarea[name="q' + n + '"]', item).map(function (x) { return x.value.trim(); }).join('');
-      var note = $$('input[name="q' + n + 'note"]', item).map(function (x) { return x.value.trim(); }).join('');
+      var id = item.getAttribute('data-q');
+      var picked = $$('input[name="' + id + '"]:checked', item).map(function (x) { return x.value; });
+      var text = $$('input[name="' + id + '"][type=text], textarea[name="' + id + '"]', item).map(function (x) { return x.value.trim(); }).join('');
+      var note = $$('input[name="' + id + '_note"]', item).map(function (x) { return x.value.trim(); }).join('');
       return [picked.join('・'), text, note].filter(Boolean).join('／');
     };
     var message = function () {
@@ -219,12 +219,10 @@
           var a = answerOf(item);
           if (!a) return;
           done++;
-          var q = $('.qs__q', item).cloneNode(true);
-          $('.qs__no', q).remove();
-          part.push('Q' + item.getAttribute('data-q') + '. ' + q.textContent.trim(), 'A. ' + a);
+          part.push('Q' + item.getAttribute('data-no') + '. ' + $('.qs__text', item).textContent.trim(), 'A. ' + a);
         });
         if (part.length) {
-          lines.push('', '■ ' + $('legend', g).textContent);
+          lines.push('', '■ ' + $('.qs__group-h', g).textContent);
           Array.prototype.push.apply(lines, part);
         }
       });
@@ -233,7 +231,7 @@
     };
     var refresh = function () {
       var m = message();
-      countEl.textContent = '全' + items.length + '問のうち、答えたもの ' + m.done + '問';
+      $$('.qs__count', qs).forEach(function (c) { c.textContent = '全' + items.length + '問のうち、答えたもの ' + m.done + '問'; });
       lineA.href = 'https://line.me/R/share?text=' + encodeURIComponent(m.text);
       return m;
     };

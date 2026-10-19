@@ -26,15 +26,15 @@
   "building": "エクセル豊玉 3F",
   "station": "練馬駅",
   "lines": "西武池袋線・西武有楽町線・都営大江戸線",
-  "exit": {"v": "南口", "tbd": true},
+  "exit": "南口",
   "walk": "5",
   "floor_note": "ビルにはエレベーターがあります",
   "_route_説明": "道順の文。番号は道順の図（tools/make_route_map.py の STEPS）と合わせる。図の道は地図データ（OpenStreetMap）から作った。",
   "route": [
-    {"v": "練馬駅の南口を出て、目の前の「練馬駅前」交差点へ", "tbd": true},
+    "練馬駅の南口を出て、目の前の「練馬駅前」交差点へ（西武線はどの改札から出ても行けます）",
     "千川通りを渡って右へ。マクドナルドの角を左に曲がります",
     "細い道をまっすぐ約120m。左にファミリーマート、右に七輪焼肉 牛繁が見えたら、もうすぐです",
-    "斜めの通りを渡ってすぐ右の青いビル（エクセル豊玉）。木の扉の右にあるガラスの扉から入り、エレベーターで3階へ"
+    "斜めの通りを渡ってすぐ右の青いビル（エクセル豊玉）。木の扉の右にあるガラスの扉から入り（右の案内板に XⅢ の看板があります）、エレベーターで3階へ"
   ],
   "_streetview_説明": "入口のようすを見せる Google ストリートビューの埋め込み（利用者が送ってくれたストリートビューの場所と向き）。pitch は上向きの角度。",
   "streetview": {"pano": "Lu3hMDwBdXb8Z-vye0VJvA", "pos": [35.7361147, 139.6541098], "heading": 255, "pitch": 10, "date": "2024年11月"},
@@ -115,12 +115,13 @@
   "cocktail_guide": [{"name": "カシスオレンジ", "taste": "sweet", "strength": "light", "base": "カシス（ルジェ）", "note": "甘酸っぱく飲みやすい、最初の一杯の定番。"}, {"name": "ディタ・グレープフルーツ", "taste": "sweet", "strength": "light", "base": "ライチ（ディタ）", "note": "ライチの華やかな香りと、グレープフルーツのさわやかさ。"}, {"name": "カルーアミルク", "taste": "sweet", "strength": "light", "base": "コーヒー（カルーア）", "note": "コーヒーとミルクのやさしい甘さ。デザートのように。"}, {"name": "バイオレットフィズ", "taste": "sweet", "strength": "light", "base": "すみれ（パルフェ・タムール）", "note": "すみれ色の見た目と、花のような香り。"}, {"name": "マンハッタン", "taste": "sweet", "strength": "strong", "base": "ウイスキー＋ベルモット", "note": "カクテルの女王。ウイスキーのコクと、ほのかな甘み。"}, {"name": "ゴッドファーザー", "taste": "sweet", "strength": "strong", "base": "ウイスキー＋アマレット", "note": "杏仁のような甘い香り。食後にゆっくり。"}, {"name": "ジントニック", "taste": "dry", "strength": "light", "base": "ジン（ビーフィーター）", "note": "すっきり、さわやか。バーテンダーの腕が出る一杯。"}, {"name": "マティーニ", "taste": "dry", "strength": "strong", "base": "ジン＋ドライベルモット", "note": "カクテルの王様。キリッとした辛口。"}, {"name": "マルガリータ", "taste": "dry", "strength": "strong", "base": "テキーラ＋オレンジリキュール", "note": "塩をまぶしたグラスで、甘酸っぱく。"}, {"name": "カンパリソーダ", "taste": "bitter", "strength": "light", "base": "カンパリ", "note": "ほろ苦さとソーダの爽快さ。食前に。"}, {"name": "スーズトニック", "taste": "bitter", "strength": "light", "base": "スーズ", "note": "ハーブのほろ苦さ。さっぱり飲みたい夜に。"}, {"name": "ネグローニ", "taste": "bitter", "strength": "strong", "base": "ジン＋カンパリ＋ベルモット", "note": "ほろ苦く、しっかり。大人のための一杯。"}],
   "_sample_photos_説明": "案11で使う見本の写真（ウィキメディア・コモンズ。誰でも使ってよい条件のもの）。作者名と条件をページに表示する。tools/get_sample_photos.py で取得。",
   "sample_photos": {"sample-bartender": {"title": "Bartenders serving cocktail (Unsplash).jpg", "artist": "Crew crew", "license": "CC0", "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en", "page": "https://commons.wikimedia.org/wiki/File:Bartenders_serving_cocktail_(Unsplash).jpg"}, "sample-cocktail": {"title": "Elegant cocktail garnished with citrus twist presented in a stylish glass on a wooden bar.jpg", "artist": "Shixart1985", "license": "CC BY 2.0", "license_url": "https://creativecommons.org/licenses/by/2.0", "page": "https://commons.wikimedia.org/wiki/File:Elegant_cocktail_garnished_with_citrus_twist_presented_in_a_stylish_glass_on_a_wooden_bar.jpg"}, "sample-stir": {"title": "Stirring with a bar spoon.jpg", "artist": "SKopp", "license": "CC BY 4.0", "license_url": "https://creativecommons.org/licenses/by/4.0", "page": "https://commons.wikimedia.org/wiki/File:Stirring_with_a_bar_spoon.jpg"}, "sample-julep": {"title": "Bartender making a cocktail (Unsplash).jpg", "artist": "Adam Jaime arobj", "license": "CC0", "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en", "page": "https://commons.wikimedia.org/wiki/File:Bartender_making_a_cocktail_(Unsplash).jpg"}},
-  "_shop_questions_説明": "案11の「お店の方へ：教えてほしいこと」（提案中だけ出る）。お店の人が答えを書き、LINEで送ってくれる。type は text（書く）/ choice（1つ選ぶ）/ multi（いくつでも選ぶ）。note があれば選んだあとに書き足す欄が出る。",
+  "_shop_questions_説明": "案11の「お店の方へ：教えてほしいこと」（提案中だけ出る）。お店の人が答えを書き、LINEで送ってくれる。type は text（書く）/ choice（1つ選ぶ）/ multi（いくつでも選ぶ）。note があれば選んだあとに書き足す欄が出る。id は答えを端末に残すときの名前（質問を消しても、ほかの答えがずれない）。",
   "shop_questions": [
       {
           "group": "営業・お店のきまり",
           "items": [
               {
+                  "id": "sat_night",
                   "q": "土曜の夜は、日曜の朝7時まで営業していますか？",
                   "type": "choice",
                   "options": [
@@ -130,6 +131,7 @@
                   "note": "いいえの場合、何時まで？"
               },
               {
+                  "id": "holiday",
                   "q": "祝日は営業しますか？",
                   "type": "choice",
                   "options": [
@@ -139,16 +141,19 @@
                   ]
               },
               {
+                  "id": "last_order",
                   "q": "ラストオーダーは何時ですか？",
                   "type": "text",
                   "placeholder": "例：お酒 6:30／フード 5:00"
               },
               {
+                  "id": "seats",
                   "q": "席数を教えてください",
                   "type": "text",
                   "placeholder": "例：カウンター8席・テーブル6席"
               },
               {
+                  "id": "payment",
                   "q": "使える支払い方法を選んでください",
                   "type": "multi",
                   "options": [
@@ -160,11 +165,13 @@
                   "note": "そのほかがあれば"
               },
               {
+                  "id": "charge",
                   "q": "チャージ（席料）はいくらですか？お通しはありますか？",
                   "type": "text",
                   "placeholder": "例：500円（お通しつき）"
               },
               {
+                  "id": "reservation",
                   "q": "予約はどうやって受けますか？",
                   "type": "multi",
                   "options": [
@@ -176,19 +183,16 @@
                   ]
               },
               {
+                  "id": "private_hire",
                   "q": "貸切はできますか？何名からですか？",
                   "type": "text",
                   "placeholder": "例：10名から／できない"
               },
               {
+                  "id": "party_plan",
                   "q": "飲み放題のプランはありますか？",
                   "type": "text",
                   "placeholder": "例：2時間 3,000円／ない"
-              },
-              {
-                  "q": "たばこ：入口に貼っている喫煙の標識の種類と、保健所に相談済みかを教えてください",
-                  "type": "text",
-                  "placeholder": "例：喫煙目的室の標識／相談済み"
               }
           ]
       },
@@ -196,46 +200,54 @@
           "group": "メニュー・料金",
           "items": [
               {
+                  "id": "prices",
                   "q": "お酒の値段のめやすを教えてください",
                   "type": "text",
                   "placeholder": "例：ウイスキー 800円〜、カクテル 900円〜、焼酎 700円〜、ビール 700円",
                   "long": true
               },
               {
+                  "id": "budget",
                   "q": "だいたいの予算はいくらくらいですか？（2〜3杯とチャージで）",
                   "type": "text",
                   "placeholder": "例：3,000円くらい"
               },
               {
+                  "id": "cocktails",
                   "q": "出しているカクテルと、看板・オリジナルのカクテルを教えてください",
                   "type": "text",
                   "placeholder": "例：定番はひととおり。オリジナルは「○○」",
                   "long": true
               },
               {
+                  "id": "shochu",
                   "q": "焼酎の銘柄を教えてください（茜霧島・だいやめ のほか）",
                   "type": "text",
                   "placeholder": "例：赤霧島、魔王、中々",
                   "long": true
               },
               {
+                  "id": "beer",
                   "q": "ビールの銘柄を教えてください（生・瓶）",
                   "type": "text",
                   "placeholder": "例：生はハイネケン、瓶はコロナ"
               },
               {
-                  "q": "写真で読めなかったお酒を教えてください（茜霧島の左右の焼酎2本／I.W.ハーパーの隣の赤いラベルのバーボン／首に白い飾りのリキュール2本／奏 Kanade の味）",
+                  "id": "more_drinks",
+                  "q": "メニューに載せたいお酒は、ほかにありますか？",
                   "type": "text",
-                  "placeholder": "わかるものだけで大丈夫です",
+                  "placeholder": "例：ジャックダニエル ハニー、梅酒、ワイン（赤・白）",
                   "long": true
               },
               {
+                  "id": "food",
                   "q": "黒板のほかに、いつも出している定番のフードはありますか？黒板は日替わりですか？",
                   "type": "text",
                   "placeholder": "例：ナッツ、チーズ盛り。黒板は日替わり",
                   "long": true
               },
               {
+                  "id": "food_time",
                   "q": "フードは何時まで頼めますか？",
                   "type": "text",
                   "placeholder": "例：朝5時まで"
@@ -246,6 +258,7 @@
           "group": "マスターのこと",
           "items": [
               {
+                  "id": "master_name",
                   "q": "マスターのお名前をサイトに出してもいいですか？",
                   "type": "choice",
                   "options": [
@@ -255,6 +268,7 @@
                   "note": "出す場合はお名前"
               },
               {
+                  "id": "master_career",
                   "q": "銀座・麻布でのご経歴をサイトに出してもいいですか？",
                   "type": "choice",
                   "options": [
@@ -264,17 +278,20 @@
                   "note": "何年くらいやっていたか"
               },
               {
+                  "id": "master_specialty",
                   "q": "得意なお酒・カクテルを教えてください",
                   "type": "text",
                   "placeholder": "例：ウイスキーのカクテル"
               },
               {
+                  "id": "master_message",
                   "q": "お客さんへのひとことをお願いします",
                   "type": "text",
                   "placeholder": "例：一人でも気軽にどうぞ",
                   "long": true
               },
               {
+                  "id": "master_photo",
                   "q": "マスターの写真をサイトに載せてもいいですか？",
                   "type": "choice",
                   "options": [
@@ -283,12 +300,14 @@
                   ]
               },
               {
+                  "id": "shop_name",
                   "q": "店名「XⅢ（クロスリー）」の由来を教えてください",
                   "type": "text",
                   "placeholder": "",
                   "long": true
               },
               {
+                  "id": "intro_text",
                   "q": "サイトの紹介文（キャッチコピー以外）で、直したいところはありますか？",
                   "type": "text",
                   "placeholder": "",
@@ -300,19 +319,7 @@
           "group": "行き方・入口",
           "items": [
               {
-                  "q": "駅の出口：西武線は「南口」で合っていますか？大江戸線は何番出口が近いですか？",
-                  "type": "text",
-                  "placeholder": "例：南口で合っている／大江戸線は A1"
-              },
-              {
-                  "q": "入口の右の案内板の3階に、いま XⅢ の看板は出ていますか？",
-                  "type": "choice",
-                  "options": [
-                      "出ている",
-                      "出ていない"
-                  ]
-              },
-              {
+                  "id": "neon",
                   "q": "窓の赤いネオンは、外から見えますか？",
                   "type": "choice",
                   "options": [
@@ -321,6 +328,7 @@
                   ]
               },
               {
+                  "id": "route_photos",
                   "q": "道順の写真（駅を出たところ・曲がり角・ビルの入口・3階の扉）を撮って送ってもらえますか？",
                   "type": "choice",
                   "options": [
@@ -334,6 +342,7 @@
           "group": "SNS・地図・連絡",
           "items": [
               {
+                  "id": "line_oa",
                   "q": "LINE 公式アカウントはありますか？",
                   "type": "choice",
                   "options": [
@@ -344,6 +353,7 @@
                   "note": "ある場合は LINE ID（@から始まる）"
               },
               {
+                  "id": "insta_name",
                   "q": "Instagram の表示名（いまは「BAR X-III クロスリー」）を、Googleマップの店名「ダイニングバー XⅢ クロスリー」にそろえますか？",
                   "type": "choice",
                   "options": [
@@ -352,6 +362,7 @@
                   ]
               },
               {
+                  "id": "gmap_edit",
                   "q": "Googleマップの店の情報（営業時間・臨時休業）は、お店で直せますか？",
                   "type": "choice",
                   "options": [
@@ -360,6 +371,7 @@
                   ]
               },
               {
+                  "id": "phone_ok",
                   "q": "電話番号（070-9065-1559）をサイトに載せてもいいですか？",
                   "type": "choice",
                   "options": [
@@ -368,6 +380,7 @@
                   ]
               },
               {
+                  "id": "events",
                   "q": "イベント（ダーツ大会など）・ボトルキープ・スタッフ募集はやっていますか？",
                   "type": "text",
                   "placeholder": "例：ボトルキープあり（3か月）",
@@ -379,6 +392,7 @@
           "group": "写真・ロゴ",
           "items": [
               {
+                  "id": "logo_data",
                   "q": "ロゴの元データ（チラシを作ったときのデータ）はありますか？",
                   "type": "choice",
                   "options": [
@@ -387,6 +401,7 @@
                   ]
               },
               {
+                  "id": "photos",
                   "q": "お店の写真（マスター・カクテル・料理・入口・看板）を送ってもらえますか？",
                   "type": "choice",
                   "options": [
@@ -400,21 +415,14 @@
           "group": "決めること",
           "items": [
               {
+                  "id": "design",
                   "q": "11案のうち、気に入った案はどれですか？（ほかの案の機能を足すこともできます）",
                   "type": "text",
                   "placeholder": "例：案03。案11のカクテル診断も入れたい",
                   "long": true
               },
               {
-                  "q": "独自ドメイン（○○.com など）を使いますか？",
-                  "type": "choice",
-                  "options": [
-                      "使う",
-                      "使わない",
-                      "わからない"
-                  ]
-              },
-              {
+                  "id": "other",
                   "q": "そのほか、伝えたいことがあればどうぞ",
                   "type": "text",
                   "placeholder": "",

@@ -72,15 +72,15 @@
       <div class="finder">
         <figure class="finder__photo">{{img name="sample-cocktail" sizes="(min-width: 860px) 420px, 90vw"}}<figcaption>{{credit name="sample-cocktail"}}</figcaption></figure>
         <form class="finder__form" aria-describedby="finder-h">
-          <fieldset><legend>味の好みは？</legend>
+          <div class="finder__set" role="group" aria-labelledby="finder-taste"><p class="finder__legend" id="finder-taste">味の好みは？</p>
             <label><input type="radio" name="taste" value="sweet" checked><span>甘め</span></label>
             <label><input type="radio" name="taste" value="dry"><span>すっきり</span></label>
             <label><input type="radio" name="taste" value="bitter"><span>ほろ苦い</span></label>
-          </fieldset>
-          <fieldset><legend>お酒の強さは？</legend>
+          </div>
+          <div class="finder__set" role="group" aria-labelledby="finder-strength"><p class="finder__legend" id="finder-strength">お酒の強さは？</p>
             <label><input type="radio" name="strength" value="light" checked><span>軽め</span></label>
             <label><input type="radio" name="strength" value="strong"><span>しっかり</span></label>
-          </fieldset>
+          </div>
           <div class="finder__result" aria-live="polite"></div>
           <p class="finder__note">迷ったら、マスターに「甘めで軽いもの」のように伝えるだけでも作ってもらえます。</p>
         </form>
@@ -260,10 +260,10 @@
           <div><dt>Phone</dt><dd>+81 70-9065-1559</dd></div>
         </dl>
         <ol class="en-route">
-          <li>Leave Nerima Station on the south side and go to the “Nerima-eki-mae” crossing.</li>
+          <li>Leave Nerima Station by the South Exit (from the Seibu Line, any gate is fine) and go to the “Nerima-eki-mae” crossing.</li>
           <li>Cross Senkawa-dori and turn right. Turn left at the McDonald’s corner.</li>
           <li>Walk straight about 120 m, passing FamilyMart on your left.</li>
-          <li>Cross the diagonal street. The blue building on your right is Excel Toyotama. Take the glass door and the elevator to the 3rd floor.</li>
+          <li>Cross the diagonal street. The blue building on your right is Excel Toyotama. Enter by the glass door (look for the XⅢ sign on the board to the right) and take the elevator to the 3rd floor.</li>
         </ol>
       </div>
     </div>

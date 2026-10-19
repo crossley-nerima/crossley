@@ -444,7 +444,7 @@ def h_streetview(ctx, cls='streetview'):
     return (f'<figure class="{esc(cls)}"><iframe class="{esc(cls)}__view" src="{esc(src)}" '
             f'title="{esc(SITE["full_name"])}の入口のようす（Google ストリートビュー）" loading="lazy" '
             'referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>'
-            f'<figcaption><b>入口のようす</b>　青いビルの角。木の扉の右にあるガラスの扉から入り、エレベーターで3階へ。'
+            f'<figcaption><b>入口のようす</b>　青いビルの角。木の扉の右にあるガラスの扉から入り、エレベーターで3階へ。入口の右の案内板に XⅢ の看板があります。'
             f'<small>Google ストリートビュー（{esc(sv["date"])}撮影。看板は当時のものです）</small></figcaption></figure>')
 
 
@@ -562,23 +562,26 @@ def h_shop_questions(ctx):
     if not PROPOSAL:
         return ''
     groups, n = [], 0
-    for g in SITE['shop_questions']:
+    for gi, g in enumerate(SITE['shop_questions'], 1):
         items = []
         for q in g['items']:
             n += 1
-            head = f'<p class="qs__q" id="qs-{n}"><span class="qs__no">{n}</span>{esc(q["q"])}</p>'
+            qid = q['id']
+            head = f'<p class="qs__q" id="qs-{qid}"><span class="qs__no">{n}</span><span class="qs__text">{esc(q["q"])}</span></p>'
             if q['type'] == 'text':
                 ph = f' placeholder="{esc(q["placeholder"])}"' if q.get('placeholder') else ''
-                field = (f'<textarea name="q{n}" rows="3" aria-labelledby="qs-{n}"{ph}></textarea>' if q.get('long')
-                         else f'<input type="text" name="q{n}" aria-labelledby="qs-{n}"{ph}>')
+                field = (f'<textarea name="{qid}" rows="3" aria-labelledby="qs-{qid}"{ph}></textarea>' if q.get('long')
+                         else f'<input type="text" name="{qid}" aria-labelledby="qs-{qid}"{ph}>')
             else:
                 kind = 'radio' if q['type'] == 'choice' else 'checkbox'
-                opts = ''.join(f'<label><input type="{kind}" name="q{n}" value="{esc(o)}"><span>{esc(o)}</span></label>' for o in q['options'])
-                field = f'<div class="qs__opts" role="group" aria-labelledby="qs-{n}">{opts}</div>'
+                opts = ''.join(f'<label class="qs__opt"><input type="{kind}" name="{qid}" value="{esc(o)}"><span>{esc(o)}</span></label>'
+                               for o in q['options'])
+                field = f'<div class="qs__opts" role="group" aria-labelledby="qs-{qid}">{opts}</div>'
                 if q.get('note'):
-                    field += f'<input type="text" class="qs__note" name="q{n}note" placeholder="{esc(q["note"])}" aria-label="{esc(q["note"])}">'
-            items.append(f'<div class="qs__item" data-q="{n}">{head}{field}</div>')
-        groups.append(f'<fieldset class="qs__group"><legend>{esc(g["group"])}</legend>{"".join(items)}</fieldset>')
+                    field += f'<input type="text" class="qs__note" name="{qid}_note" placeholder="{esc(q["note"])}" aria-label="{esc(q["note"])}">'
+            items.append(f'<div class="qs__item" data-q="{qid}" data-no="{n}">{head}{field}</div>')
+        groups.append(f'<div class="qs__group" role="group" aria-labelledby="qs-g{gi}"><h3 class="qs__group-h" id="qs-g{gi}">{esc(g["group"])}</h3>'
+                      f'{"".join(items)}</div>')
     return ('<section class="qs" id="questions" aria-labelledby="questions-h"><div class="wrap">'
             '<p class="qs__tag">お店の方へ</p>'
             '<h2 id="questions-h">ホームページのために、教えてください</h2>'
@@ -586,7 +589,7 @@ def h_shop_questions(ctx):
             'あとから続きを書けます。書き終わったら、いちばん下の「LINEで送る」で送ってください。</p>'
             f'<p class="qs__count" aria-live="polite">全{n}問</p>'
             f'<form class="qs__form" autocomplete="off">{"".join(groups)}</form>'
-            '<div class="qs__send"><p class="qs__send-h">書き終わったら、送ってください</p>'
+            '<div class="qs__send"><p class="qs__send-h">書き終わったら、送ってください</p><p class="qs__count qs__count--send"></p>'
             '<div class="qs__acts"><a class="btn qs__line" href="#" target="_blank" rel="noopener">LINEで送る</a>'
             '<button type="button" class="btn qs__copy">回答をコピー</button></div>'
             '<p class="qs__hint">「LINEで送る」を押すと、答えをまとめた文面で LINE が開きます。送る相手を選んで送ってください。'
