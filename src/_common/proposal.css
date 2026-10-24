@@ -121,3 +121,7 @@ html { scroll-padding-top: calc(var(--pp-h) + 72px); }
   white-space: nowrap;
 }
 .tbd--only { text-decoration: none; }
+
+/* 「ほかの提案」（看板の提案など）。デザイン案の一覧の下に区切って並べる。 */
+.pp-panel__head--sub { margin-top: 14px; padding-top: 14px; border-top: 1px solid #3a3a41; }
+.pp-item__swatch--sign { background: linear-gradient(135deg, #2a2316, #0d0c0a); color: #e6c37a; font-size: 12px; letter-spacing: .05em; }

@@ -1,0 +1,151 @@
+/* 看板の提案（1階入口・10案）。イメージ画像と同じ、夜の黒と金。 */
+:root {
+  --bg: #101217;
+  --bg-2: #161921;
+  --panel: #1c2029;
+  --panel-2: #242936;
+  --ink: #eef0f4;
+  --muted: #a7adbb;
+  --gold: #d9b66f;
+  --gold-2: #f2dca5;
+  --line: rgba(217, 182, 111, .25);
+  --r: 16px;
+  --ja: "Noto Sans JP", "Yu Gothic", "Hiragino Sans", system-ui, sans-serif;
+  --wrap: min(1140px, 100% - 40px);
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--ja); line-height: 1.8; -webkit-font-smoothing: antialiased; }
+img { max-width: 100%; height: auto; display: block; }
+a { color: inherit; }
+.sg-wrap { width: var(--wrap); margin: 0 auto; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+h1, h2, h3 { line-height: 1.4; }
+
+/* ボタン */
+.sg-btn { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 52px; padding: 10px 22px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); font-weight: 700; font-size: 15px; text-decoration: none; text-align: center; }
+.sg-btn small { font-size: 12px; font-weight: 500; opacity: .8; }
+.sg-btn:hover { border-color: var(--gold); }
+.sg-btn--gold { background: var(--gold); color: #1a1408; border-color: var(--gold); }
+.sg-btn--gold:hover { background: var(--gold-2); }
+
+/* いちばん上 */
+.sg-hero { padding: clamp(48px, 8vw, 96px) 0 clamp(40px, 6vw, 72px); background: radial-gradient(120% 120% at 20% 0%, #2a2433 0%, var(--bg) 60%); border-bottom: 1px solid var(--line); }
+.sg-hero__kicker { margin: 0 0 6px; color: var(--gold); font-weight: 700; letter-spacing: .12em; font-size: 14px; }
+.sg-hero h1 { margin: 0 0 16px; font-size: clamp(30px, 5vw, 52px); }
+.sg-hero h1 span { display: inline-block; margin-left: .3em; padding: 0 .4em; border-radius: 10px; background: var(--gold); color: #1a1408; font-size: .6em; vertical-align: .25em; }
+.sg-hero__lead { margin: 0 0 24px; max-width: 46em; color: #d6d9e1; font-size: 16px; }
+.sg-hero__acts { display: flex; flex-wrap: wrap; gap: 12px; }
+.sg-hero__note { margin: 14px 0 0; color: var(--muted); font-size: 13px; }
+
+/* 区切り */
+.sg-sec { padding: clamp(52px, 8vw, 88px) 0; }
+.sg-sec--alt { background: var(--bg-2); }
+.sg-sec h2 { margin: 0 0 18px; font-size: clamp(22px, 3vw, 30px); }
+.sg-sec__en { display: block; color: var(--gold); font-size: 13px; letter-spacing: .3em; font-weight: 700; }
+.sg-sec__lead { margin: -6px 0 24px; color: var(--muted); max-width: 52em; }
+
+/* いま困っていること */
+.sg-now { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: clamp(24px, 4vw, 48px); align-items: start; }
+.sg-problems { margin: 0; padding: 0; list-style: none; counter-reset: p; display: grid; gap: 12px; }
+.sg-problems li { counter-increment: p; display: grid; grid-template-columns: 36px 1fr; gap: 0 12px; padding: 16px 18px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); }
+.sg-problems li::before { content: counter(p); grid-row: span 2; width: 30px; height: 30px; border-radius: 50%; background: var(--gold); color: #1a1408; display: grid; place-items: center; font-weight: 700; font-size: 14px; }
+.sg-problems b { font-size: 16px; }
+.sg-problems span { color: var(--muted); font-size: 14px; }
+
+/* 画像 */
+.sg-shot { margin: 0; }
+.sg-shot a { display: block; border-radius: 12px; overflow: hidden; border: 1px solid #2b303c; }
+.sg-shot img { width: 100%; aspect-ratio: 1200 / 750; object-fit: cover; transition: transform .3s; }
+.sg-shot a:hover img { transform: scale(1.015); }
+.sg-shot figcaption { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 8px; font-size: 13px; color: var(--muted); }
+.sg-dl { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel-2); color: var(--gold-2); font-weight: 700; font-size: 13px; text-decoration: none; }
+.sg-dl::before { content: ""; width: 12px; height: 12px; background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 1v7M3 5.5 6 8.5 9 5.5M1.5 11h9' stroke='black' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 1v7M3 5.5 6 8.5 9 5.5M1.5 11h9' stroke='black' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat; }
+.sg-dl:hover { border-color: var(--gold); }
+
+/* 解決したいこと */
+.sg-goals { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.sg-goals li { display: grid; gap: 4px; padding: 18px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); }
+.sg-goals b { color: var(--gold-2); font-size: 17px; }
+.sg-goals span { color: var(--muted); font-size: 14px; }
+
+/* ●の段階 */
+.sg-dots { display: inline-flex; gap: 4px; vertical-align: middle; }
+.sg-dots i { width: 11px; height: 11px; border-radius: 50%; border: 1.5px solid var(--gold); }
+.sg-dots i.on { background: var(--gold); }
+
+/* 比較表 */
+.sg-table-wrap { overflow-x: auto; border-radius: var(--r); border: 1px solid var(--line); }
+.sg-table { width: 100%; min-width: 640px; border-collapse: collapse; font-size: 14px; }
+.sg-table th, .sg-table td { padding: 12px 14px; border-bottom: 1px solid #2a2f3b; text-align: left; white-space: nowrap; }
+.sg-table thead th { background: var(--panel-2); color: var(--muted); font-weight: 700; font-size: 13px; }
+.sg-table tbody tr:last-child th, .sg-table tbody tr:last-child td { border-bottom: 0; }
+.sg-table tbody tr:hover { background: rgba(217, 182, 111, .06); }
+.sg-table th[scope=row] a { text-decoration: none; font-weight: 700; }
+.sg-table th[scope=row] a:hover { color: var(--gold-2); }
+.sg-price { color: var(--gold-2); font-weight: 700; }
+.sg-no { display: inline-grid; place-items: center; min-width: 30px; height: 24px; margin-right: 8px; padding: 0 6px; border-radius: 6px; background: var(--gold); color: #1a1408; font-size: 12px; font-weight: 700; }
+
+/* 案のカード */
+.sg-sec--cards { padding-top: clamp(40px, 6vw, 64px); }
+.sg-card { padding: clamp(20px, 3vw, 32px); border-radius: 20px; background: var(--panel); border: 1px solid var(--line); scroll-margin-top: calc(var(--pp-h, 0px) + 16px); }
+.sg-card + .sg-card { margin-top: 24px; }
+.sg-card__head { display: flex; align-items: center; gap: 14px; }
+.sg-card__no { flex: none; padding: 6px 12px; border-radius: 10px; background: var(--gold); color: #1a1408; font-weight: 700; }
+.sg-card h3 { margin: 0; font-size: clamp(20px, 2.6vw, 26px); }
+.sg-card__type { margin: 0; color: var(--muted); font-size: 13px; }
+.sg-card__catch { margin: 12px 0 18px; color: var(--gold-2); font-weight: 700; font-size: 16px; }
+.sg-card__shots { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.sg-card__body { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: clamp(20px, 3vw, 36px); margin-top: 20px; }
+.sg-card__text p { margin: 0 0 14px; }
+.sg-scores { list-style: none; margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--panel-2); display: grid; gap: 6px; }
+.sg-scores li { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14px; }
+.sg-facts { margin: 0; display: grid; gap: 0; }
+.sg-facts > div { padding: 10px 0; border-bottom: 1px solid #2c313d; }
+.sg-facts > div:last-child { border-bottom: 0; }
+.sg-facts dt { color: var(--muted); font-size: 13px; font-weight: 700; }
+.sg-facts dd { margin: 2px 0 0; font-size: 14px; }
+.sg-facts dd ul { margin: 0; padding-left: 1.2em; }
+.sg-facts__price b { display: block; color: var(--gold-2); font-size: 22px; }
+.sg-facts__price small { display: block; color: var(--muted); font-size: 13px; line-height: 1.7; }
+.sg-src { font-size: 12px; color: var(--muted); }
+.sg-src a { color: var(--muted); }
+
+/* 選び方 */
+.sg-choose { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.sg-choose__item { padding: 18px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); }
+.sg-choose__item--rec { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold) inset; }
+.sg-choose__item--rec h3::after { content: "おすすめ"; margin-left: .6em; padding: 1px 8px; border-radius: 6px; background: var(--gold); color: #1a1408; font-size: 12px; vertical-align: 2px; }
+.sg-choose__item h3 { margin: 0 0 4px; font-size: 17px; }
+.sg-choose__item p { margin: 0 0 10px; color: var(--muted); font-size: 14px; }
+.sg-choose__item ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.sg-choose__item a { display: flex; align-items: center; gap: 4px; padding: 8px 10px; border-radius: 10px; background: var(--panel-2); text-decoration: none; font-size: 14px; font-weight: 700; }
+.sg-choose__item a small { margin-left: auto; color: var(--gold-2); font-weight: 500; }
+.sg-tip { margin-top: 20px; padding: 18px 20px; border-radius: 14px; border: 1px dashed var(--gold); background: rgba(217, 182, 111, .06); }
+.sg-tip h3 { margin: 0 0 4px; font-size: 16px; color: var(--gold-2); }
+.sg-tip p { margin: 0; font-size: 14px; }
+.sg-tip p + p { margin-top: 6px; }
+
+/* 決まり・見積もり */
+.sg-two { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(28px, 5vw, 56px); align-items: start; }
+.sg-rules { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.sg-rules li { display: grid; gap: 2px; padding: 14px 16px; border-radius: 12px; background: var(--panel); border-left: 3px solid var(--gold); }
+.sg-rules b { font-size: 15px; }
+.sg-rules span { color: var(--muted); font-size: 14px; }
+.sg-quote { margin: 0 0 20px; padding-left: 1.2em; display: grid; gap: 6px; }
+.sg-download { padding: 18px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); }
+.sg-download p { margin: 0 0 10px; color: var(--muted); font-size: 14px; }
+.sg-sources { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; font-size: 14px; }
+.sg-sources a { color: #cfd3dd; }
+
+.sg-footer { padding: 32px 0 48px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+.sg-footer p { margin: 0 0 4px; }
+
+@media (max-width: 860px) {
+  .sg-now, .sg-two, .sg-card__body { grid-template-columns: 1fr; }
+  .sg-card__shots { grid-template-columns: 1fr; }
+  .sg-goals { grid-template-columns: 1fr; }
+}

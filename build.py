@@ -29,6 +29,7 @@ SITE = json.loads((ROOT / 'site.json').read_text(encoding='utf-8'))
 ALL_PATTERNS = json.loads((ROOT / 'patterns.json').read_text(encoding='utf-8'))
 PATTERNS = list(ALL_PATTERNS)
 PROPOSAL = SITE.get('proposal', True)
+SIGNS = json.loads((ROOT / 'signs.json').read_text(encoding='utf-8'))  # 看板の提案（提案のときだけページにする）
 
 TOKEN = re.compile(r'\{\{\s*([\w.]+)((?:\s+[\w-]+(?:="[^"]*")?)*)\s*\}\}')
 ARG = re.compile(r'([\w-]+)(?:="([^"]*)")?')
@@ -312,31 +313,164 @@ def h_jsonld(ctx):
 
 
 def h_proposal(ctx):
-    if not PROPOSAL or not ctx.get('pattern'):
+    if not PROPOSAL or not (ctx.get('pattern') or ctx.get('page') == 'signs'):
         return ''
-    p = ctx['pattern']
-    i = [x['no'] for x in ALL_PATTERNS].index(p['no'])
-    prev = ALL_PATTERNS[i - 1]
-    nxt = ALL_PATTERNS[(i + 1) % len(ALL_PATTERNS)]
+    p = ctx.get('pattern')
     r = ctx['root']
     items = []
     for x in ALL_PATTERNS:
         bg, fg = x['colors']
-        cur = ' aria-current="page"' if x['no'] == p['no'] else ''
+        cur = ' aria-current="page"' if p and x['no'] == p['no'] else ''
         items.append(
             f'<li><a class="pp-item" href="{r}{x["slug"]}/index.html"{cur}>'
             f'<span class="pp-item__swatch" style="background:{bg};color:{fg}" aria-hidden="true">{x["no"]}</span>'
             f'<span class="pp-item__name">{x["no"]} {esc(x["name"])}<small lang="en">{esc(x["en"])}</small></span>'
             f'<span class="pp-item__structure">{esc(x["structure"])}</span>'
             f'<span class="pp-item__concept">{esc(x["concept"])}</span></a></li>')
+    cur = ' aria-current="page"' if ctx.get('page') == 'signs' else ''
+    extra = (f'<p class="pp-panel__head pp-panel__head--sub"><strong>ほかの提案</strong><span>ホームページ以外の提案</span></p>'
+             f'<ul class="pp-list"><li><a class="pp-item" href="{r}signs/index.html"{cur}>'
+             f'<span class="pp-item__swatch pp-item__swatch--sign" aria-hidden="true">看板</span>'
+             f'<span class="pp-item__name">看板の提案<small>1階入口・10案</small></span>'
+             f'<span class="pp-item__structure">置き看板 10案（イメージ画像・相場つき）</span>'
+             f'<span class="pp-item__concept">3階のお店に気づいてもらい、入口で迷わせないための、1階入口の置き看板の案です。</span></a></li></ul>')
+    switch = (f'<details class="pp-switch"><summary>{len(ALL_PATTERNS)}案を切り替え</summary>'
+              f'<div class="pp-panel"><p class="pp-panel__head"><strong>デザイン案を選ぶ</strong>'
+              f'<span>中身は同じで、見た目と構成が違います</span></p>'
+              f'<ul class="pp-list">{"".join(items)}</ul>{extra}</div></details>')
+    if not p:
+        return (f'<nav class="pp-bar" aria-label="提案の切り替え">'
+                f'<span class="pp-bar__now"><span>ほかの提案 </span><b>看板の提案（1階入口・10案）</b></span>{switch}</nav>')
+    i = [x['no'] for x in ALL_PATTERNS].index(p['no'])
+    prev = ALL_PATTERNS[i - 1]
+    nxt = ALL_PATTERNS[(i + 1) % len(ALL_PATTERNS)]
     return (f'<nav class="pp-bar" aria-label="デザイン案の切り替え">'
             f'<span class="pp-bar__now"><span>デザイン案 </span>{p["no"]}／{len(ALL_PATTERNS)}<b>{esc(p["name"])}</b></span>'
             f'<a class="pp-bar__step" href="{r}{prev["slug"]}/index.html" aria-label="前の案（{esc(prev["name"])}）">‹</a>'
             f'<a class="pp-bar__step" href="{r}{nxt["slug"]}/index.html" aria-label="次の案（{esc(nxt["name"])}）">›</a>'
-            f'<details class="pp-switch"><summary>{len(ALL_PATTERNS)}案を切り替え</summary>'
-            f'<div class="pp-panel"><p class="pp-panel__head"><strong>デザイン案を選ぶ</strong>'
-            f'<span>中身は同じで、見た目と構成が違います</span></p>'
-            f'<ul class="pp-list">{"".join(items)}</ul></div></details></nav>')
+            f'{switch}</nav>')
+
+
+# ---- 看板の提案のページ（docs/signs/。提案のときだけ書き出す） --------------------------------
+SIGN_IMG = OUT / 'signs' / 'img'
+
+
+def sign_img(name, alt, cls='sg-shot'):
+    """看板のイメージ画像。ページには小さい WebP を出し、押すと大きい JPEG が開く。保存ボタンは JPEG。"""
+    if not (SIGN_IMG / f'{name}.jpg').exists():
+        raise FileNotFoundError(f'看板の画像 {name} がありません（tools/make_sign_images.py を先に動かす）')
+    return (f'<figure class="{esc(cls)}"><a href="img/{name}.jpg" target="_blank" rel="noopener">'
+            f'<img src="img/{name}.webp" width="1200" height="750" alt="{esc(alt)}" loading="lazy" decoding="async"></a>'
+            f'<figcaption><span>{esc(alt)}</span>'
+            f'<a class="sg-dl" href="img/{name}.jpg" download="xiii-{name}.jpg">画像を保存</a></figcaption></figure>')
+
+
+def dots(n):
+    return '<span class="sg-dots" aria-hidden="true">' + ''.join('<i class="on"></i>' if k < n else '<i></i>' for k in range(3)) + '</span>'
+
+
+def h_sign_problems(ctx):
+    return ''.join(f'<li><b>{esc(x["title"])}</b><span>{esc(x["text"])}</span></li>' for x in SIGNS['problems'])
+
+
+def h_sign_goals(ctx):
+    return ''.join(f'<li><b>{esc(x["label"])}</b><span>{esc(x["text"])}</span></li>' for x in SIGNS['goals'])
+
+
+def h_sign_now(ctx):
+    return sign_img('sign-00-now', '今のようす（夜・イラスト）', 'sg-shot sg-shot--now')
+
+
+def h_sign_table(ctx):
+    goals = SIGNS['goals']
+    head = ''.join(f'<th scope="col">{esc(g["label"])}</th>' for g in goals)
+    rows = []
+    for x in SIGNS['proposals']:
+        sc = ''.join(f'<td>{dots(x["scores"][g["key"]])}<span class="visually-hidden">3段階中{x["scores"][g["key"]]}</span></td>' for g in goals)
+        rows.append(f'<tr><th scope="row"><a href="#sign-{x["no"]}"><span class="sg-no">{x["no"]}</span>{esc(x["short"])}</a></th>'
+                    f'<td class="sg-price">{esc(x["price"])}</td>{sc}</tr>')
+    return (f'<div class="sg-table-wrap"><table class="sg-table"><caption class="visually-hidden">10案の比較</caption>'
+            f'<thead><tr><th scope="col">案</th><th scope="col">相場の目安</th>{head}</tr></thead><tbody>{"".join(rows)}</tbody></table></div>')
+
+
+def src_links(keys):
+    return '・'.join(f'<a href="{esc(SIGNS["sources"][k]["url"])}" target="_blank" rel="noopener">{esc(SIGNS["sources"][k]["title"])}</a>' for k in keys)
+
+
+def h_sign_cards(ctx):
+    out = []
+    for x in SIGNS['proposals']:
+        name = f'sign-{x["no"]}-{x["id"]}'
+        scores = ''.join(f'<li><span>{esc(g["label"])}</span>{dots(x["scores"][g["key"]])}<span class="visually-hidden">3段階中{x["scores"][g["key"]]}</span></li>'
+                         for g in SIGNS['goals'])
+        notes = ''.join(f'<li>{esc(n)}</li>' for n in x['notes'])
+        out.append(
+            f'<article class="sg-card" id="sign-{x["no"]}" aria-labelledby="sign-{x["no"]}-h">'
+            f'<header class="sg-card__head"><span class="sg-card__no">案{x["no"]}</span>'
+            f'<div><h3 id="sign-{x["no"]}-h">{esc(x["name"])}</h3><p class="sg-card__type">{esc(x["type"])}</p></div></header>'
+            f'<p class="sg-card__catch">{esc(x["catch"])}</p>'
+            f'<div class="sg-card__shots">{sign_img(name + "-scene", "設置イメージ（夜・イラスト）")}'
+            f'{sign_img(name + "-design", "デザイン（正面・寸法入り）")}</div>'
+            f'<div class="sg-card__body"><div class="sg-card__text"><p>{esc(x["desc"])}</p>'
+            f'<ul class="sg-scores">{scores}</ul></div>'
+            f'<dl class="sg-facts"><div><dt>大きさの目安</dt><dd>{esc(x["size"])}</dd></div>'
+            f'<div class="sg-facts__price"><dt>相場の目安</dt><dd><b>{esc(x["price"])}</b><small>{esc(x["price_note"])}</small></dd></div>'
+            f'<div><dt>注意</dt><dd><ul>{notes}</ul></dd></div>'
+            f'<div><dt>相場の出どころ</dt><dd class="sg-src">{src_links(x["sources"])}</dd></div></dl></div>'
+            f'</article>')
+    return ''.join(out)
+
+
+def h_sign_choose(ctx):
+    by = {x['no']: x for x in SIGNS['proposals']}
+    out = []
+    for c in SIGNS['choose']:
+        items = ''.join(f'<li><a href="#sign-{n}"><span class="sg-no">{n}</span>{esc(by[n]["short"])}<small>{esc(by[n]["price"])}</small></a></li>' for n in c['items'])
+        rec = ' sg-choose__item--rec' if c.get('recommend') else ''
+        out.append(f'<div class="sg-choose__item{rec}"><h3>{esc(c["name"])}</h3><p>{esc(c["text"])}</p><ul>{items}</ul></div>')
+    return ''.join(out)
+
+
+def h_sign_tip(ctx):
+    t = SIGNS['tip']
+    return f'<h3>{esc(t["title"])}</h3><p>{esc(t["text"])}</p><p class="sg-src">出どころ：{src_links(t["sources"])}</p>'
+
+
+def h_sign_rules(ctx):
+    return ''.join(f'<li><b>{esc(r["title"])}</b><span>{esc(r["text"])}</span></li>' for r in SIGNS['rules'])
+
+
+def h_sign_quote_tips(ctx):
+    return ''.join(f'<li>{esc(t)}</li>' for t in SIGNS['quote_tips'])
+
+
+def h_sign_sources(ctx):
+    return ''.join(f'<li><a href="{esc(v["url"])}" target="_blank" rel="noopener">{esc(v["title"])}</a></li>' for v in SIGNS['sources'].values())
+
+
+def h_sign_zip(ctx):
+    z = OUT / 'signs' / 'xiii-sign-ideas.zip'
+    mb = z.stat().st_size / 1024 / 1024 if z.exists() else 0
+    return (f'<a class="sg-btn sg-btn--gold" href="xiii-sign-ideas.zip" download>画像をまとめて保存'
+            f'<small>ZIP・{len(SIGNS["proposals"]) * 2 + 1}枚・約{mb:.1f}MB</small></a>')
+
+
+def build_signs():
+    """看板の提案のページ。提案のときだけ書き出す（本番では消す。画像は tools/make_sign_images.py で作り直せる）。"""
+    dst = OUT / 'signs'
+    if not PROPOSAL:
+        shutil.rmtree(dst, ignore_errors=True)
+        return 0
+    dst.mkdir(parents=True, exist_ok=True)
+    pages = 0
+    for f in (SRC / 'signs').iterdir():
+        if f.suffix == '.html':
+            ctx = {'root': '../', 'path': f'signs/{f.name}', 'page': 'signs'}
+            (dst / f.name).write_text(render(f.read_text(encoding='utf-8'), ctx, f'signs/{f.name}'), encoding='utf-8', newline='\n')
+            pages += 1
+        else:
+            shutil.copy2(f, dst / f.name)
+    return pages
 
 
 def h_menu(ctx, h='h3', cls='menu'):
@@ -680,6 +814,9 @@ HELPERS = {
     'head': h_head, 'fonts': h_fonts, 'jsonld': h_jsonld, 'proposal': h_proposal, 'img': h_img, 'logo': h_logo,
     'menu': h_menu, 'menu_nav': h_menu_nav, 'food': h_food, 'faq': h_faq, 'info': h_info, 'hours_table': h_hours_table, 'map': h_map,
     'route': h_route, 'route_map': h_route_map, 'streetview': h_streetview, 'notices': h_notices, 'feature': h_feature, 'feature_list': h_feature_list, 'shop_questions': h_shop_questions, 'data': h_data, 'credit': h_credit, 'features': h_features, 'icon': h_icon, 'access': h_access, 'addr': h_addr,
+    'sign_problems': h_sign_problems, 'sign_goals': h_sign_goals, 'sign_now': h_sign_now, 'sign_table': h_sign_table,
+    'sign_cards': h_sign_cards, 'sign_choose': h_sign_choose, 'sign_tip': h_sign_tip, 'sign_rules': h_sign_rules,
+    'sign_quote_tips': h_sign_quote_tips, 'sign_sources': h_sign_sources, 'sign_zip': h_sign_zip,
     'tel_href': h_tel_href, 'line_add_href': h_line_add_href, 'line_qr': h_line_qr, 'line_msg_base': h_line_msg_base, 'insta_href': h_insta_href, 'year': h_year,
     'map_url': lambda ctx: esc(map_url()), 'route_url': lambda ctx: esc(route_url()),
     'root': lambda ctx: ctx['root'],
@@ -736,6 +873,8 @@ def build():
         missing = [x for x in p['pages'] if not (dst / x).exists()]
         if missing:
             raise FileNotFoundError(f'{p["slug"]}: ページが足りません {missing}')
+
+    pages += build_signs()
 
     # 入口（公開したアドレスそのもの）。開いたら最初の案を出す。切り替えは各案の上の帯で行う。
     first = ALL_PATTERNS[0]['slug']

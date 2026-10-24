@@ -20,6 +20,9 @@
 | `tools/fonts/` | ロゴの「CROSSLEY」に使う書体 Barlow（SIL Open Font License。`OFL.txt`） |
 | `tools/shoot.py` | 書き出したページを画面なしの Edge で撮って、崩れを確かめる |
 | `tools/get_sample_photos.py` | 案11で使う見本の写真（ウィキメディア・コモンズの、誰でも使ってよい条件の写真）を取ってくる。作者と条件は `site.json` の `sample_photos` |
+| `signs.json` | 1階入口の看板の提案（10案）の中身（説明・大きさ・相場・注意・相場の出どころ） |
+| `src/signs/` | 看板の提案のページのひな形（提案のときだけ `docs/signs/` に書き出す。本番では消える） |
+| `tools/make_sign_images.py` | 看板の提案のイメージ画像（設置イメージ・デザイン）と、まとめて保存する ZIP を作る |
 | `tools/make_route_map.py` | 練馬駅から店までの道順の図を、OpenStreetMap の地図データから作る（歩く道・番号の位置はこの中に書く） |
 
 ## 道順を直すとき
@@ -66,3 +69,11 @@
   QR コードは、お店の管理画面から出せる画像を `docs/assets/img/line-qr.png` に置き、`site.json` に `"line_qr": "line-qr.png"` と書く。
 - 「お店の方へ：教えてください」（案11のいちばん下・提案中だけ）: お店の人がスマホで答えを書き、「LINEで送る」で回答をまとめた文面を送ってくれる。
   質問は `site.json` の `shop_questions`。答えが届いたら、その内容を `site.json` に入れて、質問を消す。
+
+## 看板の提案（1階入口・10案）について
+
+- ページは `docs/signs/index.html`。どの案の「11案を切り替え」からも、いちばん下の「ほかの提案」から開ける。
+- 中身は `signs.json`。画像は `python -I -X utf8 tools/make_sign_images.py`（番号を渡すとその案だけ。例 `01,05`）で作り直し、そのあと `build.py` で書き出す。
+- 画像はイラスト。建物はストリートビュー（2024年11月）をもとに描き起こした（Google の画像は加工して公開できないため）。
+- 相場は 2026年10月にネットの価格表・事例から出した目安。出どころは `signs.json` の `sources`。
+
