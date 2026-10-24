@@ -397,28 +397,121 @@ def src_links(keys):
     return '・'.join(f'<a href="{esc(SIGNS["sources"][k]["url"])}" target="_blank" rel="noopener">{esc(SIGNS["sources"][k]["title"])}</a>' for k in keys)
 
 
+def pick_button(no):
+    """「気になる」の印（押すと、ページの下の「気になる案を送る」にも印が付く）。"""
+    return (f'<button type="button" class="sg-pick" data-pick="{no}" aria-pressed="false">'
+            f'<span class="sg-pick__icon" aria-hidden="true"></span><span class="sg-pick__label">気になる</span></button>')
+
+
 def h_sign_cards(ctx):
     out = []
     for x in SIGNS['proposals']:
         name = f'sign-{x["no"]}-{x["id"]}'
         scores = ''.join(f'<li><span>{esc(g["label"])}</span>{dots(x["scores"][g["key"]])}<span class="visually-hidden">3段階中{x["scores"][g["key"]]}</span></li>'
                          for g in SIGNS['goals'])
-        notes = ''.join(f'<li>{esc(n)}</li>' for n in x['notes'])
+        pros = ''.join(f'<li>{esc(t)}</li>' for t in x['pros'])
+        cons = ''.join(f'<li>{esc(t)}</li>' for t in x['cons'])
         out.append(
             f'<article class="sg-card" id="sign-{x["no"]}" aria-labelledby="sign-{x["no"]}-h">'
             f'<header class="sg-card__head"><span class="sg-card__no">案{x["no"]}</span>'
-            f'<div><h3 id="sign-{x["no"]}-h">{esc(x["name"])}</h3><p class="sg-card__type">{esc(x["type"])}</p></div></header>'
+            f'<div><h3 id="sign-{x["no"]}-h">{esc(x["name"])}</h3><p class="sg-card__type">{esc(x["type"])}</p></div>{pick_button(x["no"])}</header>'
             f'<p class="sg-card__catch">{esc(x["catch"])}</p>'
             f'<div class="sg-card__shots">{sign_img(name + "-scene", "設置イメージ（夜・イラスト）")}'
             f'{sign_img(name + "-design", "デザイン（正面・寸法入り）")}</div>'
             f'<div class="sg-card__body"><div class="sg-card__text"><p>{esc(x["desc"])}</p>'
+            f'<div class="sg-pc"><div class="sg-pc__good"><h4>よいところ</h4><ul>{pros}</ul></div>'
+            f'<div class="sg-pc__care"><h4>気をつけるところ</h4><ul>{cons}</ul></div></div>'
             f'<ul class="sg-scores">{scores}</ul></div>'
-            f'<dl class="sg-facts"><div><dt>大きさの目安</dt><dd>{esc(x["size"])}</dd></div>'
-            f'<div class="sg-facts__price"><dt>相場の目安</dt><dd><b>{esc(x["price"])}</b><small>{esc(x["price_note"])}</small></dd></div>'
-            f'<div><dt>注意</dt><dd><ul>{notes}</ul></dd></div>'
+            f'<dl class="sg-facts"><div class="sg-facts__price"><dt>相場の目安</dt><dd><b>{esc(x["price"])}</b><small>{esc(x["price_note"])}</small></dd></div>'
+            f'<div><dt>大きさの目安</dt><dd>{esc(x["size"])}</dd></div>'
             f'<div><dt>相場の出どころ</dt><dd class="sg-src">{src_links(x["sources"])}</dd></div></dl></div>'
             f'</article>')
     return ''.join(out)
+
+
+def price_range(text):
+    """「12〜25万円」→ (12, 25)（万円）。"""
+    a, b = re.findall(r'\d+', text)[:2]
+    return int(a), int(b)
+
+
+def sign_height(x):
+    m = re.search(r'高さ(?:約)?(\d+)cm', x['size'])
+    return f'高さ{m.group(1)}cm' if m else ''
+
+
+def h_sign_summary(ctx):
+    return ''.join(f'<li><b>{esc(t["title"])}</b><span>{esc(t["text"])}</span></li>' for t in SIGNS['summary'])
+
+
+def h_sign_quiz(ctx):
+    out = []
+    for q in SIGNS['quiz']:
+        opts = ''.join(f'<label class="sg-chip"><input type="radio" name="{q["key"]}" value="{esc(o["value"])}"><span>{esc(o["label"])}</span></label>'
+                       for o in q['options'])
+        out.append(f'<div class="sg-quiz__q" role="group" aria-labelledby="quiz-{q["key"]}"><p id="quiz-{q["key"]}">{esc(q["q"])}</p><div>{opts}</div></div>')
+    return ''.join(out)
+
+
+def h_sign_gallery(ctx):
+    out = []
+    for x in SIGNS['proposals']:
+        lo, hi = price_range(x['price'])
+        lit = '光らない' if x['id'] == 'chalk' else ('画面' if x['id'] == 'digital' else '光る')
+        data = ' '.join(f'data-{k}="{v}"' for k, v in (('no', x['no']), ('min', lo), ('max', hi), ('width', x['width_mm']),
+                                                     ('notice', x['scores']['notice']), ('entrance', x['scores']['entrance']),
+                                                     ('invite', x['scores']['invite'])))
+        out.append(
+            f'<li class="sg-g" {data}><a class="sg-g__link" href="#sign-{x["no"]}">'
+            f'<span class="sg-g__img"><img src="img/sign-{x["no"]}-{x["id"]}-thumb.webp" width="600" height="600" alt="" loading="lazy" decoding="async"></span>'
+            f'<span class="sg-g__match" hidden>合いそう</span>'
+            f'<span class="sg-g__no">{x["no"]}</span><b class="sg-g__name">{esc(x["short"])}</b>'
+            f'<span class="sg-g__price">{esc(x["price"])}</span>'
+            f'<span class="sg-g__tags"><span>{lit}</span><span>{esc(sign_height(x))}</span><span>幅{x["width_mm"] // 10}cm</span></span>'
+            f'<span class="sg-g__catch">{esc(x["catch"])}</span></a>{pick_button(x["no"])}</li>')
+    return ''.join(out)
+
+
+def h_sign_lineup(ctx):
+    return sign_img('sign-lineup', '10案の大きさ比べ（人・入口の扉と同じ縮尺）', 'sg-shot sg-shot--wide')
+
+
+def h_sign_timeline(ctx):
+    out = []
+    for i, t in enumerate(SIGNS['timeline'], 1):
+        time = f'<span class="sg-step__time">{esc(t["time"])}</span>' if t['time'] else ''
+        out.append(f'<li class="sg-step"><span class="sg-step__no">{i}</span><div><p class="sg-step__head"><b>{esc(t["title"])}</b>'
+                   f'<span class="sg-step__who">{esc(t["who"])}</span>{time}</p><p>{esc(t["text"])}</p></div></li>')
+    return ''.join(out)
+
+
+def h_sign_timeline_note(ctx):
+    return f'<p class="sg-sec__note">{esc(SIGNS["timeline_note"])}<span class="sg-src">　出どころ：{src_links(["imitsu_cost"])}</span></p>'
+
+
+def h_sign_pick_list(ctx):
+    return ''.join(f'<label class="sg-pickrow"><input type="checkbox" name="pick" value="{x["no"]}" data-label="案{x["no"]} {esc(x["short"])}（{esc(x["price"])}）">'
+                   f'<span><b>案{x["no"]}</b> {esc(x["short"])}<small>{esc(x["price"])}</small></span></label>' for x in SIGNS['proposals'])
+
+
+def h_sign_pick_budget(ctx):
+    q = next(q for q in SIGNS['quiz'] if q['key'] == 'budget')
+    return ''.join(f'<label class="sg-chip"><input type="radio" name="pick_budget" value="{esc(o["label"])}"><span>{esc(o["label"])}</span></label>'
+                   for o in q['options'])
+
+
+def h_sign_faq(ctx):
+    return ''.join(f'<details class="sg-faq__item"><summary>{esc(f["q"])}</summary><p>{esc(f["a"])}</p></details>' for f in SIGNS['faq']) + \
+        f'<p class="sg-src">電気代の出どころ：{src_links(["power_unit"])}</p>'
+
+
+def h_sign_glossary(ctx):
+    return ''.join(f'<div><dt>{esc(k)}</dt><dd>{esc(v)}</dd></div>' for k, v in SIGNS['glossary'])
+
+
+def h_sign_data(ctx):
+    data = [{'no': x['no'], 'short': x['short'], 'price': x['price']} for x in SIGNS['proposals']]
+    return '<script type="application/json" id="sign-data">' + json.dumps(data, ensure_ascii=False).replace('</', '<\\/') + '</script>'
 
 
 def h_sign_choose(ctx):
@@ -451,8 +544,13 @@ def h_sign_sources(ctx):
 def h_sign_zip(ctx):
     z = OUT / 'signs' / 'xiii-sign-ideas.zip'
     mb = z.stat().st_size / 1024 / 1024 if z.exists() else 0
+    n = 0
+    if z.exists():
+        import zipfile
+        with zipfile.ZipFile(z) as zf:
+            n = len(zf.namelist())
     return (f'<a class="sg-btn sg-btn--gold" href="xiii-sign-ideas.zip" download>画像をまとめて保存'
-            f'<small>ZIP・{len(SIGNS["proposals"]) * 2 + 1}枚・約{mb:.1f}MB</small></a>')
+            f'<small>ZIP・{n}枚・約{mb:.1f}MB</small></a>')
 
 
 def build_signs():
@@ -817,6 +915,9 @@ HELPERS = {
     'sign_problems': h_sign_problems, 'sign_goals': h_sign_goals, 'sign_now': h_sign_now, 'sign_table': h_sign_table,
     'sign_cards': h_sign_cards, 'sign_choose': h_sign_choose, 'sign_tip': h_sign_tip, 'sign_rules': h_sign_rules,
     'sign_quote_tips': h_sign_quote_tips, 'sign_sources': h_sign_sources, 'sign_zip': h_sign_zip,
+    'sign_summary': h_sign_summary, 'sign_quiz': h_sign_quiz, 'sign_gallery': h_sign_gallery, 'sign_lineup': h_sign_lineup,
+    'sign_timeline': h_sign_timeline, 'sign_timeline_note': h_sign_timeline_note, 'sign_pick_list': h_sign_pick_list, 'sign_pick_budget': h_sign_pick_budget,
+    'sign_faq': h_sign_faq, 'sign_glossary': h_sign_glossary, 'sign_data': h_sign_data,
     'tel_href': h_tel_href, 'line_add_href': h_line_add_href, 'line_qr': h_line_qr, 'line_msg_base': h_line_msg_base, 'insta_href': h_insta_href, 'year': h_year,
     'map_url': lambda ctx: esc(map_url()), 'route_url': lambda ctx: esc(route_url()),
     'root': lambda ctx: ctx['root'],

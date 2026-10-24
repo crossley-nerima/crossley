@@ -1,9 +1,10 @@
 <!doctype html>
 <html lang="ja">
 <head>
-{{head title="看板の提案（1階入口・10案）｜ダイニングバー XⅢ クロスリー" desc="ダイニングバー XⅢ クロスリーの、1階入口に置く看板の提案10案。設置イメージ・デザイン・相場の目安。" theme="#101217"}}
+{{head title="看板の提案（1階入口・10案）｜ダイニングバー XⅢ クロスリー" desc="ダイニングバー XⅢ クロスリーの、1階入口に置く看板の提案10案。設置イメージ・デザイン・相場の目安・選び方。" theme="#101217"}}
 {{fonts f="Noto+Sans+JP:wght@400;500;700"}}
 <link rel="stylesheet" href="style.css">
+<script src="script.js" defer></script>
 </head>
 <body>
 {{proposal}}
@@ -11,55 +12,111 @@
   <div class="sg-wrap">
     <p class="sg-hero__kicker">ダイニングバー XⅢ クロスリー</p>
     <h1>1階入口の看板の提案<span>10案</span></h1>
-    <p class="sg-hero__lead">お店は3階にあるため、ビルの前まで来ても「どこにバーがあるのか」「そもそもバーがあるのか」がわかりません。1階の入口に置く看板で、これを解決する案を10個まとめました。それぞれ、置いたときのイメージ・デザイン・相場の目安があります。</p>
+    <p class="sg-hero__lead">3階のお店に気づいてもらい、入口で迷わせないための看板です。1階の入口に置く看板を10案、置いたときのイメージ・相場の目安と一緒にまとめました。</p>
     <div class="sg-hero__acts">
-      {{sign_zip}}
-      <a class="sg-btn" href="#compare">10案を比べる</a>
+      <a class="sg-btn sg-btn--gold" href="#compare">10案を見比べる</a>
+      <a class="sg-btn" href="#send">気になる案を送る</a>
+      <button class="sg-btn sg-print" type="button">印刷・PDFで保存</button>
     </div>
-    <p class="sg-hero__note">画像は1枚ずつ「画像を保存」でも保存できます。どれもイラストで描いたイメージです。</p>
+    <nav class="sg-toc" aria-label="このページの目次">
+      <a href="#summary">要点</a><a href="#compare">見比べる・診断</a><a href="#size">大きさ</a><a href="#ideas">くわしく</a>
+      <a href="#flow">これからの流れ</a><a href="#send">気になる案を送る</a><a href="#faq">よくある質問</a>
+    </nav>
   </div>
 </header>
 
 <main>
-  <section class="sg-sec" aria-labelledby="now-h">
-    <div class="sg-wrap sg-now">
-      <div>
-        <h2 id="now-h"><span class="sg-sec__en">PROBLEM</span>いま困っていること</h2>
-        <ol class="sg-problems">{{sign_problems}}</ol>
+  <section class="sg-sec" id="summary" aria-labelledby="summary-h">
+    <div class="sg-wrap">
+      <h2 id="summary-h"><span class="sg-sec__en">IN SHORT</span>まずはここだけ</h2>
+      <ol class="sg-summary">{{sign_summary}}</ol>
+      <div class="sg-now">
+        <div>
+          <h3 class="sg-h3">いま困っていること</h3>
+          <ol class="sg-problems">{{sign_problems}}</ol>
+        </div>
+        {{sign_now}}
       </div>
-      {{sign_now}}
     </div>
   </section>
 
-  <section class="sg-sec sg-sec--alt" aria-labelledby="goal-h">
+  <section class="sg-sec sg-sec--alt" id="compare" aria-labelledby="compare-h">
     <div class="sg-wrap">
-      <h2 id="goal-h"><span class="sg-sec__en">GOAL</span>看板で解決したいこと</h2>
-      <p class="sg-sec__lead">10案それぞれが、この3つにどれだけ効くかを ●（3段階）で示しています。</p>
-      <ul class="sg-goals">{{sign_goals}}</ul>
+      <h2 id="compare-h"><span class="sg-sec__en">COMPARE</span>10案を見比べる</h2>
+      <form class="sg-quiz" aria-labelledby="quiz-h" onsubmit="return false">
+        <p class="sg-quiz__title" id="quiz-h"><b>かんたん診断</b>3つ答えると、合いそうな案に印が付きます（全部答えなくても大丈夫です）</p>
+        {{sign_quiz}}
+        <p class="sg-quiz__result" aria-live="polite"></p>
+        <button class="sg-quiz__reset" type="reset" hidden>診断をやり直す</button>
+      </form>
+      <ul class="sg-gallery">{{sign_gallery}}</ul>
+      <p class="sg-sec__note">画像を押すと、その案のくわしい説明に移ります。「気になる」を押した案は、いちばん下の「気になる案を送る」に入ります。</p>
+      <details class="sg-more">
+        <summary>表で比べる（3つのねらいへの効き目）</summary>
+        <ul class="sg-goals">{{sign_goals}}</ul>
+        {{sign_table}}
+      </details>
     </div>
   </section>
 
-  <section class="sg-sec" id="compare" aria-labelledby="compare-h">
+  <section class="sg-sec" id="size" aria-labelledby="size-h">
     <div class="sg-wrap">
-      <h2 id="compare-h"><span class="sg-sec__en">COMPARE</span>10案の比較</h2>
-      <p class="sg-sec__lead">案の名前を押すと、その案の説明に移ります。相場は、製作・デザインを含めた目安です。</p>
-      {{sign_table}}
+      <h2 id="size-h"><span class="sg-sec__en">SIZE</span>大きさ比べ</h2>
+      <p class="sg-sec__lead">10案を、人（170cm）と入口の扉の横に、同じ縮尺で並べました。入口の前に置いたときの大きさの感じがつかめます。</p>
+      {{sign_lineup}}
     </div>
   </section>
 
-  <section class="sg-sec sg-sec--cards" aria-labelledby="ideas-h">
+  <section class="sg-sec sg-sec--cards" id="ideas" aria-labelledby="ideas-h">
     <div class="sg-wrap">
-      <h2 id="ideas-h"><span class="sg-sec__en">IDEAS</span>10の案</h2>
+      <h2 id="ideas-h"><span class="sg-sec__en">IDEAS</span>10案のくわしい説明</h2>
+      <p class="sg-sec__lead">1案ごとに、置いたときのイメージ（夜）とデザイン、よいところ・気をつけるところ、相場の目安をまとめました。画像は「画像を保存」で保存できます。</p>
       {{sign_cards}}
     </div>
   </section>
 
-  <section class="sg-sec sg-sec--alt" aria-labelledby="choose-h">
+  <section class="sg-sec sg-sec--alt" id="choose" aria-labelledby="choose-h">
     <div class="sg-wrap">
       <h2 id="choose-h"><span class="sg-sec__en">HOW TO CHOOSE</span>選び方</h2>
       <p class="sg-sec__lead">入口の前は広くないので、置き看板は1つに絞るのがおすすめです。</p>
       <div class="sg-choose">{{sign_choose}}</div>
       <div class="sg-tip">{{sign_tip}}</div>
+    </div>
+  </section>
+
+  <section class="sg-sec" id="flow" aria-labelledby="flow-h">
+    <div class="sg-wrap">
+      <h2 id="flow-h"><span class="sg-sec__en">FLOW</span>これからの流れ</h2>
+      <p class="sg-sec__lead">案を選んでから、入口に置くまでの流れです。</p>
+      <ol class="sg-steps">{{sign_timeline}}</ol>
+      {{sign_timeline_note}}
+    </div>
+  </section>
+
+  <section class="sg-sec sg-sec--send" id="send" aria-labelledby="send-h">
+    <div class="sg-wrap">
+      <h2 id="send-h"><span class="sg-sec__en">YOUR CHOICE</span>気になる案を送る</h2>
+      <p class="sg-sec__lead">気になる案に印を付けて（いくつでも）、予算やひとことを添えて送ってください。書いた内容はこのスマホ（パソコン）に残ります。</p>
+      <form class="sg-send" onsubmit="return false">
+        <div class="sg-send__picks" role="group" aria-labelledby="send-picks-h"><p class="sg-send__label" id="send-picks-h">気になる案（いくつでも）</p>{{sign_pick_list}}</div>
+        <div class="sg-send__q"><p>予算</p><div>{{sign_pick_budget}}</div></div>
+        <label class="sg-send__field">入口の前に置ける幅（わかれば）<input type="text" name="space" placeholder="例：約40cm"></label>
+        <label class="sg-send__field">ひとこと<textarea name="note" rows="3" placeholder="例：案01と案05で迷っています。雨の日もそのまま置きたい。"></textarea></label>
+        <div class="sg-send__acts">
+          <a class="sg-btn sg-btn--line sg-send__line" href="#" target="_blank" rel="noopener">LINEで送る</a>
+          <button class="sg-btn sg-send__copy" type="button">文面をコピー</button>
+        </div>
+        <p class="sg-sec__note">「LINEで送る」を押すと、選んだ内容をまとめた文面で LINE が開きます。送る相手を選んで送ってください。</p>
+        <pre class="sg-send__preview" aria-label="送る文面"></pre>
+      </form>
+      {{sign_data}}
+    </div>
+  </section>
+
+  <section class="sg-sec sg-sec--alt" id="faq" aria-labelledby="faq-h">
+    <div class="sg-wrap">
+      <h2 id="faq-h"><span class="sg-sec__en">FAQ</span>よくある質問</h2>
+      <div class="sg-faq">{{sign_faq}}</div>
     </div>
   </section>
 
@@ -80,7 +137,14 @@
     </div>
   </section>
 
-  <section class="sg-sec sg-sec--alt" aria-labelledby="src-h">
+  <section class="sg-sec sg-sec--alt" aria-labelledby="words-h">
+    <div class="sg-wrap">
+      <h2 id="words-h"><span class="sg-sec__en">WORDS</span>言葉の説明</h2>
+      <dl class="sg-words">{{sign_glossary}}</dl>
+    </div>
+  </section>
+
+  <section class="sg-sec" aria-labelledby="src-h">
     <div class="sg-wrap">
       <h2 id="src-h"><span class="sg-sec__en">SOURCES</span>相場の出どころ</h2>
       <p class="sg-sec__lead">相場は、2026年10月にネットに出ている価格表・事例から出した目安です（税込と税別が混ざっています）。実際の金額は、大きさ・素材・置く場所で変わるので、見積もりで確かめてください。イメージ画像はイラストで、建物は Googleストリートビュー（2024年11月）をもとに描き起こしたものです。</p>

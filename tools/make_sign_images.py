@@ -422,20 +422,27 @@ def people(x=850):
     return one(x, 0, 2) + one(x + 34, 2, 3)
 
 
+def prism_group(k, cx, base):
+    """三角柱を、角を手前にして斜めから見た形（k は 1mm あたりの大きさ、base は地面）。"""
+    top = base - 1700 * k
+    fw = 400 * k * .93                      # 斜めから見た1面の幅
+    lift = 400 * k * .18                    # 奥へ向かって上がる分
+    def face(i, a, b, e, f, shade):
+        return (f'<g transform="matrix({a} {b} 0 {k} {e} {f})">{prism_face(i)}'
+                f'<rect x="0" y="0" width="400" height="1600" fill="#000" opacity="{shade}"/></g>')
+    s = f'<g opacity=".55" filter="url(#softer)"><rect x="{cx - fw}" y="{top}" width="{fw * 2}" height="{1600 * k}" fill="#ffd58c"/></g>'
+    s += face(0, fw / 400, lift / 400, cx - fw, top - lift, .12) + face(1, fw / 400, -lift / 400, cx, top, 0)
+    s += f'<path d="M{cx - fw} {top - lift} L{cx} {top - lift * 2} L{cx + fw} {top - lift} L{cx} {top} Z" fill="#26262b"/>'
+    s += f'<rect x="{cx - fw * .95}" y="{top + 1600 * k - lift}" width="{fw * 1.9}" height="{100 * k + lift}" fill="#1b1b20"/>'
+    return s
+
+
 # ---- 置き方（設置イメージ） --------------------------------------------------------------
 def place(art_id, cx):
     """看板を、入口の横の段の上（ビルの敷地の中）に置く。"""
     if art_id == 'prism':
-        top = G - 1700 * S
-        def face(i, a, b, e, f, shade):
-            return (f'<g transform="matrix({a} {b} 0 {S} {e} {f})">{prism_face(i)}'
-                    f'<rect x="0" y="0" width="400" height="1600" fill="#000" opacity="{shade}"/></g>')
         s = f'<ellipse cx="{cx}" cy="{G + 6}" rx="70" ry="12" fill="url(#spill)"/>'
-        s += f'<g opacity=".55" filter="url(#softer)"><rect x="{cx - 26}" y="{top}" width="52" height="{1600 * S}" fill="#ffd58c"/></g>'
-        s += face(0, 0.065, 0.012, cx - 26, top - 5, .12) + face(1, 0.065, -0.012, cx, top, 0)
-        s += f'<path d="M{cx - 26} {top - 5} L{cx} {top - 10} L{cx + 26} {top - 5} L{cx} {top} Z" fill="#26262b"/>'
-        s += f'<rect x="{cx - 24}" y="{top + 1600 * S - 4}" width="48" height="{100 * S + 4}" fill="#1b1b20"/>'
-        return s
+        return s + prism_group(S, cx, G)
     art, w, h = ARTS[art_id]()
     x0, y0 = cx - w * S / 2, G - h * S
     lit = art_id != 'chalk'
@@ -628,21 +635,103 @@ def design_svg(p):
             f'{spec_panel(p)}{over}</svg>')
 
 
+# ---- 一覧用の画像（看板だけ）・大きさ比べ ----------------------------------------------------
+def sign_alone(pid, k, cx, base, halo=True):
+    """看板だけを、地面 base の上の cx に、1mm = k の大きさで描く。"""
+    if pid == 'prism':
+        return prism_group(k, cx, base)
+    a, w, h = ARTS[pid]()
+    x0, y0 = cx - w * k / 2, base - h * k
+    s = ''
+    if halo and pid != 'chalk':
+        col = '#ff6fb4' if pid == 'neon' else ('#cfe7ff' if pid == 'digital' else '#ffd58c')
+        s += f'<g opacity=".45" filter="url(#softer)"><rect x="{x0}" y="{y0}" width="{w * k}" height="{h * k * .85}" fill="{col}"/></g>'
+    return s + f'<g transform="translate({x0},{y0}) scale({k})">{a}</g>'
+
+
+def thumb_svg(p):
+    pid = p['id']
+    a_h = {'prism': 1700}.get(pid) or ARTS[pid]()[2]
+    a_w = {'prism': 760}.get(pid) or ARTS[pid]()[1]
+    k = min(560 / a_h, 520 / a_w)
+    body = '<rect x="0" y="0" width="800" height="800" fill="url(#bgDesign)"/>'
+    body += '<ellipse cx="400" cy="690" rx="300" ry="34" fill="url(#spill)" opacity=".55"/>'
+    body += '<line x1="60" x2="740" y1="690" y2="690" stroke="#3a3f4c" stroke-width="2"/>'
+    body += sign_alone(pid, k, 400, 690)
+    return f'<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800">{DEFS}{body}</svg>'
+
+
+def person(x, base, k, label=True):
+    h = 1700 * k
+    u = h / 17                                # 体の大きさの単位
+    s = (f'<g fill="#5f6577"><circle cx="{x}" cy="{base - h + u * 1.1}" r="{u * 1.1}"/>'
+         f'<path d="M{x - u * 1.6} {base - h + u * 2.6} Q{x} {base - h + u * 2.2} {x + u * 1.6} {base - h + u * 2.6} '
+         f'L{x + u * 2} {base - h + u * 9} L{x + u * 1.2} {base - h + u * 9} L{x + u * 1} {base} L{x + u * .2} {base} '
+         f'L{x} {base - h + u * 10} L{x - u * .2} {base} L{x - u * 1} {base} L{x - u * 1.2} {base - h + u * 9} '
+         f'L{x - u * 2} {base - h + u * 9} Z"/></g>')
+    if label:
+        s += T(x, base + 40, '人', 20, '#aeb3c2', JP, 700) + T(x, base + 66, '170cm', 18, '#8d92a1', NUM, 600)
+    return s
+
+
+LINEUP_W = {'prism': 560}
+
+
+def lineup_width(k=0.3):
+    """大きさ比べの画像の幅（扉・人・10案を並べた分）。"""
+    x = 70 + 1300 * k + 110 + 120
+    for p in DATA['proposals']:
+        x += (LINEUP_W.get(p['id']) or ARTS[p['id']]()[1]) * k + 82
+    return int(x + 40)
+
+
+def lineup_svg():
+    H, base, k = 1000, 800, 0.3
+    W = lineup_width(k)
+    body = f'<rect x="0" y="0" width="{W}" height="{H}" fill="url(#bgDesign)"/><rect x="0" y="0" width="{W}" height="{H}" fill="url(#grid)"/>'
+    body += T(60, 78, '10案の大きさ比べ', 40, '#fff', JP, 700, 'start')
+    body += T(60, 122, '同じ縮尺で、人（170cm）と入口の扉の横に並べたところ', 22, '#b9bcc8', JP, 500, 'start')
+    body += f'<line x1="40" x2="{W - 40}" y1="{base}" y2="{base}" stroke="#4a4f5c" stroke-width="3"/>'
+    # 入口のガラス扉（目安）と人
+    dx, dw, dh = 70, 1300 * k, 2100 * k
+    body += (f'<g fill="#cfd8e3" fill-opacity=".08" stroke="#9aa3ad" stroke-width="3">'
+             f'<rect x="{dx}" y="{base - dh}" width="{dw / 2}" height="{dh}"/><rect x="{dx + dw / 2}" y="{base - dh}" width="{dw / 2}" height="{dh}"/></g>')
+    body += T(dx + dw / 2, base + 40, '入口の扉', 20, '#aeb3c2', JP, 700) + T(dx + dw / 2, base + 66, '高さ約2.1m（目安）', 18, '#8d92a1', JP, 500)
+    x = dx + dw + 110
+    body += person(x, base, k)
+    x += 120
+    for p in DATA['proposals']:
+        pid = p['id']
+        w = LINEUP_W.get(pid) or ARTS[pid]()[1]
+        h = 1700 if pid == 'prism' else ARTS[pid]()[2]
+        cx = x + w * k / 2
+        body += sign_alone(pid, k, cx, base)
+        body += T(cx, base - h * k - 18, f'{h / 10:.0f}cm', 18, '#c9a45c', NUM, 600)
+        body += f'<rect x="{cx - 24}" y="{base + 18}" width="48" height="28" rx="7" fill="{GOLD}"/>' + T(cx, base + 39, p['no'], 18, '#1a1408', NUM, 700)
+        for i, line in enumerate(p['short_lines']):
+            body += T(cx, base + 76 + i * 26, line, 19, '#e6e7ec', JP, 700)
+        x += w * k + 82
+    return f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">{DEFS}{body}</svg>'
+
+
 # ---- 書き出し ---------------------------------------------------------------------
 PLACE_X = {'slim': 1290, 'andon': 1300}
 
 
-def render(b, svg, name, tmp):
+def render(b, svg, name, tmp, size=(1600, 1000), dsf=1.5, web=(1200, 750), jpg=True):
+    """SVG を Edge で画像にする。jpg は保存用（大きい）、webp はページに出す用（小さい）。"""
+    import base64
+    w, h = size
     page = tmp / 'render.html'
     page.write_text('<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#000}svg{display:block}</style>'
                     f'</head><body>{svg}</body></html>', encoding='utf-8')
-    b.open(page.as_uri(), {'width': 1600, 'height': 1000, 'deviceScaleFactor': 1.5, 'mobile': False})
+    b.open(page.as_uri(), {'width': w, 'height': h, 'deviceScaleFactor': dsf, 'mobile': False})
     b.wait(1.2)
-    r = b.call('Page.captureScreenshot', {'format': 'png', 'clip': {'x': 0, 'y': 0, 'width': 1600, 'height': 1000, 'scale': 1}})
-    import base64
+    r = b.call('Page.captureScreenshot', {'format': 'png', 'clip': {'x': 0, 'y': 0, 'width': w, 'height': h, 'scale': 1}})
     im = Image.open(io.BytesIO(base64.b64decode(r['data']))).convert('RGB')
-    im.save(OUT / f'{name}.jpg', 'JPEG', quality=86, optimize=True, progressive=True)
-    im.resize((1200, 750), Image.LANCZOS).save(OUT / f'{name}.webp', 'WEBP', quality=80, method=6)
+    if jpg:
+        im.save(OUT / f'{name}.jpg', 'JPEG', quality=86, optimize=True, progressive=True)
+    im.resize(web, Image.LANCZOS).save(OUT / f'{name}.webp', 'WEBP', quality=80, method=6)
     if b.errors:
         print('  エラー:', b.errors[:3])
     return im.size
@@ -656,12 +745,16 @@ def main():
     try:
         if not only or '00' in only:
             print('00 今のようす', render(b, scene_now(), 'sign-00-now', tmp))
+        if not only or 'lineup' in only:
+            lw = lineup_width()
+            print('大きさ比べ', render(b, lineup_svg(), 'sign-lineup', tmp, size=(lw, 1000), dsf=1, web=(lw // 2, 500)))
         for p in DATA['proposals']:
             if only and p['no'] not in only:
                 continue
             cx = PLACE_X.get(p['id'], 1310)
             print(p['no'], p['name'], render(b, scene(p, cx), f'sign-{p["no"]}-{p["id"]}-scene', tmp),
-                  render(b, design_svg(p), f'sign-{p["no"]}-{p["id"]}-design', tmp))
+                  render(b, design_svg(p), f'sign-{p["no"]}-{p["id"]}-design', tmp),
+                  render(b, thumb_svg(p), f'sign-{p["no"]}-{p["id"]}-thumb', tmp, size=(800, 800), dsf=1, web=(600, 600), jpg=False))
     finally:
         b.close()
     # まとめてダウンロードする ZIP（画像はすでに JPEG なので圧縮しない）
