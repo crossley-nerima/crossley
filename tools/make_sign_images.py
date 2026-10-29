@@ -3,7 +3,7 @@
   python -I -X utf8 tools/make_sign_images.py [01,05,00,stand …]   … 番号を渡すと、その画像だけ作り直す
 
 スタンドは決まっている: モノタロウの LEDパネルA型スタンド 片面（A1）。幅640×奥行490×高さ1185mm、ボード面 640×884mm。
-その中に差し込むポスター（A1・594×841mm）を10案描く。
+その中に差し込むポスター（A1・594×841mm）を10案描く（案06「3枚の写真で見せる」をもとにした仕上げの10案）。
 1案につき3枚: 置いたイメージ（夜の入口・拡大つき）、デザイン（ポスターの全体）、一覧用の小さい画像。
 ほかに「今のようす」と「スタンドの大きさ」。
 
@@ -53,13 +53,13 @@ GOLD, GOLD_L, INK, WHITE = '#d9b66f', '#f4dfa8', '#0c0c0f', '#f6f2ea'
 # ---- ポスターに載せる中身（site.json から） ------------------------------------------------
 HOURS = f"{SITE['open']}–{int(SITE['close'][:2])}:{SITE['close'][3:]}"   # 19:00–7:00
 CLOSED = SITE['closed']
-SMOKE = next(c['value'] for c in DATA['contents'] if c['label'] == 'たばこ')
-FOOT = f'OPEN {HOURS} ／ {CLOSED} ／ {SMOKE}'
+INSTA = SITE['instagram']
+FOOT = f'OPEN {HOURS} ／ {CLOSED}　Instagram {INSTA}'
+SMOKE_T, SMOKE_S, SMOKE_N = (DATA['smoke'][k] for k in ('title', 'sub', 'note'))   # タバコ吸えます／店内喫煙可／20歳未満…
+OPEN_EN, OPEN_JP, OPEN_D = (DATA['open'][k] for k in ('en', 'jp', 'date'))         # NEW OPEN／2026年7月オープン／2026年7月
 PRICES = {x['id']: x for x in build.sign_prices()}
 CHARGE_PER, CHARGE_AMT, _ = build.sign_charge()
 CHARGE = f'テーブルチャージ　{CHARGE_PER} {CHARGE_AMT}'
-BUDGET = build.raw('budget')[0]
-INSTA = SITE['instagram']
 
 # ---- スタンド（mm）。ボード面 640×884 の中に A1 のポスター（594×841）が入る -------------------
 PW, PH = 594, 841
@@ -141,17 +141,9 @@ DEFS = f"""<defs>
 <radialGradient id="vignette" cx=".5" cy=".5" r=".72"><stop offset=".45" stop-color="#05060c" stop-opacity="0"/><stop offset="1" stop-color="#05060c" stop-opacity=".62"/></radialGradient>
 <radialGradient id="bgDesign" cx=".5" cy=".4" r=".8"><stop offset="0" stop-color="#262a33"/><stop offset="1" stop-color="#101217"/></radialGradient>
 <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#fff" stroke-opacity=".035"/></pattern>
-<filter id="halo" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="40"/></filter>
-<filter id="neon" x="-60%" y="-60%" width="220%" height="220%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="5" result="a"/><feGaussianBlur stdDeviation="16" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="a"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
 <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5"/></filter>
 <filter id="softer" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="14"/></filter>
-<filter id="chalk" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 -1.5 1.3" result="m"/><feComposite in="SourceGraphic" in2="m" operator="in"/></filter>
-<filter id="dust" x="0" y="0" width="1" height="1"><feTurbulence type="fractalNoise" baseFrequency=".02" numOctaves="3" seed="9"/><feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .09 0"/></filter>
-<filter id="paper" x="0" y="0" width="1" height="1"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="4" seed="3"/><feColorMatrix type="matrix" values="0 0 0 0 .45  0 0 0 0 .33  0 0 0 0 .18  0 0 0 .25 0"/></filter>
 <filter id="pop" color-interpolation-filters="sRGB"><feComponentTransfer><feFuncR type="gamma" amplitude="1.04" exponent=".8"/><feFuncG type="gamma" amplitude="1.04" exponent=".8"/><feFuncB type="gamma" amplitude="1.04" exponent=".8"/></feComponentTransfer><feColorMatrix type="saturate" values="1.12"/></filter>
-<filter id="gilt" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values=".33 .62 .12 0 .02  .27 .52 .1 0 0  .14 .27 .05 0 0  0 0 0 1 0"/></filter>
-<filter id="ink" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 .125  0 0 0 0 .25  0 0 0 0 .185  0 0 0 1 0"/></filter>
-<filter id="tshadow" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur in="SourceAlpha" stdDeviation="3"/><feOffset dy="1.5"/><feComponentTransfer><feFuncA type="linear" slope=".9"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
 </defs>"""
 
 
@@ -215,311 +207,352 @@ def plist(x, y, w, items, size, lab, val, lead=None, lh=None, fam=JPB, wl=500, w
     return s
 
 
-def up_arrow(cx, y, h, color, sw, extra=''):
-    """上を指す矢印（y が先端、h が長さ）。"""
-    return (f'<path d="M{cx} {y + h} V{y + sw / 2} M{cx - h * .4} {y + h * .4} L{cx} {y} L{cx + h * .4} {y + h * .4}" fill="none" '
-            f'stroke="{color}" stroke-width="{sw}" stroke-linecap="round" stroke-linejoin="round" {extra}/>')
 
 
-def neon(text, x, y, size, color, fam, sw, anchor='middle', ls=0, w=700):
-    """ネオン管のように光る文字（ぼかした光・色の管・白い芯）。"""
-    st = 'fill="none" stroke-linejoin="round" stroke-linecap="round"'
-    glow = T(x, y, text, size, 'none', fam, w, anchor, ls, st + f' stroke="{color}" stroke-width="{sw * 1.5}"')
-    tube = T(x, y, text, size, 'none', fam, w, anchor, ls, st + f' stroke="{color}" stroke-width="{sw}"')
-    core = T(x, y, text, size, 'none', fam, w, anchor, ls, st + f' stroke="#fff" stroke-width="{sw * .3}" opacity=".85"')
-    return f'<g filter="url(#neon)">{glow}</g>{tube}{core}'
 
 
-def neon_path(d, color, sw):
-    st = 'fill="none" stroke-linejoin="round" stroke-linecap="round"'
-    return (f'<g filter="url(#neon)"><path d="{d}" {st} stroke="{color}" stroke-width="{sw * 1.5}"/></g>'
-            f'<path d="{d}" {st} stroke="{color}" stroke-width="{sw}"/><path d="{d}" {st} stroke="#fff" stroke-width="{sw * .3}" opacity=".85"/>')
 
 
-def tag(x, y, text, size=15, bg='#000', fg=WHITE, op=.72):
-    """写真の上に置く小さな札（x, y は札の左下）。"""
-    w = tw(text, size) + size * 1.2
-    return (f'<rect x="{x}" y="{y - size * 1.6:.1f}" width="{w:.1f}" height="{size * 1.6:.1f}" rx="{size * .3:.1f}" fill="{bg}" opacity="{op}"/>'
-            + T(x + size * .6, y - size * .48, text, size, fg, JPB, 700, 'start'))
 
 
-def polaroid(name, x, y, w, h, rot, caption, cid, fx=.5, fy=.5):
-    """テープで貼った写真（白いふち付き）。"""
-    cx, cy = x + w / 2, y + h / 2
+
+
+# ---- 仕上げの10案（案06「3枚の写真で見せる」をもとに） -----------------------------------------
+# お店の返事（2026-10-30）: 案06に決定。タバコが吸えることと「2026年7月 NEW OPEN」を目立たせる。
+# 焼酎・テキーラは載せない。写真の上の説明（カウンター・テーブル席・ダーツ 1ゲーム ¥100）は入れない。
+PHOTO3 = (('counter-dark', .6, .55), ('tables', .5, .62), ('darts', .48, .42))   # 写真3枚と、枠の真ん中に来る位置
+RED = '#b3262d'
+
+
+def line(y, x1=40, x2=554, color=GOLD, w=1.2, op=.7):
+    return f'<line x1="{x1}" x2="{x2}" y1="{y}" y2="{y}" stroke="{color}" stroke-width="{w}" opacity="{op}"/>'
+
+
+def head06(g, y=40):
+    """案06の上の段: 左にロゴ、右に BAR と「このビルの 3F」。"""
+    s = logo(168, y, 226)
+    s += T(548, y + 72, 'BAR', 86, f'url(#{g})', SERIF, 700, 'end', ls=14)
+    s += T(548, y + 136, '3F', 62, f'url(#{g})', NUM, 700, 'end')
+    s += T(462, y + 130, 'このビルの', 22, WHITE, JPB, 700, 'end')
+    return s
+
+
+def head_small(g, y=34):
+    """上の段（小さめ）: 左にロゴ、右に BAR と「このビルの 3F」。"""
+    s = logo(150, y, 200)
+    s += T(548, y + 62, 'BAR', 76, f'url(#{g})', SERIF, 700, 'end', ls=12)
+    s += T(548, y + 116, '3F', 52, f'url(#{g})', NUM, 700, 'end')
+    s += T(478, y + 111, 'このビルの', 19, WHITE, JPB, 700, 'end')
+    return s
+
+
+def photos_big2(p, y, hb, hs, x=40, w=514, gap=8):
+    """大きい写真1枚と、小さい写真2枚（写真の説明の文字は入れない）。"""
+    (n1, fx1, fy1), (n2, fx2, fy2), (n3, fx3, fy3) = PHOTO3
+    ws = (w - gap) / 2
+    s = ph(n1, x, y, w, hb, f'{p}-p1', fx1, fy1)
+    s += ph(n2, x, y + hb + gap, ws, hs, f'{p}-p2', fx2, fy2)
+    s += ph(n3, x + ws + gap, y + hb + gap, ws, hs, f'{p}-p3', fx3, fy3)
+    return s
+
+
+def cigarette(x, y, L, rot=-10, ember='#ff6a2b', filt=GOLD, paper='#f3eee4', smoke='#e9e2d4'):
+    """火の付いたタバコの絵（火の先が左。x, y は火の先、L は長さ）。禁煙の印と間違えないよう、斜線や丸は付けない。"""
+    h = L * .17
+    s = f'<g transform="rotate({rot} {x} {y})">'
+    s += f'<rect x="{x}" y="{y - h / 2:.2f}" width="{L * .7:.2f}" height="{h:.2f}" fill="{paper}"/>'
+    s += f'<rect x="{x + L * .7:.2f}" y="{y - h / 2:.2f}" width="{L * .3:.2f}" height="{h:.2f}" rx="{h * .12:.2f}" fill="{filt}"/>'
+    s += f'<g filter="url(#soft)" opacity=".9"><rect x="{x - h * .6:.2f}" y="{y - h * .7:.2f}" width="{h * .9:.2f}" height="{h * 1.4:.2f}" rx="{h * .5:.2f}" fill="{ember}"/></g>'
+    s += f'<rect x="{x - h * .5:.2f}" y="{y - h / 2:.2f}" width="{h * .55:.2f}" height="{h:.2f}" rx="{h * .2:.2f}" fill="{ember}"/>'
+    s += '</g>'
+    sx, sy = x - h * .1, y - h * .9            # 煙（上へゆらゆら）
+    s += (f'<path d="M{sx:.2f} {sy:.2f} c{-h * .8:.2f} {-h * .7:.2f} {h * .8:.2f} {-h * 1.1:.2f} 0 {-h * 1.8:.2f} '
+          f's{h * .8:.2f} {-h * 1.1:.2f} 0 {-h * 1.8:.2f}" fill="none" stroke="{smoke}" stroke-width="{h * .2:.2f}" stroke-linecap="round" opacity=".8"/>')
+    s += (f'<path d="M{sx + h * .7:.2f} {sy - h * .3:.2f} c{-h * .6:.2f} {-h * .6:.2f} {h * .6:.2f} {-h * .9:.2f} 0 {-h * 1.5:.2f}" '
+          f'fill="none" stroke="{smoke}" stroke-width="{h * .15:.2f}" stroke-linecap="round" opacity=".55"/>')
+    return s
+
+
+def smoke_band(y, h=60, x=40, w=514, size=36, accent=GOLD, bg='#17151b', ember='#ff6a2b'):
+    """「タバコ吸えます」の帯（左にタバコの絵、右に「店内喫煙可」）。"""
+    L = h * 1.45
+    s = f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="10" fill="{bg}" stroke="{accent}" stroke-width="1.6"/>'
+    s += cigarette(x + 28, y + h * .66, L, ember=ember)
+    s += T(x + 28 + L + 22, y + h / 2 + size * .36, SMOKE_T, size, WHITE, JPB, 900, 'start')
+    s += T(x + w - 18, y + h / 2 + 6, SMOKE_S, 17, accent if accent != GOLD else GOLD_L, JPB, 700, 'end')
+    return s
+
+
+def smoke_badge(cx, cy, r, accent=GOLD):
+    """丸いシール（「タバコ 吸えます」）。写真の上に貼ったように置く。"""
+    s = f'<circle cx="{cx}" cy="{cy + 3}" r="{r + 3}" fill="#000" opacity=".5" filter="url(#soft)"/>'
+    s += f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="#141217" stroke="{accent}" stroke-width="3"/>'
+    s += f'<circle cx="{cx}" cy="{cy}" r="{r - 7}" fill="none" stroke="{accent}" stroke-width=".8"/>'
+    s += cigarette(cx - r * .4, cy - r * .22, r * .82, rot=-8)
+    s += T(cx, cy + r * .22, 'タバコ', r * .3, WHITE, JPB, 900)
+    s += T(cx, cy + r * .56, '吸えます', r * .3, WHITE, JPB, 900)
+    return s
+
+
+def open_text(cx, y, en, jp, fg, gap=16, anchor='middle'):
+    """「NEW OPEN　2026年7月オープン」（英語は大きく、日本語は小さく）。"""
+    return (f'<text x="{cx}" y="{y:.1f}" text-anchor="{anchor}" fill="{fg}">'
+            f'<tspan font-family="{NUM}" font-weight="700" font-size="{en}" letter-spacing="5">{OPEN_EN}</tspan>'
+            f'<tspan font-family="{JPB}" font-weight="700" font-size="{jp}" dx="{gap}">{OPEN_JP}</tspan></text>')
+
+
+def open_banner(y, h=40, x=40, w=514, bg=GOLD, fg='#141008'):
+    """「NEW OPEN」の帯。"""
+    return (f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="6" fill="{bg}"/>'
+            + open_text(x + w / 2, y + h * .71, round(h * .62, 1), round(h * .44, 1), fg))
+
+
+def open_stamp(cx, cy, r, rot=-12, bg=GOLD, fg='#141008'):
+    """丸いスタンプ（NEW OPEN・2026年7月）。"""
     s = f'<g transform="rotate({rot} {cx} {cy})">'
-    s += f'<rect x="{x + 4}" y="{y + 6}" width="{w}" height="{h}" fill="#000" opacity=".45" filter="url(#soft)"/>'
-    s += f'<rect x="{x}" y="{y}" width="{w}" height="{h}" fill="#f3f0e8"/>'
-    s += ph(name, x + 9, y + 9, w - 18, h - 46, cid, fx, fy)
-    s += T(cx, y + h - 13, caption, 17, '#33302b', JPB, 700)
-    s += f'<rect x="{cx - 34}" y="{y - 12}" width="68" height="24" fill="#efe2b8" opacity=".82" transform="rotate({-rot * 2} {cx} {y})"/>'
+    s += f'<circle cx="{cx}" cy="{cy + 3}" r="{r + 2}" fill="#000" opacity=".5" filter="url(#soft)"/>'
+    s += f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="{bg}"/>'
+    s += f'<circle cx="{cx}" cy="{cy}" r="{r - 5}" fill="none" stroke="{fg}" stroke-width="1" stroke-dasharray="3 2.4"/>'
+    s += T(cx, cy - r * .1, 'NEW', r * .42, fg, NUM, 700, ls=2)
+    s += T(cx, cy + r * .3, 'OPEN', r * .42, fg, NUM, 700, ls=2)
+    s += T(cx, cy + r * .6, OPEN_D, r * .2, fg, JPB, 700)
     return s + '</g>'
 
 
-# ---- 10案のポスター ----------------------------------------------------------------------
-def poster_classic(p):
-    """01 黒と金の王道。"""
+def open_corner(c=104, bw=46, bg=GOLD, fg='#141008'):
+    """右上の角にかける斜めのリボン（NEW OPEN・2026年7月）。"""
+    s = f'<g transform="translate({PW},0) rotate(45)">'
+    s += f'<rect x="-300" y="{c - bw / 2}" width="600" height="{bw}" fill="#000" opacity=".45" filter="url(#soft)"/>'
+    s += f'<rect x="-300" y="{c - bw / 2}" width="600" height="{bw}" fill="{bg}"/>'
+    s += f'<path d="M-300 {c - bw / 2 + 4} H300 M-300 {c + bw / 2 - 4} H300" stroke="{fg}" stroke-width=".8" opacity=".55"/>'
+    s += T(0, c + 1, OPEN_EN, 21, fg, NUM, 700, ls=3)
+    s += T(0, c + 17, OPEN_D, 12.5, fg, JPB, 700)
+    return s + '</g>'
+
+
+def prices_inline(y, size=16, lh=24, lab='#ebe5d8', val=GOLD_L):
+    """値段を2行に並べる（1行目: ビール・ウイスキー・カクテル、2行目: フード・ダーツ）。"""
+    s = ''
+    for i, ids in enumerate((('beer', 'whisky', 'cocktail'), ('food', 'darts'))):
+        parts = []
+        for j, (k, v) in enumerate(rows(*ids)):
+            sep = f'<tspan fill="{lab}" opacity=".45" dx="{size * .6:.1f}">／</tspan>' if j else ''
+            first = f' dx="{size * .6:.1f}"' if j else ''
+            parts.append(f'{sep}<tspan fill="{lab}" font-weight="500"{first}>{esc(k)}</tspan>'
+                         f'<tspan fill="{val}" font-weight="700" dx="{size * .35:.1f}">{esc(v)}</tspan>')
+        s += f'<text x="297" y="{y + i * lh}" text-anchor="middle" font-family="{JPB}" font-size="{size}">{"".join(parts)}</text>'
+    return s
+
+
+def prices_cols(y, size=16.5, lh=24, lab='#ebe5d8', val=GOLD_L, lead='#7d6c48'):
+    """値段を2列に並べる（左: ビール・ウイスキー・カクテル、右: フード・ダーツ）。"""
+    return (plist(64, y, 212, rows('beer', 'whisky', 'cocktail'), size, lab, val, lead, lh)
+            + plist(318, y, 212, rows('food', 'darts'), size, lab, val, lead, lh))
+
+
+def pol(name, x, y, w, h, rot, cid, fx=.5, fy=.5):
+    """白いふちの写真（説明の文字は入れない）とテープ。"""
+    cx, cy = x + w / 2, y + h / 2
+    s = f'<g transform="rotate({rot} {cx} {cy})">'
+    s += f'<rect x="{x + 4}" y="{y + 6}" width="{w}" height="{h}" fill="#000" opacity=".55" filter="url(#soft)"/>'
+    s += f'<rect x="{x}" y="{y}" width="{w}" height="{h}" fill="#f3f0e8"/>'
+    s += ph(name, x + 10, y + 10, w - 20, h - 42, cid, fx, fy)
+    s += f'<rect x="{cx - 34}" y="{y - 12}" width="68" height="24" fill="#e9d9a6" opacity=".85" transform="rotate({-rot * 2} {cx} {y})"/>'
+    return s + '</g>'
+
+
+def bg_dark(p, g):
+    return f'<defs>{gold_grad(g)}</defs><rect width="{PW}" height="{PH}" fill="#0c0b0e"/>'
+
+
+def poster_base(p):
+    """01 案06をそのまま直した形（NEW OPEN は金の帯、タバコは写真の下の帯）。"""
     g = f'{p}-g'
-    s = (f'<defs>{gold_grad(g)}<radialGradient id="{p}-bg" cx=".5" cy=".38" r=".8"><stop offset="0" stop-color="#241f2a"/>'
-         f'<stop offset="1" stop-color="#0a090c"/></radialGradient></defs>')
-    s += f'<rect width="{PW}" height="{PH}" fill="url(#{p}-bg)"/>'
-    s += f'<rect x="20" y="20" width="{PW - 40}" height="{PH - 40}" fill="none" stroke="{GOLD}" stroke-width="2.2"/>'
-    s += f'<rect x="27" y="27" width="{PW - 54}" height="{PH - 54}" fill="none" stroke="{GOLD}" stroke-width=".8" opacity=".8"/>'
-    for x, y in ((20, 20), (PW - 20, 20), (20, PH - 20), (PW - 20, PH - 20)):
-        s += f'<rect x="{x - 5}" y="{y - 5}" width="10" height="10" transform="rotate(45 {x} {y})" fill="{GOLD}"/>'
-    s += T(297, 66, 'DINING BAR  ·  NERIMA', 14, GOLD, NUM, 600, ls=7)
-    s += T(297, 158, 'BAR', 104, f'url(#{g})', SERIF, 700, ls=36)
-    s += logo(297, 172, 232)
-    s += ph('counter-dark', 52, 312, 490, 212, f'{p}-ph', fx=.62, fy=.56)
-    s += f'<rect x="52" y="312" width="490" height="212" fill="none" stroke="{GOLD}" stroke-width="1.4"/>'
-    s += T(56, 636, '3F', 122, f'url(#{g})', NUM, 700, 'start')
-    s += up_arrow(242, 556, 76, GOLD_L, 7)
-    s += T(286, 590, 'このビルの3階', 36, WHITE, JPB, 700, 'start')
-    s += T(286, 628, 'エレベーターでどうぞ', 24, '#d8d1c4', JPB, 500, 'start')
-    s += f'<line x1="60" x2="534" y1="656" y2="656" stroke="{GOLD}" stroke-width="1" opacity=".6"/>'
-    s += T(297, 690, CHARGE, 23, GOLD_L, JPB, 700)
-    s += plist(64, 724, 212, rows('beer', 'whisky', 'cocktail'), 18, '#ebe5d8', GOLD_L, '#7d6c48', 26)
-    s += plist(318, 724, 212, rows('shochu', 'food', 'darts'), 18, '#ebe5d8', GOLD_L, '#7d6c48', 26)
-    s += T(297, 801, FOOT, 12.5, '#bdb6a8', JPB, 500)
+    s = bg_dark(p, g) + head06(g) + line(192)
+    s += open_banner(200, 40)
+    s += photos_big2(p, 250, 188, 138)
+    s += smoke_band(598, 62)
+    s += T(297, 684, SMOKE_N, 14.5, '#cfc8bb', JPB, 500)
+    s += line(700, 60, 534, op=.5)
+    s += T(297, 728, CHARGE, 20, GOLD_L, JPB, 700)
+    s += prices_inline(756, 16)
+    s += T(297, 808, FOOT, 12.5, '#bdb6a8', JPB, 500)
     return s
 
 
-def poster_photo(p):
-    """02 写真が主役。"""
+def poster_corner(p):
+    """02 角のリボンと、丸いシール。"""
     g = f'{p}-g'
-    s = f'<defs>{gold_grad(g)}{shade(p + "-t", .9, 0)}{shade(p + "-b", 0, .95)}</defs>'
-    s += f'<rect width="{PW}" height="{PH}" fill="#000"/>'
-    s += ph('counter-dark', 0, 0, PW, PH, f'{p}-ph', fx=.66, fy=.5)
-    s += f'<rect x="0" y="0" width="{PW}" height="330" fill="url(#{p}-t)"/>'
-    s += f'<rect x="0" y="440" width="{PW}" height="{PH - 440}" fill="url(#{p}-b)"/>'
-    s += T(297, 62, 'DINING BAR  ·  NERIMA', 14, GOLD_L, NUM, 600, ls=7)
-    s += logo(297, 78, 250)
-    s += T(297, 298, 'BAR', 92, WHITE, SERIF, 700, ls=34, extra='filter="url(#tshadow)"')
-    s += T(297, 552, 'このビルの3階に、', 32, WHITE, JPB, 700, extra='filter="url(#tshadow)"')
-    s += T(297, 594, 'こんなバーがあります。', 32, WHITE, JPB, 700, extra='filter="url(#tshadow)"')
-    s += f'<line x1="52" x2="542" y1="622" y2="622" stroke="{GOLD}" stroke-width="1.2" opacity=".75"/>'
-    s += T(48, 748, '3F', 132, f'url(#{g})', NUM, 700, 'start')
-    s += T(54, 780, 'エレベーターで3階へ', 17, '#e6dfd0', JPB, 500, 'start')
-    s += T(240, 660, 'テーブルチャージ', 17, '#e6dfd0', JPB, 700, 'start')
-    s += T(542, 660, f'{CHARGE_PER} {CHARGE_AMT}', 20, GOLD_L, JPB, 700, 'end')
-    s += plist(240, 692, 302, rows('beer', 'whisky', 'cocktail', 'food', 'darts'), 17, '#efe9dc', GOLD_L, '#8a7a56', 22.5)
-    s += T(297, 812, FOOT, 12.5, '#cfc8ba', JPB, 500)
+    s = bg_dark(p, g)
+    s += logo(297, 38, 236)
+    s += T(297, 222, 'BAR · 3F', 54, f'url(#{g})', NUM, 700, ls=8)
+    s += T(297, 254, 'このビルの3階・エレベーターでどうぞ', 18, '#e6dfd0', JPB, 500)
+    s += open_corner()
+    s += photos_big2(p, 272, 190, 136)
+    s += smoke_badge(468, 456, 72)
+    s += T(297, 634, f'{SMOKE_S}・{SMOKE_N}', 15, '#e6dfd0', JPB, 500)
+    s += line(650, 60, 534, op=.5)
+    s += T(297, 680, CHARGE, 20, GOLD_L, JPB, 700)
+    s += prices_cols(712, 16.5, 24)
+    s += T(297, 796, FOOT, 12.5, '#bdb6a8', JPB, 500)
     return s
 
 
-def poster_neon(p):
-    """03 ネオンサイン風。"""
-    s = (f'<defs><pattern id="{p}-brick" width="64" height="26" patternUnits="userSpaceOnUse"><rect width="64" height="26" fill="#170f19"/>'
-         f'<path d="M0 .8H64 M0 13.8H64 M.8 0V13 M32.8 13V26" stroke="#271b2c" stroke-width="1.6"/></pattern>'
-         f'<radialGradient id="{p}-v" cx=".5" cy=".45" r=".75"><stop offset=".35" stop-color="#000" stop-opacity="0"/>'
-         f'<stop offset="1" stop-color="#000" stop-opacity=".78"/></radialGradient></defs>')
-    s += f'<rect width="{PW}" height="{PH}" fill="url(#{p}-brick)"/><rect width="{PW}" height="{PH}" fill="url(#{p}-v)"/>'
-    s += neon('Bar', 297, 226, 200, '#ff4fa3', SCRIPT, 5.5)
-    s += neon('X-III', 297, 354, 108, '#ffcf6b', SERIF, 3.6, ls=8)
-    s += T(297, 394, 'CROSSLEY', 22, '#ffd98a', NUM, 600, ls=12, extra='filter="url(#neon)"')
-    s += neon('3F', 50, 588, 158, '#5fe3ff', NUM, 5, 'start')
-    s += neon_path('M276 590 V456 M244 488 L276 456 L308 488', '#5fe3ff', 7)
-    s += ph('counter-dark', 318, 436, 228, 160, f'{p}-ph', fx=.62, fy=.55, rx=10)
-    s += neon_path('M328 436 H536 A10 10 0 0 1 546 446 V586 A10 10 0 0 1 536 596 H328 A10 10 0 0 1 318 586 V446 A10 10 0 0 1 328 436 Z', '#ff4fa3', 3)
-    s += T(297, 642, 'このビルの3階・エレベーターでどうぞ', 22, '#f4eefc', JPB, 700)
-    s += neon_path('M81 664 H513 A21 21 0 0 1 513 706 H81 A21 21 0 0 1 81 664 Z', '#ff4fa3', 2.4)
-    s += T(297, 693, CHARGE, 20, WHITE, JPB, 700)
-    s += plist(66, 738, 212, rows('beer', 'whisky', 'cocktail'), 17, '#bdf0ff', WHITE, '#3f7482', 24)
-    s += plist(316, 738, 212, rows('shochu', 'food', 'darts'), 17, '#bdf0ff', WHITE, '#3f7482', 24)
-    s += T(297, 812, FOOT, 12.5, '#cdbfd8', JPB, 500)
-    return s
-
-
-def poster_chalk(p):
-    """04 黒板のメニュー。"""
-    s = f'<rect width="{PW}" height="{PH}" fill="#4a2f1b"/>'
-    for i, y in enumerate(range(6, PH, 9)):
-        s += f'<line x1="0" x2="{PW}" y1="{y}" y2="{y + (i % 3) - 1}" stroke="#3a2414" stroke-width="{1 + i % 2}" opacity=".7"/>'
-    s += '<rect x="26" y="26" width="542" height="789" fill="#1c2a24"/><rect x="26" y="26" width="542" height="789" fill="#fff" filter="url(#dust)"/>'
-    c = '<g filter="url(#chalk)">'
-    c += T(297, 126, 'BAR', 100, '#f3f0e6', HAND, 700, ls=14)
-    c += T(62, 372, '3F', 130, '#f6dc72', HAND, 700, 'start')
-    c += up_arrow(262, 258, 112, '#f6dc72', 9)
-    c += T(312, 296, 'このビルの', 28, '#f3f0e6', JPB, 700, 'start')
-    c += T(312, 340, '3階です！', 40, '#f3f0e6', JPB, 900, 'start')
-    c += T(312, 372, 'エレベーターでどうぞ', 18, '#cfe6f5', JPB, 500, 'start')
-    c += T(297, 654, '— MENU —', 30, '#f3f0e6', HAND, 700, ls=6)
-    c += T(297, 690, CHARGE, 22, '#ffb9c9', JPB, 700)
-    c += plist(64, 726, 212, rows('beer', 'whisky', 'cocktail'), 18, '#f3f0e6', '#f3f0e6', '#9fb6aa', 27)
-    c += plist(318, 726, 212, rows('shochu', 'tequila', 'food'), 18, '#f3f0e6', '#f3f0e6', '#9fb6aa', 27)
-    c += '</g>'
-    s += c
-    s += logo(297, 138, 190, white=True, extra='opacity=".9"')
-    s += polaroid('counter-dark', 58, 404, 232, 200, -4, 'カウンター', f'{p}-p1', fx=.62)
-    s += polaroid('darts', 304, 408, 232, 200, 3, 'ダーツ 1ゲーム ¥100', f'{p}-p2', fx=.48, fy=.42)
-    s += T(297, 804, FOOT, 12.5, '#cfe6f5', JPB, 500)
-    return s
-
-
-def poster_big3f(p):
-    """05 大きな「3F」。"""
-    s = (f'<defs><linearGradient id="{p}-y" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffdb57"/>'
-         f'<stop offset="1" stop-color="#f3b022"/></linearGradient>{gold_grad(p + "-g")}</defs>')
-    s += f'<rect width="{PW}" height="452" fill="url(#{p}-y)"/><rect y="452" width="{PW}" height="{PH - 452}" fill="#121014"/>'
-    s += T(297, 80, 'このビルの', 40, '#141008', JPB, 900, ls=6)
-    s += T(297, 364, '3F', 330, '#141008', NUM, 700)
-    s += T(297, 428, 'に、バーがあります。', 44, '#141008', JPB, 900)
-    s += logo(165, 474, 206)
-    s += T(408, 532, 'BAR', 64, f'url(#{p}-g)', SERIF, 700, ls=18)
-    s += T(408, 568, 'エレベーターで3階へ', 19, '#e8e1d2', JPB, 500)
-    s += ph('counter-dark', 40, 592, 252, 100, f'{p}-p1', fx=.62, fy=.55, rx=6)
-    s += ph('tables', 302, 592, 252, 100, f'{p}-p2', fx=.5, fy=.62, rx=6)
-    s += T(297, 728, CHARGE, 21, '#ffd957', JPB, 700)
-    pr = [f'{k} {v}' for k, v in rows('beer', 'whisky', 'cocktail')]
-    s += T(297, 756, ' ・ '.join(pr), 15.5, WHITE, JPB, 500)
-    pr = [f'{k} {v}' for k, v in rows('shochu', 'food', 'darts')]
-    s += T(297, 779, ' ・ '.join(pr), 15.5, WHITE, JPB, 500)
-    s += T(297, 806, FOOT, 12, '#c9c2b4', JPB, 500)
-    return s
-
-
-def poster_three(p):
-    """06 3枚の写真で見せる。"""
+def poster_smokebig(p):
+    """03 「タバコ吸えます」を大きな見出しに。NEW OPEN は丸いスタンプ。"""
     g = f'{p}-g'
-    s = f'<defs>{gold_grad(g)}</defs><rect width="{PW}" height="{PH}" fill="#0c0b0e"/>'
-    s += logo(168, 44, 226)
-    s += T(548, 112, 'BAR', 86, f'url(#{g})', SERIF, 700, 'end', ls=14)
-    s += T(548, 176, '3F', 62, f'url(#{g})', NUM, 700, 'end')
-    s += T(462, 170, 'このビルの', 22, WHITE, JPB, 700, 'end')
-    s += f'<line x1="40" x2="554" y1="196" y2="196" stroke="{GOLD}" stroke-width="1.2" opacity=".7"/>'
-    s += ph('counter-dark', 40, 210, 514, 214, f'{p}-p1', fx=.6, fy=.55)
-    s += ph('tables', 40, 432, 253, 162, f'{p}-p2', fx=.5, fy=.62)
-    s += ph('darts', 301, 432, 253, 162, f'{p}-p3', fx=.48, fy=.42)
-    s += tag(50, 414, 'カウンター') + tag(50, 584, 'テーブル席') + tag(311, 584, 'ダーツ 1ゲーム ¥100')
-    s += T(297, 628, 'おひとりでも、仲間とでも。エレベーターで3階へ。', 20, '#e9e3d6', JPB, 500)
-    s += f'<line x1="60" x2="534" y1="646" y2="646" stroke="{GOLD}" stroke-width="1" opacity=".55"/>'
-    s += T(297, 678, CHARGE, 21, GOLD_L, JPB, 700)
-    s += plist(64, 710, 212, rows('beer', 'whisky', 'cocktail'), 17, '#ebe5d8', GOLD_L, '#7d6c48', 24)
-    s += plist(318, 710, 212, rows('shochu', 'tequila', 'food'), 17, '#ebe5d8', GOLD_L, '#7d6c48', 24)
-    s += T(297, 790, FOOT, 12.5, '#bdb6a8', JPB, 500)
-    s += T(297, 810, f'Instagram {INSTA}', 12.5, GOLD, NUM, 600, ls=1)
+    s = bg_dark(p, g) + head06(g) + line(192)
+    s += line(206, op=.9) + line(290, op=.9)
+    s += cigarette(62, 264, 104, rot=-12)
+    s += T(192, 266, SMOKE_T, 48, WHITE, JPB, 900, 'start')
+    s += T(297, 316, f'{SMOKE_S}・{SMOKE_N}', 15, GOLD_L, JPB, 700)
+    s += photos_big2(p, 332, 192, 138)
+    s += open_stamp(98, 386, 58, -12)
+    s += T(297, 708, CHARGE, 20, GOLD_L, JPB, 700)
+    s += prices_inline(738, 16)
+    s += T(297, 796, FOOT, 12.5, '#bdb6a8', JPB, 500)
     return s
 
 
-def poster_label(p):
-    """07 ウイスキーのラベル。"""
-    green, red, gold = '#20402f', '#8e2a22', '#b8924a'
-    s = f'<defs><path id="{p}-arc" d="M110 160 A230 150 0 0 1 484 160"/></defs>'
-    s += f'<rect width="{PW}" height="{PH}" fill="#efe4cb"/><rect width="{PW}" height="{PH}" filter="url(#paper)"/>'
-    s += f'<rect x="18" y="18" width="{PW - 36}" height="{PH - 36}" fill="none" stroke="{green}" stroke-width="7"/>'
-    s += f'<rect x="28" y="28" width="{PW - 56}" height="{PH - 56}" fill="none" stroke="{gold}" stroke-width="1.6"/>'
-    s += f'<rect x="33" y="33" width="{PW - 66}" height="{PH - 66}" fill="none" stroke="{green}" stroke-width=".8"/>'
-    for x, y in ((33, 33), (PW - 33, 33), (33, PH - 33), (PW - 33, PH - 33)):
-        s += f'<rect x="{x - 6}" y="{y - 6}" width="12" height="12" transform="rotate(45 {x} {y})" fill="{gold}"/>'
-    s += (f'<text font-family="{NUM}" font-size="19" font-weight="600" fill="{green}" letter-spacing="5">'
-          f'<textPath href="#{p}-arc" startOffset="50%" text-anchor="middle">DINING BAR · NERIMA TOKYO</textPath></text>')
-    s += logo(297, 162, 300, extra='filter="url(#ink)"')
-    s += T(297, 340, '— EST. 2026 —', 14, gold, SERIF, 700, ls=4)
-    s += f'<path d="M50 354 H544 L528 376 L544 398 H50 L66 376 Z" fill="{red}"/>'
-    s += f'<path d="M66 358 H528 M66 394 H528" stroke="#e9c98a" stroke-width=".8" opacity=".8"/>'
-    s += T(297, 385, 'THIRD FLOOR  ·  3F', 25, '#f6ecd6', NUM, 700, ls=6)
-    s += ph('backbar', 129, 412, 336, 210, f'{p}-ph', fx=.72, fy=.6, clip='M297 412 A168 105 0 1 1 296.9 412 Z')
-    s += f'<ellipse cx="297" cy="517" rx="168" ry="105" fill="none" stroke="{gold}" stroke-width="3"/>'
-    s += f'<ellipse cx="297" cy="517" rx="177" ry="114" fill="none" stroke="{green}" stroke-width="1.4"/>'
-    s += T(297, 660, 'このビルの3階・エレベーターでどうぞ', 22, green, JPB, 700)
-    s += f'<rect x="68" y="674" width="458" height="112" fill="none" stroke="{green}" stroke-width="1.3"/>'
-    s += T(297, 700, CHARGE, 19, red, JPB, 700)
-    s += f'<line x1="84" x2="510" y1="711" y2="711" stroke="{gold}" stroke-width=".9"/>'
-    s += plist(86, 732, 196, rows('beer', 'whisky', 'cocktail'), 15, green, green, '#b9a77c', 20)
-    s += plist(312, 732, 196, rows('shochu', 'food', 'darts'), 15, green, green, '#b9a77c', 20)
-    s += T(297, 802, FOOT, 12, green, JPB, 500)
-    return s
-
-
-def poster_deco(p):
-    """08 アールデコ。"""
+def poster_openbig(p):
+    """04 「NEW OPEN」をいちばん上に大きく。"""
     g = f'{p}-g'
-    s = (f'<defs>{gold_grad(g)}<linearGradient id="{p}-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0f182d"/>'
-         f'<stop offset="1" stop-color="#070b15"/></linearGradient></defs>')
-    s += f'<rect width="{PW}" height="{PH}" fill="url(#{p}-bg)"/>'
-    n = 22
-    for inset, sw in ((20, 1.8), (28, .7)):
-        a, b, c, d = inset, PW - inset, inset, PH - inset
-        s += (f'<path d="M{a + n} {c} H{b - n} L{b} {c + n} V{d - n} L{b - n} {d} H{a + n} L{a} {d - n} V{c + n} Z" '
-              f'fill="none" stroke="{GOLD}" stroke-width="{sw}"/>')
-    cx, cy = 297, 206
-    for deg in range(186, 356, 6):
-        r = math.radians(deg)
-        s += (f'<line x1="{cx + 108 * math.cos(r):.1f}" y1="{cy + 108 * math.sin(r):.1f}" x2="{cx + 172 * math.cos(r):.1f}" '
-              f'y2="{cy + 172 * math.sin(r):.1f}" stroke="{GOLD}" stroke-width="1" opacity=".45"/>')
-    s += f'<path d="M{cx - 100} {cy} A100 100 0 0 1 {cx + 100} {cy}" fill="none" stroke="{GOLD}" stroke-width="1.6"/>'
-    s += f'<path d="M{cx - 180} {cy} A180 180 0 0 1 {cx + 180} {cy}" fill="none" stroke="{GOLD}" stroke-width=".8" opacity=".6"/>'
-    s += logo(297, 128, 236, extra='filter="url(#gilt)"')
-    s += T(297, 330, 'BAR', 68, f'url(#{g})', NUM, 600, ls=46, extra='style="font-stretch:75%"')
-    s += f'<path d="M150 348 H262 M332 348 H444" stroke="{GOLD}" stroke-width="1.2"/>'
-    s += f'<rect x="291" y="342" width="12" height="12" transform="rotate(45 297 348)" fill="{GOLD}"/>'
-    arch = 'M152 640 V510 A145 145 0 0 1 442 510 V640 Z'
-    s += ph('counter-dark', 152, 365, 290, 275, f'{p}-ph', fx=.6, fy=.55, clip=arch)
-    s += f'<path d="{arch}" fill="none" stroke="{GOLD}" stroke-width="2.2"/>'
-    s += f'<path d="M142 650 V510 A155 155 0 0 1 452 510 V650 Z" fill="none" stroke="{GOLD}" stroke-width=".8" opacity=".8"/>'
-    s += f'<path d="M247 618 H347 L365 640 L347 662 H247 L229 640 Z" fill="#0b1222" stroke="{GOLD}" stroke-width="1.6"/>'
-    s += T(297, 657, '3F', 46, GOLD_L, NUM, 700)
-    s += T(297, 694, 'このビルの3階・エレベーターでどうぞ', 19, '#e8e2d2', JPB, 500)
-    s += T(297, 724, CHARGE, 18, GOLD_L, JPB, 700)
-    pr = [f'{k} {v}' for k, v in rows('beer', 'whisky', 'cocktail')]
-    s += T(297, 750, '  ◆  '.join(pr), 14, '#e8e2d2', JPB, 500)
-    pr = [f'{k} {v}' for k, v in rows('shochu', 'food', 'darts')]
-    s += T(297, 772, '  ◆  '.join(pr), 14, '#e8e2d2', JPB, 500)
-    s += T(297, 796, FOOT, 11.5, '#a9a497', JPB, 500)
+    s = bg_dark(p, g)
+    s += T(297, 104, OPEN_EN, 78, f'url(#{g})', NUM, 700, ls=12)
+    s += T(297, 142, OPEN_JP, 24, WHITE, JPB, 700, ls=4)
+    s += line(162)
+    s += logo(168, 174, 200)
+    s += T(548, 236, 'BAR', 70, f'url(#{g})', SERIF, 700, 'end', ls=12)
+    s += T(548, 286, '3F', 50, f'url(#{g})', NUM, 700, 'end')
+    s += T(480, 281, 'このビルの', 19, WHITE, JPB, 700, 'end')
+    s += line(300)
+    s += photos_big2(p, 310, 172, 124)
+    s += smoke_band(624, 56, size=32)
+    s += T(297, 702, SMOKE_N, 14.5, '#cfc8bb', JPB, 500)
+    s += T(297, 732, CHARGE, 20, GOLD_L, JPB, 700)
+    s += prices_inline(760, 16)
+    s += T(297, 808, FOOT, 12.5, '#bdb6a8', JPB, 500)
     return s
 
 
-def poster_first(p):
-    """09 はじめての方へ（料金表）。"""
+def poster_stack(p):
+    """05 写真3枚を、同じ大きさで縦に。"""
     g = f'{p}-g'
-    ink, sub = '#1b160e', '#6b5a3a'
-    s = f'<defs>{gold_grad(g)}</defs><rect width="{PW}" height="{PH}" fill="#111016"/>'
-    s += logo(297, 30, 196)
-    s += T(297, 196, 'BAR · 3F', 60, f'url(#{g})', NUM, 700, ls=8)
-    s += T(297, 230, 'このビルの3階・エレベーターでどうぞ', 18, '#e6dfd0', JPB, 500)
-    s += f'<rect y="246" width="{PW}" height="416" fill="#fbf7ee"/>'
-    s += T(297, 298, 'はじめての方へ', 40, ink, JPB, 900, ls=4)
-    s += T(297, 326, '料金の目安です。1杯だけでも、お気軽にどうぞ。', 17, sub, JPB, 500)
-    s += '<rect x="46" y="342" width="502" height="76" rx="10" fill="#f2e1b0"/>'
-    s += T(68, 374, 'テーブルチャージ', 25, ink, JPB, 900, 'start')
-    s += T(68, 402, CHARGE_PER, 17, sub, JPB, 500, 'start')
-    s += T(528, 400, CHARGE_AMT, 46, ink, NUM, 700, 'end')
-    s += plist(68, 454, 460, rows('beer', 'whisky', 'cocktail', 'shochu', 'food', 'darts'), 23, ink, ink, '#c4b48c', 32)
-    s += f'<line x1="68" x2="528" y1="628" y2="628" stroke="#e3d6b4" stroke-width="1"/>'
-    s += T(297, 650, f'ご予算の目安：{BUDGET}', 16, sub, JPB, 500)
-    for i, (name, fx, fy) in enumerate((('counter-dark', .62, .55), ('tables', .5, .62), ('darts', .48, .42))):
-        s += ph(name, 40 + i * 177, 680, 160, 96, f'{p}-p{i}', fx, fy, rx=6)
-    s += T(297, 806, FOOT, 12.5, '#c9c2b4', JPB, 500)
+    s = bg_dark(p, g) + head_small(g)
+    s += open_banner(162, 36)
+    for i, (name, fx, fy) in enumerate(PHOTO3):
+        s += ph(name, 40, 208 + i * 126, 514, 118, f'{p}-p{i}', fx, fy)
+    s += smoke_band(592, 58, size=34)
+    s += T(297, 672, SMOKE_N, 14.5, '#cfc8bb', JPB, 500)
+    s += line(688, 60, 534, op=.5)
+    s += T(297, 716, CHARGE, 20, GOLD_L, JPB, 700)
+    s += prices_inline(744, 16)
+    s += T(297, 800, FOOT, 12.5, '#bdb6a8', JPB, 500)
     return s
 
 
-def poster_master(p):
-    """10 マスターの一杯。"""
+def poster_tall(p):
+    """06 縦長の写真3枚を、横に並べる。"""
     g = f'{p}-g'
-    s = f'<defs>{gold_grad(g)}{shade(p + "-l", .92, 0, False)}{shade(p + "-b", 0, .96)}</defs>'
-    s += f'<rect width="{PW}" height="{PH}" fill="#000"/>'
-    s += ph('backbar', 0, 0, PW, PH, f'{p}-ph', fx=.72, fy=.5)
-    s += f'<rect width="380" height="{PH}" fill="url(#{p}-l)"/>'
-    s += f'<rect y="520" width="{PW}" height="{PH - 520}" fill="url(#{p}-b)"/>'
-    s += logo(150, 44, 204)
-    vt = f'writing-mode="vertical-rl" font-family="{MIN}" font-weight="600" fill="{WHITE}" letter-spacing="2" filter="url(#tshadow)"'
-    s += f'<text x="124" y="180" font-size="31" {vt}>銀座・麻布で腕を磨いた</text>'
-    s += f'<text x="80" y="180" font-size="31" {vt}>マスターの一杯を、練馬で。</text>'
-    s += T(48, 716, '3F', 100, f'url(#{g})', NUM, 700, 'start')
-    s += T(178, 674, 'BAR', 44, GOLD_L, SERIF, 700, 'start', ls=12)
-    s += T(178, 708, 'このビルの3階・エレベーターでどうぞ', 18, WHITE, JPB, 500, 'start')
-    s += T(48, 748, CHARGE, 18, GOLD_L, JPB, 700, 'start')
-    pr = [f'{k} {v}' for k, v in rows('cocktail', 'whisky', 'beer', 'food')]
-    s += T(48, 774, '　'.join(pr), 14, '#ece6d9', JPB, 500, 'start')
-    s += T(48, 800, FOOT, 12, '#bdb6a8', JPB, 500, 'start')
+    s = bg_dark(p, g) + head06(g) + line(192)
+    s += open_banner(200, 38)
+    for i, (name, fx, fy, z) in enumerate((('counter-dark', .78, .5, 1), ('tables', .5, .68, 1.3), ('darts', .5, .56, 1.2))):
+        x = 40 + i * 176
+        s += ph(name, x, 250, 162, 286, f'{p}-p{i}', fx, fy, zoom=z)
+        s += f'<rect x="{x}" y="250" width="162" height="286" fill="none" stroke="{GOLD}" stroke-width=".9" opacity=".8"/>'
+    s += smoke_band(552, 58, size=34)
+    s += T(297, 632, SMOKE_N, 14.5, '#cfc8bb', JPB, 500)
+    s += line(648, 60, 534, op=.5)
+    s += T(297, 676, CHARGE, 20, GOLD_L, JPB, 700)
+    s += prices_cols(708, 16.5, 24)
+    s += T(297, 792, FOOT, 12.5, '#bdb6a8', JPB, 500)
+    return s
+
+
+def poster_red(p):
+    """07 赤を少し足して（NEW OPEN の帯と、タバコの帯のふちを赤に）。"""
+    g = f'{p}-g'
+    s = bg_dark(p, g) + head06(g) + line(192, color=RED, w=1.6, op=1)
+    s += open_banner(200, 40, bg=RED, fg='#fbeede')
+    s += photos_big2(p, 250, 188, 138)
+    s += smoke_band(598, 62, accent=RED, bg='#1b1215', ember='#ff5a2a')
+    s += T(297, 684, SMOKE_N, 14.5, '#e9cfca', JPB, 500)
+    s += line(700, 60, 534, color=RED, op=.8)
+    s += T(297, 728, CHARGE, 20, GOLD_L, JPB, 700)
+    s += prices_inline(756, 16)
+    s += T(297, 808, FOOT, 12.5, '#bdb6a8', JPB, 500)
+    return s
+
+
+def poster_circle(p):
+    """08 丸い写真3枚。"""
+    g = f'{p}-g'
+    s = bg_dark(p, g) + head06(g) + line(192)
+    s += line(226, 60, 168, op=.8) + line(226, 426, 534, op=.8)
+    s += T(297, 238, OPEN_EN, 36, f'url(#{g})', NUM, 700, ls=10)
+    s += T(297, 266, OPEN_JP, 17, WHITE, JPB, 700, ls=3)
+
+    def disc(i, cx, cy, r):
+        name, fx, fy = PHOTO3[i]
+        d = f'M{cx - r} {cy} a{r} {r} 0 1 0 {2 * r} 0 a{r} {r} 0 1 0 {-2 * r} 0 Z'
+        return (f'<circle cx="{cx}" cy="{cy + 4}" r="{r + 2}" fill="#000" opacity=".6" filter="url(#soft)"/>'
+                + ph(name, cx - r, cy - r, 2 * r, 2 * r, f'{p}-p{i}', fx, fy, clip=d)
+                + f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="{GOLD}" stroke-width="2.6"/>'
+                + f'<circle cx="{cx}" cy="{cy}" r="{r + 6}" fill="none" stroke="{GOLD}" stroke-width=".7" opacity=".8"/>')
+    s += disc(0, 297, 410, 124) + disc(1, 112, 484, 76) + disc(2, 482, 484, 76)
+    s += smoke_band(578, 58, size=34)
+    s += T(297, 658, SMOKE_N, 14.5, '#cfc8bb', JPB, 500)
+    s += line(674, 60, 534, op=.5)
+    s += T(297, 702, CHARGE, 20, GOLD_L, JPB, 700)
+    s += prices_cols(732, 16, 23)
+    s += T(297, 806, FOOT, 12.5, '#bdb6a8', JPB, 500)
+    return s
+
+
+def poster_wide(p):
+    """09 大きい写真を上いっぱいに（ふちなし）。"""
+    g = f'{p}-g'
+    s = f'<defs>{gold_grad(g)}{shade(p + "-t", .93, 0)}<linearGradient id="{p}-b" x1="0" y1="0" x2="0" y2="1">' \
+        f'<stop offset="0" stop-color="#0c0b0e" stop-opacity="0"/><stop offset="1" stop-color="#0c0b0e"/></linearGradient></defs>'
+    s += f'<rect width="{PW}" height="{PH}" fill="#0c0b0e"/>'
+    s += ph('counter-dark', 0, 0, PW, 410, f'{p}-p0', .6, .58)
+    s += f'<rect width="{PW}" height="250" fill="url(#{p}-t)"/><rect y="320" width="{PW}" height="92" fill="url(#{p}-b)"/>'
+    s += head_small(g)
+    s += f'<rect x="40" y="350" width="356" height="42" rx="6" fill="{GOLD}"/>'
+    s += open_text(54, 379, 25, 18, '#141008', gap=14, anchor='start')
+    s += ph('tables', 40, 416, 253, 142, f'{p}-p1', .5, .62)
+    s += ph('darts', 301, 416, 253, 142, f'{p}-p2', .48, .42)
+    s += smoke_band(572, 58, size=34)
+    s += T(297, 652, SMOKE_N, 14.5, '#cfc8bb', JPB, 500)
+    s += line(668, 60, 534, op=.5)
+    s += T(297, 696, CHARGE, 20, GOLD_L, JPB, 700)
+    s += prices_cols(726, 16, 23)
+    s += T(297, 802, FOOT, 12.5, '#bdb6a8', JPB, 500)
+    return s
+
+
+def poster_polaroid(p):
+    """10 白いふちの写真を、斜めに貼ったように。NEW OPEN はスタンプ。"""
+    g = f'{p}-g'
+    s = bg_dark(p, g) + head06(g) + line(192)
+    s += pol('counter-dark', 46, 216, 316, 250, -4, f'{p}-p0', .62, .55)
+    s += pol('tables', 340, 228, 212, 192, 5, f'{p}-p1', .5, .62)
+    s += pol('darts', 300, 414, 230, 196, -3, f'{p}-p2', .48, .42)
+    s += open_stamp(124, 546, 62, -10)
+    s += smoke_band(626, 58, size=34)
+    s += T(297, 706, SMOKE_N, 14.5, '#cfc8bb', JPB, 500)
+    s += T(297, 736, CHARGE, 20, GOLD_L, JPB, 700)
+    s += prices_inline(764, 16)
+    s += T(297, 810, FOOT, 12.5, '#bdb6a8', JPB, 500)
     return s
 
 
 # 案の id → (ポスターを描く関数, 光ったときのまわりの色)
 POSTERS = {
-    'classic': (poster_classic, '#ffe2a6'), 'photo': (poster_photo, '#d7f5b4'), 'neon': (poster_neon, '#ff9ad2'),
-    'chalk': (poster_chalk, '#f3efe2'), 'big3f': (poster_big3f, '#ffd85a'), 'three': (poster_three, '#ffe2a6'),
-    'label': (poster_label, '#fff1d2'), 'deco': (poster_deco, '#ffe2a6'), 'first': (poster_first, '#fffaf0'),
-    'master': (poster_master, '#d7f5b4'),
+    'base': (poster_base, '#ffe2a6'), 'corner': (poster_corner, '#ffe2a6'), 'smokebig': (poster_smokebig, '#ffe2a6'),
+    'openbig': (poster_openbig, '#ffe2a6'), 'stack': (poster_stack, '#ffe2a6'), 'tall': (poster_tall, '#ffe2a6'),
+    'red': (poster_red, '#ffc2b0'), 'circle': (poster_circle, '#ffe2a6'), 'wide': (poster_wide, '#e6f5c4'),
+    'polaroid': (poster_polaroid, '#ffe2a6'),
 }
 
 

@@ -46,13 +46,8 @@ h1, h2, h3 { line-height: 1.4; }
 .sg-sec__en { display: block; color: var(--gold); font-size: 13px; letter-spacing: .3em; font-weight: 700; }
 .sg-sec__lead { margin: -6px 0 24px; color: var(--muted); max-width: 52em; }
 
-/* いま困っていること */
+/* 直したこと・いまの入口 */
 .sg-now { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: clamp(24px, 4vw, 48px); align-items: start; }
-.sg-problems { margin: 0; padding: 0; list-style: none; counter-reset: p; display: grid; gap: 12px; }
-.sg-problems li { counter-increment: p; display: grid; grid-template-columns: 36px 1fr; gap: 0 12px; padding: 16px 18px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); }
-.sg-problems li::before { content: counter(p); grid-row: span 2; width: 30px; height: 30px; border-radius: 50%; background: var(--gold); color: #1a1408; display: grid; place-items: center; font-weight: 700; font-size: 14px; }
-.sg-problems b { font-size: 16px; }
-.sg-problems span { color: var(--muted); font-size: 14px; }
 
 /* 画像 */
 .sg-shot { margin: 0; }
@@ -301,7 +296,7 @@ button.sg-btn { font-family: inherit; cursor: pointer; }
   .pp-bar, .sg-hero__acts, .sg-toc, .sg-quiz, .sg-pick, .sg-dl, .sg-sec--send, .sg-download, .sg-quiz__result { display: none !important; }
   .sg-hero { background: #fff; padding: 0 0 12px; }
   .sg-sec { padding: 18px 0; }
-  .sg-card, .sg-g, .sg-summary li, .sg-step, .sg-faq__item, .sg-choose__item, .sg-contents li, .sg-total, .sg-stand { break-inside: avoid; }
+  .sg-card, .sg-g, .sg-summary li, .sg-step, .sg-faq__item, .sg-choose__item, .sg-contents li, .sg-total, .sg-stand, .sg-changes li { break-inside: avoid; }
   .sg-ask .sg-btn { display: none; }
   .sg-meter { border: 1px solid #999; }
   .sg-card { border: 1px solid #ccc; }
@@ -310,10 +305,18 @@ button.sg-btn { font-family: inherit; cursor: pointer; }
   a { text-decoration: none; }
 }
 
-/* ---- ポスターの提案で足したもの（スタンド・載せること・予算・送る値段） ---- */
-.sg-h3--goals { margin-top: 26px; }
-.sg-now .sg-goals { grid-template-columns: 1fr; gap: 8px; }
+/* ---- ポスターの提案で足したもの（直したこと・スタンド・載せること・予算・送る値段） ---- */
+.sg-now .sg-goals { grid-template-columns: 1fr; gap: 8px; margin-top: 16px; }
 .sg-now .sg-goals li { padding: 12px 16px; }
+.sg-changes { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.sg-changes li { padding: 14px 16px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); }
+.sg-changes p { margin: 0; display: grid; grid-template-columns: 6.5em 1fr; gap: 10px; align-items: baseline; }
+.sg-changes p + p { margin-top: 6px; }
+.sg-changes span { justify-self: start; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.sg-changes__ask { color: #c9ccd5; font-size: 14px; }
+.sg-changes__ask span { border: 1px solid #4a5060; color: #c9ccd5; }
+.sg-changes__done { font-size: 15px; }
+.sg-changes__done span { background: var(--gold); color: #1a1408; }
 
 /* 決まっているスタンド */
 .sg-stand { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 44px); align-items: start; }
@@ -381,6 +384,7 @@ button.sg-btn { font-family: inherit; cursor: pointer; }
   .sg-stand, .sg-contents, .sg-rules--grid, .sg-total { grid-template-columns: 1fr; }
 }
 @media (max-width: 600px) {
+  .sg-changes p { grid-template-columns: 1fr; gap: 4px; }
   .sg-send__prices { grid-template-columns: 1fr; }
   .sg-specs > div { grid-template-columns: 1fr; gap: 2px; }
   /* 予算の表は、スマホでは横にずらさずに読めるよう、メモを下の行に回す */

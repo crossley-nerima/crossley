@@ -1,26 +1,25 @@
-// 看板のポスターの提案のページ: かんたん診断・「気になる」の印・気になる案と値段を送る（LINE・コピー）・印刷。
+// 看板のポスター（仕上げの10案）のページ: かんたん診断・「気になる」の印・気になる案と値段を送る（LINE・コピー）・印刷。
 (function () {
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
 
-  // ---- かんたん診断: いちばん大事なこと・好きな色・写真の量から、合いそうな案（3つまで）に印を付ける
+  // ---- かんたん診断: いちばん目立たせたいこと・写真の並べ方から、合いそうな案（3つまで）に印を付ける
   var quiz = $('.sg-quiz'), cards = $$('.sg-g'), result = $('.sg-quiz__result'), reset = $('.sg-quiz__reset');
   var NAMES = {};
   cards.forEach(function (c) { NAMES[c.getAttribute('data-no')] = $('.sg-g__name', c).textContent; });
   function val(name) { var x = $('input[name="' + name + '"]:checked', quiz); return x ? x.value : ''; }
   function diagnose() {
-    var priority = val('priority'), tone = val('tone'), photo = val('photo');
-    var answered = priority || tone || photo;
+    var priority = val('priority'), layout = val('layout');
+    var answered = priority || layout;
     reset.hidden = !answered;
     cards.forEach(function (c) { c.classList.remove('is-match', 'is-dim'); $('.sg-g__match', c).hidden = true; });
     if (!answered) { result.textContent = ''; return; }
     var list = cards.map(function (c) {
       var d = function (k) { return c.getAttribute('data-' + k); };
-      // 色の好みは、大事なことの1段階より少し重く見る（好きな色の案が、上位に入るように）
+      // 写真の並べ方は、目立たせたいことの1段階より少し重く見る（選んだ並べ方の案が、上位に入るように）
       var score = (priority ? parseFloat(d(priority)) * 10 : 0)
-        + (tone && tone !== 'any' && d('tone') === tone ? 12 : 0)
-        + (photo && photo !== 'any' && d('photo') === photo ? 5 : 0)
-        + (parseFloat(d('notice')) + parseFloat(d('mood')) + parseFloat(d('price'))) / 10;   // 同じ点なら、全体に強い案を先に
+        + (layout && layout !== 'any' && d('layout') === layout ? 12 : 0)
+        + (parseFloat(d('newopen')) + parseFloat(d('smoke')) + parseFloat(d('mood'))) / 10;   // 同じ点なら、全体に強い案を先に
       return { el: c, no: d('no'), score: score };
     });
     list.sort(function (a, b) { return b.score - a.score; });
@@ -35,7 +34,8 @@
   }
 
   // ---- 気になる案: 一覧・くわしい説明の「気になる」と、送るフォームのチェックをそろえ、この端末に残す
-  var KEY = 'xiii-poster-picks', form = $('.sg-send');
+  // 前の10案（案の番号の中身が違う）の印が残らないよう、仕上げの10案では別の名前で残す
+  var KEY = 'xiii-poster-picks-final', form = $('.sg-send');
   var saved = {};
   try { saved = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { saved = {}; }
   var priceInputs = form ? $$('input[name^="price_"]', form) : [];
@@ -57,7 +57,7 @@
   }
   function message() {
     var picks = $$('input[name=pick]:checked', form).map(function (x) { return '・' + x.getAttribute('data-label'); });
-    var lines = ['【看板のポスターの提案への返事】', '', '気になる案：', picks.length ? picks.join('\n') : '・（まだ選んでいません）'];
+    var lines = ['【看板のポスター（仕上げの10案）への返事】', '', '気になる案：', picks.length ? picks.join('\n') : '・（まだ選んでいません）'];
     var f = $('input[name=frame]:checked', form);
     if (f) lines.push('', 'スタンドの枠の色：' + f.value);
     var prices = priceInputs.filter(function (x) { return x.value.trim(); })

@@ -331,16 +331,16 @@ def h_proposal(ctx):
     extra = (f'<p class="pp-panel__head pp-panel__head--sub"><strong>ほかの提案</strong><span>ホームページ以外の提案</span></p>'
              f'<ul class="pp-list"><li><a class="pp-item" href="{r}signs/index.html"{cur}>'
              f'<span class="pp-item__swatch pp-item__swatch--sign" aria-hidden="true">看板</span>'
-             f'<span class="pp-item__name">看板のポスターの提案<small>1階入口・10案</small></span>'
-             f'<span class="pp-item__structure">光る置き看板（A1）に入れるポスター 10案（置いたイメージ・予算つき）</span>'
-             f'<span class="pp-item__concept">3階のお店に気づいてもらい、雰囲気と値段を伝える、入口の置き看板のポスターの案です。</span></a></li></ul>')
+             f'<span class="pp-item__name">看板のポスターの提案<small>仕上げの10案</small></span>'
+             f'<span class="pp-item__structure">光る置き看板（A1）に入れるポスター（案06をもとに10案・置いたイメージつき）</span>'
+             f'<span class="pp-item__concept">「タバコ吸えます」と「2026年7月 NEW OPEN」を目立たせた、入口の置き看板のポスターの仕上げの案です。</span></a></li></ul>')
     switch = (f'<details class="pp-switch"><summary>{len(ALL_PATTERNS)}案を切り替え</summary>'
               f'<div class="pp-panel"><p class="pp-panel__head"><strong>デザイン案を選ぶ</strong>'
               f'<span>中身は同じで、見た目と構成が違います</span></p>'
               f'<ul class="pp-list">{"".join(items)}</ul>{extra}</div></details>')
     if not p:
         return (f'<nav class="pp-bar" aria-label="提案の切り替え">'
-                f'<span class="pp-bar__now"><span>ほかの提案 </span><b>看板のポスター（1階入口・10案）</b></span>{switch}</nav>')
+                f'<span class="pp-bar__now"><span>ほかの提案 </span><b>看板のポスター（仕上げの10案）</b></span>{switch}</nav>')
     i = [x['no'] for x in ALL_PATTERNS].index(p['no'])
     prev = ALL_PATTERNS[i - 1]
     nxt = ALL_PATTERNS[(i + 1) % len(ALL_PATTERNS)]
@@ -393,9 +393,6 @@ def sign_charge():
     return per, amount, tbd
 
 
-TONE_LABEL = {'dark': '落ち着いた色', 'bright': '明るい色', 'fun': '遊び心'}
-
-
 def sign_img(name, alt, cls='sg-shot', size=(1200, 750)):
     """看板のイメージ画像。ページには小さい WebP を出し、押すと大きい JPEG が開く。保存ボタンは JPEG。"""
     if not (SIGN_IMG / f'{name}.jpg').exists():
@@ -433,8 +430,10 @@ def h_sign_summary(ctx):
     return ''.join(f'<li><b>{esc(t["title"])}</b><span>{esc(t["text"])}</span></li>' for t in SIGNS['summary'])
 
 
-def h_sign_problems(ctx):
-    return ''.join(f'<li><b>{esc(x["title"])}</b><span>{esc(x["text"])}</span></li>' for x in SIGNS['problems'])
+def h_sign_changes(ctx):
+    """お店の意見と、それをどう直したか。"""
+    return ''.join(f'<li><p class="sg-changes__ask"><span>ご意見</span>{esc(c["ask"])}</p>'
+                   f'<p class="sg-changes__done"><span>直したこと</span>{esc(c["done"])}</p></li>' for c in SIGNS['changes'])
 
 
 def h_sign_now(ctx):
@@ -503,10 +502,9 @@ def h_sign_quiz(ctx):
 def h_sign_gallery(ctx):
     out = []
     for x in SIGNS['proposals']:
-        sc = x['scores']
-        data = ' '.join(f'data-{k}="{esc(v)}"' for k, v in (('no', x['no']), ('notice', sc['notice']), ('mood', sc['mood']),
-                                                            ('price', sc['price']), ('tone', x['tone']), ('photo', x['photo'])))
-        tags = f'<span>{esc(TONE_LABEL[x["tone"]])}</span><span>写真{len(x["photos"])}枚</span>'
+        # かんたん診断（script.js）が使う: 3つのねらいの点数と、写真の並べ方
+        data = ' '.join(f'data-{k}="{esc(v)}"' for k, v in [('no', x['no']), ('layout', x['layout'])] + list(x['scores'].items()))
+        tags = ''.join(f'<span>{esc(t)}</span>' for t in x['tags'])
         out.append(
             f'<li class="sg-g" {data}><a class="sg-g__link" href="#sign-{x["no"]}">'
             f'<span class="sg-g__img"><img src="img/{sign_base(x)}-thumb.webp" width="480" height="680" '
@@ -638,7 +636,6 @@ def h_sign_price_fields(ctx):
     per = sign_charge()[0]
     fields = [('charge', f'テーブルチャージ（{per}）' if per else 'テーブルチャージ', '例：¥500')]
     fields += [(x['id'], x['label'], '例：¥600〜') for x in sign_prices() if x['tbd']]
-    fields.append(('budget', 'ご予算の目安（なくても可）', '例：2〜3杯で¥3,000くらい'))
     return ''.join(f'<label class="sg-send__price"><span>{esc(label)}</span>'
                    f'<input type="text" name="price_{key}" data-label="{esc(label)}" placeholder="{esc(ph)}" autocomplete="off"></label>'
                    for key, label, ph in fields)
@@ -1035,7 +1032,7 @@ HELPERS = {
     'head': h_head, 'fonts': h_fonts, 'jsonld': h_jsonld, 'proposal': h_proposal, 'img': h_img, 'logo': h_logo,
     'menu': h_menu, 'menu_nav': h_menu_nav, 'food': h_food, 'faq': h_faq, 'info': h_info, 'hours_table': h_hours_table, 'map': h_map,
     'route': h_route, 'route_map': h_route_map, 'streetview': h_streetview, 'notices': h_notices, 'feature': h_feature, 'feature_list': h_feature_list, 'shop_questions': h_shop_questions, 'data': h_data, 'credit': h_credit, 'features': h_features, 'icon': h_icon, 'access': h_access, 'addr': h_addr,
-    'sign_summary': h_sign_summary, 'sign_problems': h_sign_problems, 'sign_now': h_sign_now, 'sign_goals': h_sign_goals,
+    'sign_summary': h_sign_summary, 'sign_changes': h_sign_changes, 'sign_now': h_sign_now, 'sign_goals': h_sign_goals,
     'sign_stand': h_sign_stand, 'sign_contents': h_sign_contents, 'sign_ask': h_sign_ask, 'sign_quiz': h_sign_quiz,
     'sign_gallery': h_sign_gallery, 'sign_table': h_sign_table, 'sign_cards': h_sign_cards, 'sign_choose': h_sign_choose,
     'sign_mix_tip': h_sign_mix_tip, 'sign_budget': h_sign_budget, 'sign_print': h_sign_print, 'sign_order_tips': h_sign_order_tips,

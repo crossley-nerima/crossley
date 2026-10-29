@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ja">
 <head>
-{{head title="看板のポスターの提案（1階入口・10案）｜ダイニングバー XⅢ クロスリー" desc="ダイニングバー XⅢ クロスリーの、1階入口の光る置き看板（A1）に差し込むポスターの提案10案。置いたイメージ・デザイン・予算・印刷の頼み方。" theme="#101217"}}
+{{head title="看板のポスター（仕上げの10案）｜ダイニングバー XⅢ クロスリー" desc="ダイニングバー XⅢ クロスリーの、1階入口の光る置き看板（A1）に差し込むポスター。案06をもとに「タバコ吸えます」と「2026年7月 NEW OPEN」を目立たせた仕上げの10案。" theme="#101217"}}
 {{fonts f="Noto+Sans+JP:wght@400;500;700"}}
 <link rel="stylesheet" href="style.css">
 <script src="script.js" defer></script>
@@ -11,15 +11,15 @@
 <header class="sg-hero">
   <div class="sg-wrap">
     <p class="sg-hero__kicker">ダイニングバー XⅢ クロスリー</p>
-    <h1>入口の置き看板のポスター<span>10案</span></h1>
-    <p class="sg-hero__lead">置き看板は、光るスタンド（モノタロウの LEDパネルA型スタンド・A1）に決まりました。その中に差し込むポスターのデザインを10案作りました。ねらいは、目立たせることと、お店の雰囲気を伝えること。テーブルチャージと、メニューの値段の目安も載せています。</p>
+    <h1>入口の置き看板のポスター<span>仕上げの10案</span></h1>
+    <p class="sg-hero__lead">ポスターは、案06「3枚の写真で見せる」に決まりました。いただいたご意見（タバコが吸えることを目立たせる・2026年7月 NEW OPEN を押し出す・焼酎とテキーラを外す・写真の説明を外す）を入れて、仕上げの10案を作りました。この中から1つ選んでください。</p>
     <div class="sg-hero__acts">
       <a class="sg-btn sg-btn--gold" href="#compare">10案を見る</a>
       <a class="sg-btn" href="#send">気になる案を送る</a>
       <button class="sg-btn sg-print" type="button">印刷・PDFで保存</button>
     </div>
     <nav class="sg-toc" aria-label="このページの目次">
-      <a href="#summary">要点</a><a href="#stand">スタンド</a><a href="#contents">載せること</a><a href="#compare">10案を見比べる</a>
+      <a href="#summary">要点・直したこと</a><a href="#stand">スタンド</a><a href="#contents">載せること</a><a href="#compare">10案を見比べる</a>
       <a href="#ideas">くわしく</a><a href="#budget">予算</a><a href="#print-guide">印刷の頼み方</a><a href="#flow">流れ</a>
       <a href="#send">気になる案を送る</a><a href="#faq">よくある質問</a>
     </nav>
@@ -33,12 +33,14 @@
       <ol class="sg-summary">{{sign_summary}}</ol>
       <div class="sg-now">
         <div>
-          <h3 class="sg-h3">いま困っていること</h3>
-          <ol class="sg-problems">{{sign_problems}}</ol>
-          <h3 class="sg-h3 sg-h3--goals">ポスターでやること</h3>
+          <h3 class="sg-h3">いただいたご意見と、直したこと</h3>
+          <ol class="sg-changes">{{sign_changes}}</ol>
+        </div>
+        <div>
+          <h3 class="sg-h3">いまの入口（夜）</h3>
+          {{sign_now}}
           <ul class="sg-goals">{{sign_goals}}</ul>
         </div>
-        {{sign_now}}
       </div>
     </div>
   </section>
@@ -54,7 +56,7 @@
   <section class="sg-sec" id="contents" aria-labelledby="contents-h">
     <div class="sg-wrap">
       <h2 id="contents-h"><span class="sg-sec__en">ON THE POSTER</span>ポスターに載せること</h2>
-      <p class="sg-sec__lead">10案とも、同じ中身を載せています。値段は、ホームページの案と同じところから入れているので、決まれば全部そろって変わります。</p>
+      <p class="sg-sec__lead">10案とも、同じ中身を載せています（焼酎・テキーラと、写真の説明は外しました）。値段は、ホームページの案と同じところから入れているので、決まれば全部そろって変わります。</p>
       <ul class="sg-contents">{{sign_contents}}</ul>
       {{sign_ask}}
     </div>
@@ -64,7 +66,7 @@
     <div class="sg-wrap">
       <h2 id="compare-h"><span class="sg-sec__en">COMPARE</span>10案を見比べる</h2>
       <form class="sg-quiz" aria-labelledby="quiz-h" onsubmit="return false">
-        <p class="sg-quiz__title" id="quiz-h"><b>かんたん診断</b>答えると、合いそうな案に印が付きます（全部答えなくても大丈夫です）</p>
+        <p class="sg-quiz__title" id="quiz-h"><b>かんたん診断</b>答えると、合いそうな案に印が付きます（片方だけでも大丈夫です）</p>
         {{sign_quiz}}
         <p class="sg-quiz__result" aria-live="polite"></p>
         <button class="sg-quiz__reset" type="reset" hidden>診断をやり直す</button>
@@ -72,7 +74,7 @@
       <ul class="sg-gallery">{{sign_gallery}}</ul>
       <p class="sg-sec__note">ポスターを押すと、その案のくわしい説明（置いたイメージつき）に移ります。「気になる」を押した案は、いちばん下の「気になる案を送る」に入ります。</p>
       <details class="sg-more">
-        <summary>表で比べる（3つのねらいへの効き目）</summary>
+        <summary>表で比べる（NEW OPEN・タバコ・雰囲気の目立ち方）</summary>
         {{sign_table}}
       </details>
     </div>
@@ -81,7 +83,7 @@
   <section class="sg-sec sg-sec--cards" id="ideas" aria-labelledby="ideas-h">
     <div class="sg-wrap">
       <h2 id="ideas-h"><span class="sg-sec__en">IDEAS</span>10案のくわしい説明</h2>
-      <p class="sg-sec__lead">1案ごとに、入口に置いたときのイメージ（夜）と、ポスターのデザインです。画像は「画像を保存」で保存できます。値段の「〇〇〇」は、決まったら入れます。</p>
+      <p class="sg-sec__lead">どの案も、案06の「3枚の写真」と黒と金はそのままで、NEW OPEN とタバコの見せ方、写真の並べ方を変えています。1案ごとに、入口に置いたときのイメージ（夜）と、ポスターのデザインです。値段の「〇〇〇」は、決まったら入れます。</p>
       {{sign_cards}}
     </div>
   </section>
@@ -89,7 +91,7 @@
   <section class="sg-sec sg-sec--alt" id="choose" aria-labelledby="choose-h">
     <div class="sg-wrap">
       <h2 id="choose-h"><span class="sg-sec__en">HOW TO CHOOSE</span>選び方</h2>
-      <p class="sg-sec__lead">スタンドに入るのは1枚です。迷ったら、いちばん大事にしたいことから選んでください。</p>
+      <p class="sg-sec__lead">スタンドに入るのは1枚です。迷ったら、いちばん目立たせたいことから選んでください。</p>
       <div class="sg-choose">{{sign_choose}}</div>
       <div class="sg-tip">{{sign_mix_tip}}</div>
     </div>
@@ -132,7 +134,7 @@
   <section class="sg-sec sg-sec--send" id="send" aria-labelledby="send-h">
     <div class="sg-wrap">
       <h2 id="send-h"><span class="sg-sec__en">YOUR CHOICE</span>気になる案を送る</h2>
-      <p class="sg-sec__lead">気になる案に印を付けて（いくつでも）、わかれば値段も書いて送ってください。書いた内容はこのスマホ（パソコン）に残ります。</p>
+      <p class="sg-sec__lead">気に入った案に印を付けて（迷っていたら、いくつでも）、わかれば値段も書いて送ってください。書いた内容はこのスマホ（パソコン）に残ります。</p>
       <form class="sg-send" onsubmit="return false">
         <div class="sg-send__picks" role="group" aria-labelledby="send-picks-h"><p class="sg-send__label" id="send-picks-h">気になる案（いくつでも）</p>{{sign_pick_list}}</div>
         <div class="sg-send__q" role="group" aria-labelledby="send-color-h"><p id="send-color-h">スタンドの枠の色</p><div>
@@ -141,7 +143,7 @@
           <label class="sg-chip"><input type="radio" name="frame" value="どちらでも"><span>どちらでも</span></label>
         </div></div>
         <div class="sg-send__prices" role="group" aria-labelledby="send-prices-h"><p class="sg-send__label" id="send-prices-h">ポスターに入れる値段（決まっているものだけ）</p>{{sign_price_fields}}</div>
-        <label class="sg-send__field">ひとこと<textarea name="note" rows="3" placeholder="例：案02と案09で迷っています。案02の写真で、料金表は案09のようにしたい。"></textarea></label>
+        <label class="sg-send__field">ひとこと<textarea name="note" rows="3" placeholder="例：案01と案03で迷っています。案01の形で、タバコは案03のように大きくしたい。"></textarea></label>
         <div class="sg-send__acts">
           <a class="sg-btn sg-btn--line sg-send__line" href="#" target="_blank" rel="noopener">LINEで送る</a>
           <button class="sg-btn sg-send__copy" type="button">文面をコピー</button>
