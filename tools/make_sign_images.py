@@ -1,53 +1,79 @@
-"""看板の提案（1階入口の置き看板・10案）のイメージ画像を作る。
+"""看板の提案（1階入口の光る置き看板に差し込むポスター・10案）のイメージ画像を作る。
 
-  python -I -X utf8 tools/make_sign_images.py [01,05 …]   … 番号を渡すと、その案だけ作り直す
+  python -I -X utf8 tools/make_sign_images.py [01,05,00,stand …]   … 番号を渡すと、その画像だけ作り直す
 
+スタンドは決まっている: モノタロウの LEDパネルA型スタンド 片面（A1）。幅640×奥行490×高さ1185mm、ボード面 640×884mm。
+その中に差し込むポスター（A1・594×841mm）を10案描く。
+1案につき3枚: 置いたイメージ（夜の入口・拡大つき）、デザイン（ポスターの全体）、一覧用の小さい画像。
+ほかに「今のようす」と「スタンドの大きさ」。
+
+文字や値段は signs.json と site.json から読む（値段の計算は build.py の sign_prices と同じもの）。
+値段が決まったら site.json を直して、この画像とページを作り直す。
 建物はストリートビューの写真を加工せず、イラストで描き起こす（Google の画像は加工して公開できないため）。
-青い角のビル、丸い角の大きな窓、1階の隣のお店の木の扉と入口のガラス扉、右の柱の案内板、手前の電柱と電線。
-1案につき2枚: 設置イメージ（夜の入口に置いたところ）とデザイン（看板の正面・寸法入り）。ほかに「今のようす」1枚。
-SVG で描き、画面なしの Edge で JPEG（2400×1500）に書き出す。ページ用の小さい WebP と、まとめてダウンロードする ZIP も作る。
-文字や値段は signs.json と site.json から読む。
+SVG で描き、画面なしの Edge で書き出す。ページ用の小さい WebP と、まとめてダウンロードする ZIP も作る。
 """
+import base64
 import html
 import io
 import json
+import math
 import sys
 import tempfile
-import time
 import zipfile
 from pathlib import Path
 
 from PIL import Image
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-import shoot  # noqa: E402
-
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(ROOT))
+import shoot  # noqa: E402
+import build  # noqa: E402  値段の計算（sign_prices・sign_charge）をページと同じにするため
+
 IMG = ROOT / 'docs' / 'assets' / 'img'
 OUT = ROOT / 'docs' / 'signs' / 'img'
-ZIP = ROOT / 'docs' / 'signs' / 'xiii-sign-ideas.zip'
+ZIP = ROOT / 'docs' / 'signs' / 'xiii-sign-posters.zip'
 DATA = json.loads((ROOT / 'signs.json').read_text(encoding='utf-8'))
 SITE = json.loads((ROOT / 'site.json').read_text(encoding='utf-8'))
 
 LOGO = (IMG / 'logo-x-iii.png').as_uri()
 LOGO_W = (IMG / 'logo-x-iii-white.png').as_uri()
-PHOTO = (IMG / 'counter-dark-1600.webp').as_uri()
-PHOTO2 = (IMG / 'backbar-1600.webp').as_uri()
 BARLOW = (ROOT / 'tools' / 'fonts' / 'Barlow-Regular.ttf').as_uri()
 
 JP = "'Yu Gothic','Meiryo',sans-serif"
+JPB = "'Noto Sans JP','Yu Gothic',sans-serif"
+MIN = "'Noto Serif JP','Yu Mincho',serif"
 SERIF = "'Palatino Linotype','Book Antiqua',Georgia,serif"
 NUM = "'Bahnschrift','Barlow',sans-serif"
 SCRIPT = "'Segoe Script','Segoe Print',cursive"
 HAND = "'Segoe Print','Yu Gothic',cursive"
 
 GOLD, GOLD_L, INK, WHITE = '#d9b66f', '#f4dfa8', '#0c0c0f', '#f6f2ea'
-HOURS = f"{SITE['open']}–{int(SITE['close'][:2])}:{SITE['close'][3:]}"  # 19:00–7:00
 
-S = 0.07          # 設置イメージの縮尺（1mm = 0.07。1m = 70）
+# ---- ポスターに載せる中身（site.json から） ------------------------------------------------
+HOURS = f"{SITE['open']}–{int(SITE['close'][:2])}:{SITE['close'][3:]}"   # 19:00–7:00
+CLOSED = SITE['closed']
+SMOKE = next(c['value'] for c in DATA['contents'] if c['label'] == 'たばこ')
+FOOT = f'OPEN {HOURS} ／ {CLOSED} ／ {SMOKE}'
+PRICES = {x['id']: x for x in build.sign_prices()}
+CHARGE_PER, CHARGE_AMT, _ = build.sign_charge()
+CHARGE = f'テーブルチャージ　{CHARGE_PER} {CHARGE_AMT}'
+BUDGET = build.raw('budget')[0]
+INSTA = SITE['instagram']
+
+# ---- スタンド（mm）。ボード面 640×884 の中に A1 のポスター（594×841）が入る -------------------
+PW, PH = 594, 841
+STAND_W, STAND_H, STAND_D, BOARD_H = 640, 1185, 490, 884
+LIP = 32                               # 表の枠の幅（ポスターのふちに 9〜10mm かかる）
+
+# ---- 建物の絵の座標 --------------------------------------------------------------------
+S = 0.07          # 建物の絵の縮尺（1mm = 0.07。1m = 70）
 G = 905           # 地面（入口の段の上）の高さ
-VB = (430, 160, 1290, 806.25)   # 設置イメージで切り取る範囲（1600×1000 に拡大する）
+CX = 1300         # スタンドを置く位置（入口のガラス扉の右）
+VB = (430, 160, 1290, 806.25)    # 「今のようす」で切り取る範囲（1600×1000 に拡大）
 K = 1600 / VB[2]
+PV = (600, 125, 900 * 870 / 1000, 870)   # 置いたイメージの左側（900×1000）に出す範囲
+PK = 1000 / 870
 
 
 def esc(s):
@@ -55,18 +81,41 @@ def esc(s):
 
 
 def o(x, y):
-    """建物の絵の座標を、出来上がりの画像（1600×1000）の座標にする。"""
+    """建物の絵の座標を、「今のようす」の画像（1600×1000）の座標にする。"""
     return ((x - VB[0]) * K, (y - VB[1]) * K)
 
 
+def po(x, y):
+    """建物の絵の座標を、置いたイメージの左側（900×1000）の座標にする。"""
+    return ((x - PV[0]) * PK, (y - PV[1]) * PK)
+
+
 def T(x, y, s, size, fill=WHITE, fam=JP, w=700, anchor='middle', ls=0, extra=''):
-    return (f'<text x="{x}" y="{y}" font-family="{fam}" font-size="{size}" font-weight="{w}" fill="{fill}" '
+    # 字間（letter-spacing）は最後の字の後ろにも付くので、その分ずらして真ん中・右端をそろえる。
+    if ls and anchor == 'middle':
+        x += ls / 2
+    elif ls and anchor == 'end':
+        x += ls
+    return (f'<text x="{x:.1f}" y="{y:.1f}" font-family="{fam}" font-size="{size}" font-weight="{w}" fill="{fill}" '
             f'text-anchor="{anchor}" letter-spacing="{ls}" {extra}>{esc(s)}</text>')
+
+
+def tw(s, size):
+    """文字の幅のおおよそ（点線の長さを決めるのに使う）。"""
+    w = 0.0
+    for ch in s:
+        if ch == ' ':
+            w += .3
+        elif ord(ch) < 0x300:
+            w += .6 if (ch.isupper() or ch.isdigit() or ch == '¥') else .5
+        else:
+            w += 1.0
+    return w * size
 
 
 def logo(cx, y, w, white=False, extra=''):
     h = w * 234 / 444
-    return f'<image href="{LOGO_W if white else LOGO}" x="{cx - w / 2}" y="{y}" width="{w}" height="{h:.1f}" {extra}/>'
+    return f'<image href="{LOGO_W if white else LOGO}" x="{cx - w / 2:.1f}" y="{y}" width="{w}" height="{h:.1f}" {extra}/>'
 
 
 DEFS = f"""<defs>
@@ -83,240 +132,437 @@ DEFS = f"""<defs>
 <linearGradient id="cyl" x1="0" x2="1"><stop offset="0" stop-color="#2b303d"/><stop offset=".45" stop-color="#4a5163"/><stop offset="1" stop-color="#262a35"/></linearGradient>
 <linearGradient id="pole" x1="0" x2="1"><stop offset="0" stop-color="#4c5059"/><stop offset=".5" stop-color="#8d9199"/><stop offset="1" stop-color="#3f434b"/></linearGradient>
 <linearGradient id="road" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2c36"/><stop offset="1" stop-color="#16171e"/></linearGradient>
-<linearGradient id="cylShade" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".55"/><stop offset=".3" stop-color="#000" stop-opacity="0"/><stop offset=".7" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".6"/></linearGradient>
+<linearGradient id="metal" x1="0" x2="1"><stop offset="0" stop-color="#8b929b"/><stop offset=".22" stop-color="#e2e6eb"/><stop offset=".5" stop-color="#c2c7ce"/><stop offset=".8" stop-color="#d9dde2"/><stop offset="1" stop-color="#848a93"/></linearGradient>
+<linearGradient id="metalV" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e6e9ed"/><stop offset="1" stop-color="#9aa0a8"/></linearGradient>
+<radialGradient id="panelLit" cx=".5" cy=".42" r=".75"><stop offset="0" stop-color="#fff" stop-opacity=".2"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
 <radialGradient id="lamp" cx="1" cy=".62" r=".75"><stop offset="0" stop-color="#ffd9a0" stop-opacity=".30"/><stop offset="1" stop-color="#ffd9a0" stop-opacity="0"/></radialGradient>
 <radialGradient id="lobbySpill" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#eaf2ff" stop-opacity=".45"/><stop offset="1" stop-color="#eaf2ff" stop-opacity="0"/></radialGradient>
-<radialGradient id="spill" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd58c" stop-opacity=".8"/><stop offset="1" stop-color="#ffd58c" stop-opacity="0"/></radialGradient>
-<radialGradient id="spillPink" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ff6fb4" stop-opacity=".7"/><stop offset="1" stop-color="#ff6fb4" stop-opacity="0"/></radialGradient>
-<radialGradient id="spillCool" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#cfe7ff" stop-opacity=".7"/><stop offset="1" stop-color="#cfe7ff" stop-opacity="0"/></radialGradient>
-<radialGradient id="faceLit" cx=".5" cy=".42" r=".75"><stop offset="0" stop-color="#25232a"/><stop offset="1" stop-color="#0c0c0f"/></radialGradient>
-<radialGradient id="washi" cx=".5" cy=".55" r=".7"><stop offset="0" stop-color="#fff3d6"/><stop offset=".7" stop-color="#f3dcae"/><stop offset="1" stop-color="#d9b77e"/></radialGradient>
-<radialGradient id="bgDesign" cx=".35" cy=".5" r=".8"><stop offset="0" stop-color="#262a33"/><stop offset="1" stop-color="#101217"/></radialGradient>
-<linearGradient id="photoFade" x1="0" y1="0" x2="0" y2="1"><stop offset=".45" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".88"/></linearGradient>
-<linearGradient id="screenFade" x1="0" y1="0" x2="0" y2="1"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".95"/></linearGradient>
+<radialGradient id="spill" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff0cf" stop-opacity=".75"/><stop offset="1" stop-color="#fff0cf" stop-opacity="0"/></radialGradient>
+<radialGradient id="vignette" cx=".5" cy=".5" r=".72"><stop offset=".45" stop-color="#05060c" stop-opacity="0"/><stop offset="1" stop-color="#05060c" stop-opacity=".62"/></radialGradient>
+<radialGradient id="bgDesign" cx=".5" cy=".4" r=".8"><stop offset="0" stop-color="#262a33"/><stop offset="1" stop-color="#101217"/></radialGradient>
 <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#fff" stroke-opacity=".035"/></pattern>
-<filter id="glow" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="22" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-<filter id="halo" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="120"/></filter>
-<filter id="neon" x="-60%" y="-60%" width="220%" height="220%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="9" result="a"/><feGaussianBlur stdDeviation="28" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="a"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="halo" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="40"/></filter>
+<filter id="neon" x="-60%" y="-60%" width="220%" height="220%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="5" result="a"/><feGaussianBlur stdDeviation="16" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="a"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
 <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5"/></filter>
 <filter id="softer" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="14"/></filter>
-<filter id="chalk" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 -1.6 1.25" result="m"/><feComposite in="SourceGraphic" in2="m" operator="in"/></filter>
-<filter id="dust" x="0" y="0" width="1" height="1"><feTurbulence type="fractalNoise" baseFrequency=".02" numOctaves="3" seed="9"/><feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .07 0"/></filter>
-<clipPath id="arrowClip"><path d="M300 0 L600 420 L450 420 L450 1500 L150 1500 L150 420 L0 420 Z"/></clipPath>
+<filter id="chalk" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 -1.5 1.3" result="m"/><feComposite in="SourceGraphic" in2="m" operator="in"/></filter>
+<filter id="dust" x="0" y="0" width="1" height="1"><feTurbulence type="fractalNoise" baseFrequency=".02" numOctaves="3" seed="9"/><feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .09 0"/></filter>
+<filter id="paper" x="0" y="0" width="1" height="1"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="4" seed="3"/><feColorMatrix type="matrix" values="0 0 0 0 .45  0 0 0 0 .33  0 0 0 0 .18  0 0 0 .25 0"/></filter>
+<filter id="pop" color-interpolation-filters="sRGB"><feComponentTransfer><feFuncR type="gamma" amplitude="1.04" exponent=".8"/><feFuncG type="gamma" amplitude="1.04" exponent=".8"/><feFuncB type="gamma" amplitude="1.04" exponent=".8"/></feComponentTransfer><feColorMatrix type="saturate" values="1.12"/></filter>
+<filter id="gilt" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values=".33 .62 .12 0 .02  .27 .52 .1 0 0  .14 .27 .05 0 0  0 0 0 1 0"/></filter>
+<filter id="ink" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 .125  0 0 0 0 .25  0 0 0 0 .185  0 0 0 1 0"/></filter>
+<filter id="tshadow" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur in="SourceAlpha" stdDeviation="3"/><feOffset dy="1.5"/><feComponentTransfer><feFuncA type="linear" slope=".9"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
 </defs>"""
 
 
-# ---- 看板の絵（mm 単位。左上が 0,0） ------------------------------------------------------
-def frame(w, h, rx=10, gold=True, inset=14):
-    s = f'<rect x="0" y="0" width="{w}" height="{h}" rx="{rx}" fill="url(#faceLit)"/>'
-    if gold:
-        s += f'<rect x="{inset}" y="{inset}" width="{w - 2 * inset}" height="{h - 2 * inset}" rx="{max(2, rx - 4)}" fill="none" stroke="{GOLD}" stroke-width="5"/>'
+# ---- ポスターの部品（mm。左上が 0,0、594×841） ----------------------------------------------
+def gold_grad(gid):
+    return (f'<linearGradient id="{gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbeec4"/>'
+            f'<stop offset=".45" stop-color="#e2c27e"/><stop offset="1" stop-color="#a9823e"/></linearGradient>')
+
+
+def shade(gid, a, b, vertical=True):
+    """黒のぼかし（a の不透明度から b の不透明度へ）。"""
+    xy = 'x1="0" y1="0" x2="0" y2="1"' if vertical else 'x1="0" y1="0" x2="1" y2="0"'
+    return (f'<linearGradient id="{gid}" {xy}><stop offset="0" stop-color="#000" stop-opacity="{a}"/>'
+            f'<stop offset="1" stop-color="#000" stop-opacity="{b}"/></linearGradient>')
+
+
+def _photo_info():
+    names = {'counter-dark': 'counter-dark-2400', 'backbar': 'backbar-2400', 'counter-wide': 'counter-wide-1108',
+             'neon-counter': 'neon-counter-1477', 'tables': 'tables-1108', 'darts': 'darts-1108'}
+    out = {}
+    for k, f in names.items():
+        p = IMG / f'{f}.webp'
+        with Image.open(p) as im:
+            out[k] = (p.as_uri(), im.size[0], im.size[1])
+    return out
+
+
+PHOTOS = _photo_info()
+
+
+def ph(name, x, y, w, h, cid, fx=.5, fy=.5, zoom=1.0, rx=0, clip=None, pop=True):
+    """写真を枠いっぱいに切り抜いて置く。(fx, fy) は枠の真ん中に来る写真の位置（0〜1）。clip は枠の形（パスの d）。"""
+    uri, iw, ih = PHOTOS[name]
+    k = max(w / iw, h / ih) * zoom
+    dw, dh = iw * k, ih * k
+    ix = min(x, max(x + w - dw, x + w / 2 - fx * dw))
+    iy = min(y, max(y + h - dh, y + h / 2 - fy * dh))
+    shape = f'<path d="{clip}"/>' if clip else f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="{rx}"/>'
+    f = ' filter="url(#pop)"' if pop else ''
+    return (f'<clipPath id="{cid}">{shape}</clipPath><g clip-path="url(#{cid})">'
+            f'<image href="{uri}" x="{ix:.2f}" y="{iy:.2f}" width="{dw:.2f}" height="{dh:.2f}" preserveAspectRatio="none"{f}/></g>')
+
+
+def rows(*ids):
+    return [(PRICES[i]['label'], PRICES[i]['value']) for i in ids]
+
+
+def plist(x, y, w, items, size, lab, val, lead=None, lh=None, fam=JPB, wl=500, wv=700, extra=''):
+    """値段の一覧（名前は左、値段は右。あいだを点線でつなぐ）。"""
+    lh = lh or size * 1.55
+    s = ''
+    for i, (k, v) in enumerate(items):
+        yy = y + i * lh
+        s += T(x, yy, k, size, lab, fam, wl, 'start', extra=extra)
+        s += T(x + w, yy, v, size, val, fam, wv, 'end', extra=extra)
+        if lead:
+            a, b = x + tw(k, size) + size * .45, x + w - tw(v, size) - size * .45
+            if b - a > size:
+                s += (f'<line x1="{a:.1f}" x2="{b:.1f}" y1="{yy - size * .32:.1f}" y2="{yy - size * .32:.1f}" stroke="{lead}" '
+                      f'stroke-width="{size * .1:.2f}" stroke-dasharray="0 {size * .34:.2f}" stroke-linecap="round"/>')
     return s
 
 
-def up_arrow(cx, y, h, color, sw):
+def up_arrow(cx, y, h, color, sw, extra=''):
     """上を指す矢印（y が先端、h が長さ）。"""
-    return (f'<path d="M{cx} {y + h} V{y + sw / 2} M{cx - h * .42} {y + h * .42} L{cx} {y} L{cx + h * .42} {y + h * .42}" fill="none" '
-            f'stroke="{color}" stroke-width="{sw}" stroke-linecap="round" stroke-linejoin="round"/>')
+    return (f'<path d="M{cx} {y + h} V{y + sw / 2} M{cx - h * .4} {y + h * .4} L{cx} {y} L{cx + h * .4} {y + h * .4}" fill="none" '
+            f'stroke="{color}" stroke-width="{sw}" stroke-linecap="round" stroke-linejoin="round" {extra}/>')
 
 
-def chevron(cx, y, w, color, sw):
-    return f'<path d="M{cx - w / 2} {y + w / 2} L{cx} {y} L{cx + w / 2} {y + w / 2}" fill="none" stroke="{color}" stroke-width="{sw}" stroke-linecap="round" stroke-linejoin="round"/>'
+def neon(text, x, y, size, color, fam, sw, anchor='middle', ls=0, w=700):
+    """ネオン管のように光る文字（ぼかした光・色の管・白い芯）。"""
+    st = 'fill="none" stroke-linejoin="round" stroke-linecap="round"'
+    glow = T(x, y, text, size, 'none', fam, w, anchor, ls, st + f' stroke="{color}" stroke-width="{sw * 1.5}"')
+    tube = T(x, y, text, size, 'none', fam, w, anchor, ls, st + f' stroke="{color}" stroke-width="{sw}"')
+    core = T(x, y, text, size, 'none', fam, w, anchor, ls, st + f' stroke="#fff" stroke-width="{sw * .3}" opacity=".85"')
+    return f'<g filter="url(#neon)">{glow}</g>{tube}{core}'
 
 
-def art_tower():
-    w, h = 450, 1800
-    s = frame(w, h - 100)
-    s += T(225, 170, 'BAR', 132, GOLD_L, SERIF, 700, ls=22)
-    s += f'<line x1="95" x2="355" y1="212" y2="212" stroke="{GOLD}" stroke-width="3"/>'
-    s += logo(225, 240, 330)
-    s += f'<g filter="url(#glow)">{up_arrow(225, 470, 150, GOLD_L, 20)}' + T(225, 900, '3F', 330, '#fff2d2', NUM, 700) + '</g>'
-    s += T(225, 1010, 'このビルの3階', 58, WHITE, JP, 700)
-    s += T(225, 1078, 'エレベーターでどうぞ', 40, '#d9d3c7', JP, 500)
-    s += f'<line x1="95" x2="355" y1="1140" y2="1140" stroke="{GOLD}" stroke-width="3"/>'
-    s += T(225, 1222, f'OPEN {HOURS}', 50, GOLD_L, NUM, 600, ls=2)
-    s += T(225, 1285, SITE['closed'], 38, '#cfc8bb', JP, 500)
-    s += T(225, 1420, 'ウイスキー', 40, '#e8e2d6', JP, 500, ls=4) + T(225, 1480, 'カクテル・ダーツ', 40, '#e8e2d6', JP, 500, ls=4)
-    s += f'<rect x="0" y="{h - 100}" width="{w}" height="100" rx="6" fill="#1b1b20"/>'
-    return s, w, h
+def neon_path(d, color, sw):
+    st = 'fill="none" stroke-linejoin="round" stroke-linecap="round"'
+    return (f'<g filter="url(#neon)"><path d="{d}" {st} stroke="{color}" stroke-width="{sw * 1.5}"/></g>'
+            f'<path d="{d}" {st} stroke="{color}" stroke-width="{sw}"/><path d="{d}" {st} stroke="#fff" stroke-width="{sw * .3}" opacity=".85"/>')
 
 
-def art_arrow():
-    w, h = 600, 1700
-    d = 'M300 0 L600 420 L450 420 L450 1500 L150 1500 L150 420 L0 420 Z'
-    s = f'<path d="{d}" fill="url(#faceLit)"/>'
-    s += f'<g filter="url(#glow)"><path d="{d}" fill="none" stroke="{GOLD_L}" stroke-width="14" stroke-linejoin="round"/></g>'
-    s += f'<g filter="url(#glow)">' + T(300, 365, '3F', 200, '#fff2d2', NUM, 700) + '</g>'
-    s += T(300, 545, 'BAR', 88, GOLD_L, SERIF, 700, ls=8)
-    s += logo(300, 580, 262)
-    s += f'<text x="300" y="800" writing-mode="vertical-rl" style="text-orientation:upright" font-family="{JP}" font-size="62" font-weight="700" fill="{WHITE}" letter-spacing="10">このビルの3階へ</text>'
-    s += T(300, 1440, HOURS, 44, GOLD_L, NUM, 600)
-    s += f'<rect x="80" y="1500" width="440" height="200" rx="14" fill="#1b1b20"/>' + T(300, 1620, 'OPEN', 56, '#8a7c62', NUM, 600, ls=10)
-    return s, w, h
+def tag(x, y, text, size=15, bg='#000', fg=WHITE, op=.72):
+    """写真の上に置く小さな札（x, y は札の左下）。"""
+    w = tw(text, size) + size * 1.2
+    return (f'<rect x="{x}" y="{y - size * 1.6:.1f}" width="{w:.1f}" height="{size * 1.6:.1f}" rx="{size * .3:.1f}" fill="{bg}" opacity="{op}"/>'
+            + T(x + size * .6, y - size * .48, text, size, fg, JPB, 700, 'start'))
 
 
-def prism_face(i):
-    w, h = 400, 1600
-    s = frame(w, h)
-    if i == 0:
-        s += T(200, 170, 'BAR', 110, GOLD_L, SERIF, 700, ls=16) + logo(200, 210, 300)
-        s += f'<g filter="url(#glow)">' + T(200, 760, '3F', 300, '#fff2d2', NUM, 700) + '</g>'
-        s += T(200, 880, 'このビルの3階', 50, WHITE) + T(200, 945, 'エレベーターで', 38, '#d9d3c7', JP, 500)
-        s += f'<g filter="url(#glow)">{chevron(200, 1060, 130, GOLD_L, 20)}{chevron(200, 1130, 130, GOLD_L, 20)}</g>'
-    elif i == 1:
-        s += T(200, 230, 'OPEN', 120, GOLD_L, NUM, 600, ls=10)
-        s += f'<g filter="url(#glow)">' + T(200, 520, SITE['open'], 150, '#fff2d2', NUM, 700) + '</g>'
-        s += T(200, 640, '｜', 70, GOLD, JP, 500)
-        s += f'<g filter="url(#glow)">' + T(200, 830, f"{int(SITE['close'][:2])}:{SITE['close'][3:]}", 150, '#fff2d2', NUM, 700) + '</g>'
-        s += T(200, 940, '朝まで営業', 54, WHITE) + T(200, 1020, SITE['closed'], 40, '#cfc8bb', JP, 500)
-        s += logo(200, 1250, 260)
-    else:
-        s += T(200, 330, '一人でも、', 66, WHITE) + T(200, 420, '気軽に。', 66, WHITE)
-        s += f'<line x1="90" x2="310" y1="500" y2="500" stroke="{GOLD}" stroke-width="3"/>'
-        for k, t in enumerate(['ウイスキー', 'カクテル', 'ダーツ']):
-            s += T(200, 620 + k * 90, t, 50, GOLD_L, JP, 700, ls=6)
-        s += f'<g filter="url(#glow)">' + T(200, 1260, 'BAR 3F', 96, '#fff2d2', NUM, 700) + '</g>'
+def polaroid(name, x, y, w, h, rot, caption, cid, fx=.5, fy=.5):
+    """テープで貼った写真（白いふち付き）。"""
+    cx, cy = x + w / 2, y + h / 2
+    s = f'<g transform="rotate({rot} {cx} {cy})">'
+    s += f'<rect x="{x + 4}" y="{y + 6}" width="{w}" height="{h}" fill="#000" opacity=".45" filter="url(#soft)"/>'
+    s += f'<rect x="{x}" y="{y}" width="{w}" height="{h}" fill="#f3f0e8"/>'
+    s += ph(name, x + 9, y + 9, w - 18, h - 46, cid, fx, fy)
+    s += T(cx, y + h - 13, caption, 17, '#33302b', JPB, 700)
+    s += f'<rect x="{cx - 34}" y="{y - 12}" width="68" height="24" fill="#efe2b8" opacity=".82" transform="rotate({-rot * 2} {cx} {y})"/>'
+    return s + '</g>'
+
+
+# ---- 10案のポスター ----------------------------------------------------------------------
+def poster_classic(p):
+    """01 黒と金の王道。"""
+    g = f'{p}-g'
+    s = (f'<defs>{gold_grad(g)}<radialGradient id="{p}-bg" cx=".5" cy=".38" r=".8"><stop offset="0" stop-color="#241f2a"/>'
+         f'<stop offset="1" stop-color="#0a090c"/></radialGradient></defs>')
+    s += f'<rect width="{PW}" height="{PH}" fill="url(#{p}-bg)"/>'
+    s += f'<rect x="20" y="20" width="{PW - 40}" height="{PH - 40}" fill="none" stroke="{GOLD}" stroke-width="2.2"/>'
+    s += f'<rect x="27" y="27" width="{PW - 54}" height="{PH - 54}" fill="none" stroke="{GOLD}" stroke-width=".8" opacity=".8"/>'
+    for x, y in ((20, 20), (PW - 20, 20), (20, PH - 20), (PW - 20, PH - 20)):
+        s += f'<rect x="{x - 5}" y="{y - 5}" width="10" height="10" transform="rotate(45 {x} {y})" fill="{GOLD}"/>'
+    s += T(297, 66, 'DINING BAR  ·  NERIMA', 14, GOLD, NUM, 600, ls=7)
+    s += T(297, 158, 'BAR', 104, f'url(#{g})', SERIF, 700, ls=36)
+    s += logo(297, 172, 232)
+    s += ph('counter-dark', 52, 312, 490, 212, f'{p}-ph', fx=.62, fy=.56)
+    s += f'<rect x="52" y="312" width="490" height="212" fill="none" stroke="{GOLD}" stroke-width="1.4"/>'
+    s += T(56, 636, '3F', 122, f'url(#{g})', NUM, 700, 'start')
+    s += up_arrow(242, 556, 76, GOLD_L, 7)
+    s += T(286, 590, 'このビルの3階', 36, WHITE, JPB, 700, 'start')
+    s += T(286, 628, 'エレベーターでどうぞ', 24, '#d8d1c4', JPB, 500, 'start')
+    s += f'<line x1="60" x2="534" y1="656" y2="656" stroke="{GOLD}" stroke-width="1" opacity=".6"/>'
+    s += T(297, 690, CHARGE, 23, GOLD_L, JPB, 700)
+    s += plist(64, 724, 212, rows('beer', 'whisky', 'cocktail'), 18, '#ebe5d8', GOLD_L, '#7d6c48', 26)
+    s += plist(318, 724, 212, rows('shochu', 'food', 'darts'), 18, '#ebe5d8', GOLD_L, '#7d6c48', 26)
+    s += T(297, 801, FOOT, 12.5, '#bdb6a8', JPB, 500)
     return s
 
 
-def art_neon():
-    w, h = 600, 1500
-    s = f'<rect x="0" y="0" width="600" height="1000" rx="22" fill="#08080a" stroke="#2c2c33" stroke-width="6"/>'
-    s += f'<g filter="url(#neon)"><text x="300" y="300" font-family="{SCRIPT}" font-size="250" font-weight="700" fill="none" stroke="#ff5aa8" stroke-width="10" text-anchor="middle">Bar</text></g>'
-    s += f'<g filter="url(#neon)"><text x="300" y="560" font-family="{SERIF}" font-size="190" fill="none" stroke="#ffd27a" stroke-width="7" text-anchor="middle" letter-spacing="6">X-III</text>'
-    s += f'<text x="300" y="640" font-family="{NUM}" font-size="46" fill="#ffd27a" text-anchor="middle" letter-spacing="22">CROSSLEY</text></g>'
-    s += f'<g filter="url(#neon)"><text x="250" y="870" font-family="{NUM}" font-size="170" font-weight="600" fill="none" stroke="#8fe8ff" stroke-width="8" text-anchor="middle">3F</text>'
-    s += f'<path d="M430 880 V720 M380 770 L430 720 L480 770" fill="none" stroke="#8fe8ff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/></g>'
-    # スタンド（イーゼル）
-    s += '<path d="M120 990 L60 1500 M480 990 L540 1500 M300 990 L300 1440" stroke="#1d1d22" stroke-width="26" stroke-linecap="round"/>'
-    s += '<path d="M110 1260 H490" stroke="#1d1d22" stroke-width="18"/>'
-    return s, w, h
+def poster_photo(p):
+    """02 写真が主役。"""
+    g = f'{p}-g'
+    s = f'<defs>{gold_grad(g)}{shade(p + "-t", .9, 0)}{shade(p + "-b", 0, .95)}</defs>'
+    s += f'<rect width="{PW}" height="{PH}" fill="#000"/>'
+    s += ph('counter-dark', 0, 0, PW, PH, f'{p}-ph', fx=.66, fy=.5)
+    s += f'<rect x="0" y="0" width="{PW}" height="330" fill="url(#{p}-t)"/>'
+    s += f'<rect x="0" y="440" width="{PW}" height="{PH - 440}" fill="url(#{p}-b)"/>'
+    s += T(297, 62, 'DINING BAR  ·  NERIMA', 14, GOLD_L, NUM, 600, ls=7)
+    s += logo(297, 78, 250)
+    s += T(297, 298, 'BAR', 92, WHITE, SERIF, 700, ls=34, extra='filter="url(#tshadow)"')
+    s += T(297, 552, 'このビルの3階に、', 32, WHITE, JPB, 700, extra='filter="url(#tshadow)"')
+    s += T(297, 594, 'こんなバーがあります。', 32, WHITE, JPB, 700, extra='filter="url(#tshadow)"')
+    s += f'<line x1="52" x2="542" y1="622" y2="622" stroke="{GOLD}" stroke-width="1.2" opacity=".75"/>'
+    s += T(48, 748, '3F', 132, f'url(#{g})', NUM, 700, 'start')
+    s += T(54, 780, 'エレベーターで3階へ', 17, '#e6dfd0', JPB, 500, 'start')
+    s += T(240, 660, 'テーブルチャージ', 17, '#e6dfd0', JPB, 700, 'start')
+    s += T(542, 660, f'{CHARGE_PER} {CHARGE_AMT}', 20, GOLD_L, JPB, 700, 'end')
+    s += plist(240, 692, 302, rows('beer', 'whisky', 'cocktail', 'food', 'darts'), 17, '#efe9dc', GOLD_L, '#8a7a56', 22.5)
+    s += T(297, 812, FOOT, 12.5, '#cfc8ba', JPB, 500)
+    return s
 
 
-def art_photo():
-    w, h = 600, 1350
-    s = f'<rect x="0" y="0" width="600" height="1200" rx="12" fill="#0b0b0e"/>'
-    s += '<clipPath id="phClip"><rect x="20" y="20" width="560" height="660" rx="6"/></clipPath>'
-    s += f'<g clip-path="url(#phClip)"><image href="{PHOTO}" x="-300" y="20" width="1180" height="660" preserveAspectRatio="xMidYMid slice"/>'
-    s += '<rect x="20" y="20" width="560" height="660" fill="url(#photoFade)"/></g>'
-    s += T(300, 590, '3階に、', 54, WHITE) + T(300, 652, 'こんなお店があります。', 48, WHITE)
-    s += logo(300, 706, 290)
-    s += f'<g filter="url(#glow)">' + T(300, 950, 'BAR  3F', 76, GOLD_L, NUM, 700, ls=6) + '</g>'
-    s += T(300, 1015, 'このビルの3階・エレベーターで', 33, '#dcd6ca', JP, 500)
-    s += T(300, 1075, f'OPEN {HOURS} ／ {SITE["closed"]}', 31, GOLD_L, JP, 700)
-    s += T(300, 1140, '一人でも気軽にどうぞ', 34, WHITE, JP, 700)
-    s += f'<rect x="70" y="1200" width="460" height="150" rx="10" fill="#1b1b20"/>'
-    return s, w, h
+def poster_neon(p):
+    """03 ネオンサイン風。"""
+    s = (f'<defs><pattern id="{p}-brick" width="64" height="26" patternUnits="userSpaceOnUse"><rect width="64" height="26" fill="#170f19"/>'
+         f'<path d="M0 .8H64 M0 13.8H64 M.8 0V13 M32.8 13V26" stroke="#271b2c" stroke-width="1.6"/></pattern>'
+         f'<radialGradient id="{p}-v" cx=".5" cy=".45" r=".75"><stop offset=".35" stop-color="#000" stop-opacity="0"/>'
+         f'<stop offset="1" stop-color="#000" stop-opacity=".78"/></radialGradient></defs>')
+    s += f'<rect width="{PW}" height="{PH}" fill="url(#{p}-brick)"/><rect width="{PW}" height="{PH}" fill="url(#{p}-v)"/>'
+    s += neon('Bar', 297, 226, 200, '#ff4fa3', SCRIPT, 5.5)
+    s += neon('X-III', 297, 354, 108, '#ffcf6b', SERIF, 3.6, ls=8)
+    s += T(297, 394, 'CROSSLEY', 22, '#ffd98a', NUM, 600, ls=12, extra='filter="url(#neon)"')
+    s += neon('3F', 50, 588, 158, '#5fe3ff', NUM, 5, 'start')
+    s += neon_path('M276 590 V456 M244 488 L276 456 L308 488', '#5fe3ff', 7)
+    s += ph('counter-dark', 318, 436, 228, 160, f'{p}-ph', fx=.62, fy=.55, rx=10)
+    s += neon_path('M328 436 H536 A10 10 0 0 1 546 446 V586 A10 10 0 0 1 536 596 H328 A10 10 0 0 1 318 586 V446 A10 10 0 0 1 328 436 Z', '#ff4fa3', 3)
+    s += T(297, 642, 'このビルの3階・エレベーターでどうぞ', 22, '#f4eefc', JPB, 700)
+    s += neon_path('M81 664 H513 A21 21 0 0 1 513 706 H81 A21 21 0 0 1 81 664 Z', '#ff4fa3', 2.4)
+    s += T(297, 693, CHARGE, 20, WHITE, JPB, 700)
+    s += plist(66, 738, 212, rows('beer', 'whisky', 'cocktail'), 17, '#bdf0ff', WHITE, '#3f7482', 24)
+    s += plist(316, 738, 212, rows('shochu', 'food', 'darts'), 17, '#bdf0ff', WHITE, '#3f7482', 24)
+    s += T(297, 812, FOOT, 12.5, '#cdbfd8', JPB, 500)
+    return s
 
 
-def art_chalk():
-    w, h = 640, 1450
-    s = '<g transform="translate(0,200)">'
-    s += '<rect x="0" y="0" width="640" height="900" rx="14" fill="#5d3b22"/><rect x="34" y="34" width="572" height="832" rx="6" fill="#1b2823"/>'
-    s += '<rect x="34" y="34" width="572" height="832" fill="#fff" filter="url(#dust)" opacity=".9"/>'
+def poster_chalk(p):
+    """04 黒板のメニュー。"""
+    s = f'<rect width="{PW}" height="{PH}" fill="#4a2f1b"/>'
+    for i, y in enumerate(range(6, PH, 9)):
+        s += f'<line x1="0" x2="{PW}" y1="{y}" y2="{y + (i % 3) - 1}" stroke="#3a2414" stroke-width="{1 + i % 2}" opacity=".7"/>'
+    s += '<rect x="26" y="26" width="542" height="789" fill="#1c2a24"/><rect x="26" y="26" width="542" height="789" fill="#fff" filter="url(#dust)"/>'
     c = '<g filter="url(#chalk)">'
-    c += T(320, 150, 'BAR', 110, '#f4f1e6', HAND, 700, ls=10)
-    c += logo(320, 172, 210, white=True, extra='opacity=".85"')
-    c += T(235, 520, '3F', 220, '#f7df7c', HAND, 700)
-    c += '<path d="M455 520 V350 M405 405 L455 350 L505 405" fill="none" stroke="#f7df7c" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>'
-    c += T(320, 600, 'このビルの3階', 50, '#f4f1e6', JP, 700)
-    c += T(320, 680, '今夜のおすすめ', 40, '#f6b9b9', JP, 700)
-    c += T(320, 735, 'ジントニック・ハイボール', 33, '#f4f1e6', JP, 500)
-    c += T(320, 785, 'ナポリタン ¥1,600', 33, '#f4f1e6', JP, 500)
-    c += T(320, 840, f'OPEN {HOURS}', 34, '#bfe3ff', HAND, 700)
+    c += T(297, 126, 'BAR', 100, '#f3f0e6', HAND, 700, ls=14)
+    c += T(62, 372, '3F', 130, '#f6dc72', HAND, 700, 'start')
+    c += up_arrow(262, 258, 112, '#f6dc72', 9)
+    c += T(312, 296, 'このビルの', 28, '#f3f0e6', JPB, 700, 'start')
+    c += T(312, 340, '3階です！', 40, '#f3f0e6', JPB, 900, 'start')
+    c += T(312, 372, 'エレベーターでどうぞ', 18, '#cfe6f5', JPB, 500, 'start')
+    c += T(297, 654, '— MENU —', 30, '#f3f0e6', HAND, 700, ls=6)
+    c += T(297, 690, CHARGE, 22, '#ffb9c9', JPB, 700)
+    c += plist(64, 726, 212, rows('beer', 'whisky', 'cocktail'), 18, '#f3f0e6', '#f3f0e6', '#9fb6aa', 27)
+    c += plist(318, 726, 212, rows('shochu', 'tequila', 'food'), 18, '#f3f0e6', '#f3f0e6', '#9fb6aa', 27)
     c += '</g>'
     s += c
-    s += '<path d="M60 900 L10 1250 M580 900 L630 1250" stroke="#5d3b22" stroke-width="30" stroke-linecap="round"/>'
-    s += '</g>'
-    # 上から照らすライト
-    s += '<path d="M320 175 V40 H250" fill="none" stroke="#2a2a2e" stroke-width="12"/><path d="M215 25 h70 l-12 40 h-46 z" fill="#2a2a2e"/>'
-    s += '<path d="M228 66 L120 260 H460 L273 66 Z" fill="#ffe7b0" opacity=".08"/>'
-    return s, w, h
-
-
-def art_digital():
-    w, h = 640, 1850
-    s = '<rect x="0" y="0" width="640" height="1650" rx="26" fill="#131418" stroke="#2c2e34" stroke-width="6"/>'
-    s += '<clipPath id="scClip"><rect x="40" y="40" width="560" height="1000" rx="6"/></clipPath><g clip-path="url(#scClip)">'
-    s += '<rect x="40" y="40" width="560" height="1000" fill="#050506"/>'
-    s += f'<image href="{PHOTO2}" x="-320" y="40" width="1100" height="560" preserveAspectRatio="xMidYMid slice"/>'
-    s += '<rect x="40" y="40" width="560" height="560" fill="url(#screenFade)"/>'
-    s += '<rect x="66" y="66" width="200" height="56" rx="28" fill="#1fbf6a"/>' + T(166, 104, '● 営業中', 30, '#fff')
-    s += logo(320, 560, 300)
-    s += T(320, 800, 'BAR  3F', 74, GOLD_L, NUM, 700, ls=6)
-    s += T(320, 860, '今夜のおすすめ：ジントニック', 30, WHITE, JP, 500)
-    s += '<rect x="40" y="960" width="560" height="80" fill="#1d1e24"/>' + T(320, 1012, 'お知らせ：12/30〜1/3 は年末年始のお休み', 26, '#ffcf8a', JP, 500)
-    s += '</g>'
-    s += '<rect x="250" y="1100" width="140" height="10" rx="5" fill="#2c2e34"/>'
-    s += logo(320, 1220, 280) + T(320, 1520, 'BAR  3F', 70, GOLD, NUM, 700, ls=6)
-    s += '<rect x="90" y="1650" width="460" height="200" rx="12" fill="#1b1c21"/>'
-    return s, w, h
-
-
-def art_slim():
-    w, h = 200, 1800
-    s = frame(w, h - 80, rx=6, inset=10)
-    s += T(100, 130, 'BAR', 62, GOLD_L, SERIF, 700, ls=4)
-    s += f'<text x="100" y="200" writing-mode="vertical-rl" style="text-orientation:upright" font-family="{SERIF}" font-size="92" font-weight="700" fill="{GOLD_L}" letter-spacing="2">XⅢ</text>'
-    s += f'<text x="100" y="440" writing-mode="vertical-rl" style="text-orientation:upright" font-family="{JP}" font-size="56" font-weight="700" fill="{WHITE}" letter-spacing="8">クロスリー</text>'
-    s += f'<g filter="url(#glow)">' + T(100, 1080, '3', 230, '#fff2d2', NUM, 700) + T(100, 1250, 'F', 160, '#fff2d2', NUM, 700) + '</g>'
-    s += f'<g filter="url(#glow)">{chevron(100, 1330, 90, GOLD_L, 14)}{chevron(100, 1380, 90, GOLD_L, 14)}</g>'
-    s += T(100, 1600, HOURS, 30, GOLD_L, NUM, 600)
-    s += f'<rect x="0" y="{h - 80}" width="{w}" height="80" rx="6" fill="#1b1b20"/>'
-    return s, w, h
-
-
-def art_andon():
-    w, h = 300, 900
-    s = '<rect x="0" y="0" width="300" height="900" rx="6" fill="#1a120c"/>'
-    s += '<rect x="22" y="40" width="256" height="760" fill="url(#washi)"/>'
-    s += '<rect x="22" y="40" width="256" height="760" fill="#fff" filter="url(#dust)" opacity=".5"/>'
-    s += '<g stroke="#1a120c" stroke-width="7" opacity=".85"><line x1="22" x2="278" y1="250" y2="250"/><line x1="22" x2="278" y1="590" y2="590"/></g>'
-    s += T(150, 172, 'BAR', 72, '#2a1a10', SERIF, 700, ls=12)
-    s += (f'<text x="150" y="292" writing-mode="vertical-rl" style="text-orientation:upright" font-family="{SERIF}" '
-          f'font-size="118" font-weight="700" fill="#1a120c">XⅢ</text>')
-    s += T(150, 712, '3F', 112, '#7a1d14', NUM, 700)
-    s += T(150, 772, 'クロスリー', 30, '#2a1a10', JP, 700, ls=6)
-    s += '<rect x="0" y="0" width="300" height="40" rx="4" fill="#120c08"/><rect x="0" y="800" width="300" height="100" rx="4" fill="#120c08"/>'
-    return s, w, h
-
-
-def spin_band():
-    """円柱のまわりの中身（展開図。幅 848mm = 直径270mm の円周）。表（左半分）と裏（右半分）で中身を分け、
-    回るたびに交互に見えるようにする。上下には、回っているとわかる斜めの金の帯。"""
-    s = ''
-    for y0 in (0, 1150):
-        for k in range(-3, 18):
-            x = k * 56
-            s += f'<line x1="{x}" y1="{y0 + 140}" x2="{x + 90}" y2="{y0}" stroke="{GOLD}" stroke-width="6" opacity=".6"/>'
-        s += f'<line x1="0" x2="848" y1="{y0 + (140 if y0 == 0 else 0)}" y2="{y0 + (140 if y0 == 0 else 0)}" stroke="{GOLD}" stroke-width="4" opacity=".8"/>'
-    a, b = 212, 636                            # 表と裏の真ん中
-    s += T(a, 330, 'BAR', 92, GOLD_L, SERIF, 700, ls=10) + logo(a, 370, 230)
-    s += f'<g filter="url(#glow)">{up_arrow(a, 560, 120, GOLD_L, 18)}' + T(a, 900, '3F', 210, '#fff2d2', NUM, 700) + '</g>'
-    s += T(a, 990, 'このビルの3階', 40, WHITE)
-    s += T(b, 330, 'OPEN', 86, GOLD_L, NUM, 600, ls=8)
-    s += f'<g filter="url(#glow)">' + T(b, 520, SITE['open'], 112, '#fff2d2', NUM, 700) + T(b, 720, f"{int(SITE['close'][:2])}:{SITE['close'][3:]}", 112, '#fff2d2', NUM, 700) + '</g>'
-    s += T(b, 605, '｜', 50, GOLD, JP, 500) + T(b, 830, '朝まで営業', 46, WHITE) + T(b, 900, SITE['closed'], 34, '#cfc8bb', JP, 500)
-    s += T(b, 1010, 'エレベーターで3階へ', 34, '#d9d3c7', JP, 500)
+    s += logo(297, 138, 190, white=True, extra='opacity=".9"')
+    s += polaroid('counter-dark', 58, 404, 232, 200, -4, 'カウンター', f'{p}-p1', fx=.62)
+    s += polaroid('darts', 304, 408, 232, 200, 3, 'ダーツ 1ゲーム ¥100', f'{p}-p2', fx=.48, fy=.42)
+    s += T(297, 804, FOOT, 12.5, '#cfe6f5', JPB, 500)
     return s
 
 
-def art_spin():
-    w, h = 270, 1650
-    s = '<rect x="0" y="0" width="270" height="1450" rx="40" fill="#0c0c0f"/>'
-    s += '<clipPath id="cylClip"><rect x="0" y="80" width="270" height="1290" rx="24"/></clipPath>'
-    s += '<g clip-path="url(#cylClip)"><rect x="0" y="80" width="270" height="1290" fill="url(#faceLit)"/>'
-    s += f'<g transform="translate(-77,80)">{spin_band()}</g>'
-    s += '<rect x="0" y="80" width="270" height="1290" fill="url(#cylShade)"/></g>'
-    s += '<ellipse cx="135" cy="80" rx="135" ry="26" fill="#26262c" stroke="#3a3a42" stroke-width="4"/>'
-    s += '<path d="M0 1370 A135 26 0 0 0 270 1370" fill="#1a1a1f"/>'
-    s += '<rect x="100" y="1390" width="70" height="170" fill="#1b1b20"/><ellipse cx="135" cy="1600" rx="130" ry="40" fill="#1b1b20"/>'
-    return s, w, h
+def poster_big3f(p):
+    """05 大きな「3F」。"""
+    s = (f'<defs><linearGradient id="{p}-y" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffdb57"/>'
+         f'<stop offset="1" stop-color="#f3b022"/></linearGradient>{gold_grad(p + "-g")}</defs>')
+    s += f'<rect width="{PW}" height="452" fill="url(#{p}-y)"/><rect y="452" width="{PW}" height="{PH - 452}" fill="#121014"/>'
+    s += T(297, 80, 'このビルの', 40, '#141008', JPB, 900, ls=6)
+    s += T(297, 364, '3F', 330, '#141008', NUM, 700)
+    s += T(297, 428, 'に、バーがあります。', 44, '#141008', JPB, 900)
+    s += logo(165, 474, 206)
+    s += T(408, 532, 'BAR', 64, f'url(#{p}-g)', SERIF, 700, ls=18)
+    s += T(408, 568, 'エレベーターで3階へ', 19, '#e8e1d2', JPB, 500)
+    s += ph('counter-dark', 40, 592, 252, 100, f'{p}-p1', fx=.62, fy=.55, rx=6)
+    s += ph('tables', 302, 592, 252, 100, f'{p}-p2', fx=.5, fy=.62, rx=6)
+    s += T(297, 728, CHARGE, 21, '#ffd957', JPB, 700)
+    pr = [f'{k} {v}' for k, v in rows('beer', 'whisky', 'cocktail')]
+    s += T(297, 756, ' ・ '.join(pr), 15.5, WHITE, JPB, 500)
+    pr = [f'{k} {v}' for k, v in rows('shochu', 'food', 'darts')]
+    s += T(297, 779, ' ・ '.join(pr), 15.5, WHITE, JPB, 500)
+    s += T(297, 806, FOOT, 12, '#c9c2b4', JPB, 500)
+    return s
 
 
-ARTS = {'tower': art_tower, 'arrow': art_arrow, 'neon': art_neon, 'photo': art_photo, 'chalk': art_chalk,
-        'digital': art_digital, 'slim': art_slim, 'andon': art_andon, 'spin': art_spin}
-SPILL = {'neon': 'spillPink', 'digital': 'spillCool', 'photo': 'spill', 'andon': 'spill'}
+def poster_three(p):
+    """06 3枚の写真で見せる。"""
+    g = f'{p}-g'
+    s = f'<defs>{gold_grad(g)}</defs><rect width="{PW}" height="{PH}" fill="#0c0b0e"/>'
+    s += logo(168, 44, 226)
+    s += T(548, 112, 'BAR', 86, f'url(#{g})', SERIF, 700, 'end', ls=14)
+    s += T(548, 176, '3F', 62, f'url(#{g})', NUM, 700, 'end')
+    s += T(462, 170, 'このビルの', 22, WHITE, JPB, 700, 'end')
+    s += f'<line x1="40" x2="554" y1="196" y2="196" stroke="{GOLD}" stroke-width="1.2" opacity=".7"/>'
+    s += ph('counter-dark', 40, 210, 514, 214, f'{p}-p1', fx=.6, fy=.55)
+    s += ph('tables', 40, 432, 253, 162, f'{p}-p2', fx=.5, fy=.62)
+    s += ph('darts', 301, 432, 253, 162, f'{p}-p3', fx=.48, fy=.42)
+    s += tag(50, 414, 'カウンター') + tag(50, 584, 'テーブル席') + tag(311, 584, 'ダーツ 1ゲーム ¥100')
+    s += T(297, 628, 'おひとりでも、仲間とでも。エレベーターで3階へ。', 20, '#e9e3d6', JPB, 500)
+    s += f'<line x1="60" x2="534" y1="646" y2="646" stroke="{GOLD}" stroke-width="1" opacity=".55"/>'
+    s += T(297, 678, CHARGE, 21, GOLD_L, JPB, 700)
+    s += plist(64, 710, 212, rows('beer', 'whisky', 'cocktail'), 17, '#ebe5d8', GOLD_L, '#7d6c48', 24)
+    s += plist(318, 710, 212, rows('shochu', 'tequila', 'food'), 17, '#ebe5d8', GOLD_L, '#7d6c48', 24)
+    s += T(297, 790, FOOT, 12.5, '#bdb6a8', JPB, 500)
+    s += T(297, 810, f'Instagram {INSTA}', 12.5, GOLD, NUM, 600, ls=1)
+    return s
+
+
+def poster_label(p):
+    """07 ウイスキーのラベル。"""
+    green, red, gold = '#20402f', '#8e2a22', '#b8924a'
+    s = f'<defs><path id="{p}-arc" d="M110 160 A230 150 0 0 1 484 160"/></defs>'
+    s += f'<rect width="{PW}" height="{PH}" fill="#efe4cb"/><rect width="{PW}" height="{PH}" filter="url(#paper)"/>'
+    s += f'<rect x="18" y="18" width="{PW - 36}" height="{PH - 36}" fill="none" stroke="{green}" stroke-width="7"/>'
+    s += f'<rect x="28" y="28" width="{PW - 56}" height="{PH - 56}" fill="none" stroke="{gold}" stroke-width="1.6"/>'
+    s += f'<rect x="33" y="33" width="{PW - 66}" height="{PH - 66}" fill="none" stroke="{green}" stroke-width=".8"/>'
+    for x, y in ((33, 33), (PW - 33, 33), (33, PH - 33), (PW - 33, PH - 33)):
+        s += f'<rect x="{x - 6}" y="{y - 6}" width="12" height="12" transform="rotate(45 {x} {y})" fill="{gold}"/>'
+    s += (f'<text font-family="{NUM}" font-size="19" font-weight="600" fill="{green}" letter-spacing="5">'
+          f'<textPath href="#{p}-arc" startOffset="50%" text-anchor="middle">DINING BAR · NERIMA TOKYO</textPath></text>')
+    s += logo(297, 162, 300, extra='filter="url(#ink)"')
+    s += T(297, 340, '— EST. 2026 —', 14, gold, SERIF, 700, ls=4)
+    s += f'<path d="M50 354 H544 L528 376 L544 398 H50 L66 376 Z" fill="{red}"/>'
+    s += f'<path d="M66 358 H528 M66 394 H528" stroke="#e9c98a" stroke-width=".8" opacity=".8"/>'
+    s += T(297, 385, 'THIRD FLOOR  ·  3F', 25, '#f6ecd6', NUM, 700, ls=6)
+    s += ph('backbar', 129, 412, 336, 210, f'{p}-ph', fx=.72, fy=.6, clip='M297 412 A168 105 0 1 1 296.9 412 Z')
+    s += f'<ellipse cx="297" cy="517" rx="168" ry="105" fill="none" stroke="{gold}" stroke-width="3"/>'
+    s += f'<ellipse cx="297" cy="517" rx="177" ry="114" fill="none" stroke="{green}" stroke-width="1.4"/>'
+    s += T(297, 660, 'このビルの3階・エレベーターでどうぞ', 22, green, JPB, 700)
+    s += f'<rect x="68" y="674" width="458" height="112" fill="none" stroke="{green}" stroke-width="1.3"/>'
+    s += T(297, 700, CHARGE, 19, red, JPB, 700)
+    s += f'<line x1="84" x2="510" y1="711" y2="711" stroke="{gold}" stroke-width=".9"/>'
+    s += plist(86, 732, 196, rows('beer', 'whisky', 'cocktail'), 15, green, green, '#b9a77c', 20)
+    s += plist(312, 732, 196, rows('shochu', 'food', 'darts'), 15, green, green, '#b9a77c', 20)
+    s += T(297, 802, FOOT, 12, green, JPB, 500)
+    return s
+
+
+def poster_deco(p):
+    """08 アールデコ。"""
+    g = f'{p}-g'
+    s = (f'<defs>{gold_grad(g)}<linearGradient id="{p}-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0f182d"/>'
+         f'<stop offset="1" stop-color="#070b15"/></linearGradient></defs>')
+    s += f'<rect width="{PW}" height="{PH}" fill="url(#{p}-bg)"/>'
+    n = 22
+    for inset, sw in ((20, 1.8), (28, .7)):
+        a, b, c, d = inset, PW - inset, inset, PH - inset
+        s += (f'<path d="M{a + n} {c} H{b - n} L{b} {c + n} V{d - n} L{b - n} {d} H{a + n} L{a} {d - n} V{c + n} Z" '
+              f'fill="none" stroke="{GOLD}" stroke-width="{sw}"/>')
+    cx, cy = 297, 206
+    for deg in range(186, 356, 6):
+        r = math.radians(deg)
+        s += (f'<line x1="{cx + 108 * math.cos(r):.1f}" y1="{cy + 108 * math.sin(r):.1f}" x2="{cx + 172 * math.cos(r):.1f}" '
+              f'y2="{cy + 172 * math.sin(r):.1f}" stroke="{GOLD}" stroke-width="1" opacity=".45"/>')
+    s += f'<path d="M{cx - 100} {cy} A100 100 0 0 1 {cx + 100} {cy}" fill="none" stroke="{GOLD}" stroke-width="1.6"/>'
+    s += f'<path d="M{cx - 180} {cy} A180 180 0 0 1 {cx + 180} {cy}" fill="none" stroke="{GOLD}" stroke-width=".8" opacity=".6"/>'
+    s += logo(297, 128, 236, extra='filter="url(#gilt)"')
+    s += T(297, 330, 'BAR', 68, f'url(#{g})', NUM, 600, ls=46, extra='style="font-stretch:75%"')
+    s += f'<path d="M150 348 H262 M332 348 H444" stroke="{GOLD}" stroke-width="1.2"/>'
+    s += f'<rect x="291" y="342" width="12" height="12" transform="rotate(45 297 348)" fill="{GOLD}"/>'
+    arch = 'M152 640 V510 A145 145 0 0 1 442 510 V640 Z'
+    s += ph('counter-dark', 152, 365, 290, 275, f'{p}-ph', fx=.6, fy=.55, clip=arch)
+    s += f'<path d="{arch}" fill="none" stroke="{GOLD}" stroke-width="2.2"/>'
+    s += f'<path d="M142 650 V510 A155 155 0 0 1 452 510 V650 Z" fill="none" stroke="{GOLD}" stroke-width=".8" opacity=".8"/>'
+    s += f'<path d="M247 618 H347 L365 640 L347 662 H247 L229 640 Z" fill="#0b1222" stroke="{GOLD}" stroke-width="1.6"/>'
+    s += T(297, 657, '3F', 46, GOLD_L, NUM, 700)
+    s += T(297, 694, 'このビルの3階・エレベーターでどうぞ', 19, '#e8e2d2', JPB, 500)
+    s += T(297, 724, CHARGE, 18, GOLD_L, JPB, 700)
+    pr = [f'{k} {v}' for k, v in rows('beer', 'whisky', 'cocktail')]
+    s += T(297, 750, '  ◆  '.join(pr), 14, '#e8e2d2', JPB, 500)
+    pr = [f'{k} {v}' for k, v in rows('shochu', 'food', 'darts')]
+    s += T(297, 772, '  ◆  '.join(pr), 14, '#e8e2d2', JPB, 500)
+    s += T(297, 796, FOOT, 11.5, '#a9a497', JPB, 500)
+    return s
+
+
+def poster_first(p):
+    """09 はじめての方へ（料金表）。"""
+    g = f'{p}-g'
+    ink, sub = '#1b160e', '#6b5a3a'
+    s = f'<defs>{gold_grad(g)}</defs><rect width="{PW}" height="{PH}" fill="#111016"/>'
+    s += logo(297, 30, 196)
+    s += T(297, 196, 'BAR · 3F', 60, f'url(#{g})', NUM, 700, ls=8)
+    s += T(297, 230, 'このビルの3階・エレベーターでどうぞ', 18, '#e6dfd0', JPB, 500)
+    s += f'<rect y="246" width="{PW}" height="416" fill="#fbf7ee"/>'
+    s += T(297, 298, 'はじめての方へ', 40, ink, JPB, 900, ls=4)
+    s += T(297, 326, '料金の目安です。1杯だけでも、お気軽にどうぞ。', 17, sub, JPB, 500)
+    s += '<rect x="46" y="342" width="502" height="76" rx="10" fill="#f2e1b0"/>'
+    s += T(68, 374, 'テーブルチャージ', 25, ink, JPB, 900, 'start')
+    s += T(68, 402, CHARGE_PER, 17, sub, JPB, 500, 'start')
+    s += T(528, 400, CHARGE_AMT, 46, ink, NUM, 700, 'end')
+    s += plist(68, 454, 460, rows('beer', 'whisky', 'cocktail', 'shochu', 'food', 'darts'), 23, ink, ink, '#c4b48c', 32)
+    s += f'<line x1="68" x2="528" y1="628" y2="628" stroke="#e3d6b4" stroke-width="1"/>'
+    s += T(297, 650, f'ご予算の目安：{BUDGET}', 16, sub, JPB, 500)
+    for i, (name, fx, fy) in enumerate((('counter-dark', .62, .55), ('tables', .5, .62), ('darts', .48, .42))):
+        s += ph(name, 40 + i * 177, 680, 160, 96, f'{p}-p{i}', fx, fy, rx=6)
+    s += T(297, 806, FOOT, 12.5, '#c9c2b4', JPB, 500)
+    return s
+
+
+def poster_master(p):
+    """10 マスターの一杯。"""
+    g = f'{p}-g'
+    s = f'<defs>{gold_grad(g)}{shade(p + "-l", .92, 0, False)}{shade(p + "-b", 0, .96)}</defs>'
+    s += f'<rect width="{PW}" height="{PH}" fill="#000"/>'
+    s += ph('backbar', 0, 0, PW, PH, f'{p}-ph', fx=.72, fy=.5)
+    s += f'<rect width="380" height="{PH}" fill="url(#{p}-l)"/>'
+    s += f'<rect y="520" width="{PW}" height="{PH - 520}" fill="url(#{p}-b)"/>'
+    s += logo(150, 44, 204)
+    vt = f'writing-mode="vertical-rl" font-family="{MIN}" font-weight="600" fill="{WHITE}" letter-spacing="2" filter="url(#tshadow)"'
+    s += f'<text x="124" y="180" font-size="31" {vt}>銀座・麻布で腕を磨いた</text>'
+    s += f'<text x="80" y="180" font-size="31" {vt}>マスターの一杯を、練馬で。</text>'
+    s += T(48, 716, '3F', 100, f'url(#{g})', NUM, 700, 'start')
+    s += T(178, 674, 'BAR', 44, GOLD_L, SERIF, 700, 'start', ls=12)
+    s += T(178, 708, 'このビルの3階・エレベーターでどうぞ', 18, WHITE, JPB, 500, 'start')
+    s += T(48, 748, CHARGE, 18, GOLD_L, JPB, 700, 'start')
+    pr = [f'{k} {v}' for k, v in rows('cocktail', 'whisky', 'beer', 'food')]
+    s += T(48, 774, '　'.join(pr), 14, '#ece6d9', JPB, 500, 'start')
+    s += T(48, 800, FOOT, 12, '#bdb6a8', JPB, 500, 'start')
+    return s
+
+
+# 案の id → (ポスターを描く関数, 光ったときのまわりの色)
+POSTERS = {
+    'classic': (poster_classic, '#ffe2a6'), 'photo': (poster_photo, '#d7f5b4'), 'neon': (poster_neon, '#ff9ad2'),
+    'chalk': (poster_chalk, '#f3efe2'), 'big3f': (poster_big3f, '#ffd85a'), 'three': (poster_three, '#ffe2a6'),
+    'label': (poster_label, '#fff1d2'), 'deco': (poster_deco, '#ffe2a6'), 'first': (poster_first, '#fffaf0'),
+    'master': (poster_master, '#d7f5b4'),
+}
+
+
+def poster(pr):
+    func, _ = POSTERS[pr['id']]
+    p = 'p' + pr['no']
+    return (f'<clipPath id="{p}-all"><rect width="{PW}" height="{PH}"/></clipPath>'
+            f'<g clip-path="url(#{p}-all)">{func(p)}</g>')
+
+
+# ---- スタンド（正面・mm。左上が 0,0。幅 640・高さ 1185。上の 884 がボード面） ----------------------
+def stand_svg(art, lit=True, cord=True):
+    m = 'url(#metal)'
+    s = ''
+    s += f'<rect x="12" y="{BOARD_H - 30}" width="26" height="{STAND_H - BOARD_H + 14}" fill="{m}"/>'
+    s += f'<rect x="{STAND_W - 38}" y="{BOARD_H - 30}" width="26" height="{STAND_H - BOARD_H + 14}" fill="{m}"/>'
+    s += f'<rect x="38" y="{STAND_H - 120}" width="{STAND_W - 76}" height="14" fill="url(#metalV)"/>'
+    for x in (4, STAND_W - 46):
+        s += f'<rect x="{x}" y="{STAND_H - 18}" width="42" height="18" rx="5" fill="#2a2c31"/>'
+    if cord:
+        s += (f'<path d="M{STAND_W - 30} {BOARD_H - 6} C{STAND_W - 30} {STAND_H - 60} {STAND_W - 10} {STAND_H - 6} '
+              f'{STAND_W + 60} {STAND_H - 5} H{STAND_W + 260}" fill="none" stroke="#141519" stroke-width="7"/>')
+    s += f'<rect x="0" y="0" width="{STAND_W}" height="{BOARD_H}" rx="8" fill="{m}"/>'
+    px, py = (STAND_W - PW) / 2, (BOARD_H - PH) / 2
+    s += f'<g transform="translate({px},{py})">{art}</g>'
+    if lit:
+        s += f'<rect x="{px}" y="{py}" width="{PW}" height="{PH}" fill="url(#panelLit)" style="mix-blend-mode:screen"/>'
+    s += (f'<path d="M0 0H{STAND_W}V{BOARD_H}H0Z M{LIP} {LIP}V{BOARD_H - LIP}H{STAND_W - LIP}V{LIP}Z" fill="{m}" fill-rule="evenodd"/>'
+          f'<rect x="{LIP}" y="{LIP}" width="{STAND_W - 2 * LIP}" height="{BOARD_H - 2 * LIP}" fill="none" stroke="#5b6068" stroke-width="2.5"/>'
+          f'<rect x="1.5" y="1.5" width="{STAND_W - 3}" height="{BOARD_H - 3}" rx="7" fill="none" stroke="#6c727b" stroke-width="3"/>')
+    s += f'<path d="M{LIP} {LIP} H{LIP + 190} L{LIP} {LIP + 300} Z" fill="#fff" opacity=".07"/>'
+    return s
+
+
+def place_stand(pr, cx=CX):
+    """スタンドを、入口の横の段の上（ビルの敷地の中）に置く。"""
+    _, glow = POSTERS[pr['id']]
+    x0, y0 = cx - STAND_W * S / 2, G - STAND_H * S
+    s = f'<g opacity=".32" filter="url(#softer)"><rect x="{x0 - 3}" y="{y0 - 2}" width="{STAND_W * S + 6}" height="{BOARD_H * S + 4}" fill="{glow}"/></g>'
+    s += f'<ellipse cx="{cx}" cy="{G + 5}" rx="75" ry="11" fill="url(#spill)"/>'
+    s += f'<rect x="{x0}" y="{G + 1}" width="{STAND_W * S}" height="5" fill="{glow}" opacity=".18" filter="url(#soft)"/>'
+    s += f'<g transform="translate({x0:.2f},{y0:.2f}) scale({S})">{stand_svg(poster(pr))}</g>'
+    return s
 
 
 # ---- 建物（夜） -----------------------------------------------------------------
@@ -422,57 +668,17 @@ def people(x=850):
     return one(x, 0, 2) + one(x + 34, 2, 3)
 
 
-def prism_group(k, cx, base):
-    """三角柱を、角を手前にして斜めから見た形（k は 1mm あたりの大きさ、base は地面）。"""
-    top = base - 1700 * k
-    fw = 400 * k * .93                      # 斜めから見た1面の幅
-    lift = 400 * k * .18                    # 奥へ向かって上がる分
-    def face(i, a, b, e, f, shade):
-        return (f'<g transform="matrix({a} {b} 0 {k} {e} {f})">{prism_face(i)}'
-                f'<rect x="0" y="0" width="400" height="1600" fill="#000" opacity="{shade}"/></g>')
-    s = f'<g opacity=".55" filter="url(#softer)"><rect x="{cx - fw}" y="{top}" width="{fw * 2}" height="{1600 * k}" fill="#ffd58c"/></g>'
-    s += face(0, fw / 400, lift / 400, cx - fw, top - lift, .12) + face(1, fw / 400, -lift / 400, cx, top, 0)
-    s += f'<path d="M{cx - fw} {top - lift} L{cx} {top - lift * 2} L{cx + fw} {top - lift} L{cx} {top} Z" fill="#26262b"/>'
-    s += f'<rect x="{cx - fw * .95}" y="{top + 1600 * k - lift}" width="{fw * 1.9}" height="{100 * k + lift}" fill="#1b1b20"/>'
-    return s
-
-
-# ---- 置き方（設置イメージ） --------------------------------------------------------------
-def place(art_id, cx):
-    """看板を、入口の横の段の上（ビルの敷地の中）に置く。"""
-    if art_id == 'prism':
-        s = f'<ellipse cx="{cx}" cy="{G + 6}" rx="70" ry="12" fill="url(#spill)"/>'
-        return s + prism_group(S, cx, G)
-    art, w, h = ARTS[art_id]()
-    x0, y0 = cx - w * S / 2, G - h * S
-    lit = art_id != 'chalk'
-    s = ''
-    if lit:
-        s += f'<ellipse cx="{cx}" cy="{G + 6}" rx="{max(55, w * S * 1.6)}" ry="12" fill="url(#{SPILL.get(art_id, "spill")})"/>'
-        s += f'<g opacity=".45" filter="url(#softer)"><rect x="{x0}" y="{y0}" width="{w * S}" height="{h * S * .85}" fill="{"#ff6fb4" if art_id == "neon" else "#ffd58c"}"/></g>'
-    if art_id in ('tower', 'slim', 'andon', 'digital'):
-        d = {'tower': 300, 'slim': 200, 'andon': 300, 'digital': 160}[art_id] * S * .45
-        s += f'<path d="M{x0 + w * S} {y0} l{d} {-d * .35} v{h * S} l{-d} {d * .35} z" fill="#0a0a0d"/>'
-        if art_id == 'andon':
-            s += f'<path d="M{x0 + w * S} {y0 + 40 * S} l{d} {-d * .35} v{760 * S} l{-d} {d * .35} z" fill="#e7c78f" opacity=".75"/>'
-    s += f'<g transform="translate({x0},{y0}) scale({S})">{art}</g>'
-    if art_id == 'spin':
-        s += (f'<g fill="none" stroke="#f4dfa8" stroke-width="2" opacity=".75"><path d="M{cx - 18} {y0 + 30} q 18 -10 36 0"/>'
-              f'<path d="M{cx + 14} {y0 + 26} l4 4 l-6 2"/></g>')
-    return s
-
-
 # ---- 画像の枠（題名・説明・吹き出し） ------------------------------------------------------
-def chrome(no, title, sub, caption):
+def chrome(no, title, sub, caption, w=1600, h=1000, foot='ダイニングバー XⅢ クロスリー｜入口の置き看板のポスター'):
     badge = (f'<rect x="40" y="36" rx="12" width="{96 if no else 0}" height="46" fill="{GOLD}"/>'
              f'{T(88, 69, "案" + no, 26, "#1a1408", JP, 700) if no else ""}')
     tx = 152 if no else 44
-    s = f'<rect x="0" y="0" width="1600" height="120" fill="#000" opacity=".35"/>{badge}'
+    s = f'<rect x="0" y="0" width="{w}" height="120" fill="#000" opacity=".45"/>{badge}'
     s += T(tx, 70, title, 34, '#fff', JP, 700, 'start')
     s += T(tx, 104, sub, 19, '#cfd0d8', JP, 500, 'start')
-    s += f'<rect x="0" y="952" width="1600" height="48" fill="#000" opacity=".55"/>'
-    s += T(40, 983, caption, 18, '#d9d9e0', JP, 500, 'start')
-    s += T(1560, 983, 'ダイニングバー XⅢ クロスリー｜1階入口の看板の提案', 18, '#d9b66f', JP, 700, 'end')
+    s += f'<rect x="0" y="{h - 48}" width="{w}" height="48" fill="#000" opacity=".6"/>'
+    s += T(40, h - 17, caption, 18, '#d9d9e0', JP, 500, 'start')
+    s += T(w - 40, h - 17, foot, 18, GOLD, JP, 700, 'end')
     return s
 
 
@@ -490,95 +696,15 @@ def callout(tx, ty, lx, ly, lines, anchor='start'):
     return s
 
 
-def floor_tags():
+def floor_tags(mapper, x=14):
     s = ''
     for label, y1, y2, hl in (('3F', 258, 392, True), ('2F', 470, 600, False), ('1F', 690, 905, False)):
-        a, b = o(0, y1)[1], o(0, y2)[1]
+        a, b = mapper(0, y1)[1], mapper(0, y2)[1]
         col = GOLD if hl else '#8a8fa3'
-        s += f'<rect x="14" y="{a}" width="6" height="{b - a}" rx="3" fill="{col}" opacity="{.95 if hl else .6}"/>'
-        s += T(30, (a + b) / 2 + 10, label, 30, col, NUM, 700, 'start')
+        s += f'<rect x="{x}" y="{a:.1f}" width="6" height="{b - a:.1f}" rx="3" fill="{col}" opacity="{.95 if hl else .6}"/>'
+        s += T(x + 16, (a + b) / 2 + 10, label, 30, col, NUM, 700, 'start')
         if hl:
-            s += T(30, (a + b) / 2 + 40, 'お店', 20, GOLD, JP, 700, 'start')
-    return s
-
-
-def scene_svg(inner_world, overlay):
-    vb = ' '.join(map(str, VB))
-    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">{DEFS}'
-            f'<svg x="0" y="0" width="1600" height="1000" viewBox="{vb}" preserveAspectRatio="xMidYMid slice">{inner_world}</svg>'
-            f'{overlay}</svg>')
-
-
-TALL = {'andon': 900, 'chalk': 1450, 'photo': 1350, 'neon': 1500, 'spin': 1650, 'arrow': 1700, 'prism': 1700, 'digital': 1850}
-WIDE = {'prism': 760, 'chalk': 640, 'neon': 600, 'photo': 600, 'arrow': 600, 'digital': 640, 'slim': 200, 'andon': 300, 'spin': 270}
-
-
-def zoom_inset(world, cx, tall, title, sub, box=(1196, 196, 370, 712)):
-    """看板のまわりを拡大した枠（同じ絵を、看板の近くだけ切り取って大きく見せる）。"""
-    x, y, w, h = box
-    zx, zy, zw, zh = x + 14, y + 112, w - 28, h - 126
-    wh = tall * S * 1.32 + 24                 # 看板の高さの1.3倍ほどが入るように
-    ww = wh * zw / zh
-    vb = f'{cx - ww / 2:.1f} {G - tall * S - (wh - tall * S) * .55:.1f} {ww:.1f} {wh:.1f}'
-    s = f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="16" fill="#0b0d14" opacity=".93" stroke="{GOLD}" stroke-width="1.5"/>'
-    s += T(x + 18, y + 38, title, 22, '#fff', JP, 700, 'start')
-    for i, line in enumerate(wrap(sub, 18)[:2]):
-        s += T(x + 18, y + 70 + i * 26, line, 17 if i else 18, '#c9cad3' if i == 0 else '#9ea3b2', JP, 500, 'start')
-    s += f'<clipPath id="zoomClip"><rect x="{zx}" y="{zy}" width="{zw}" height="{zh}" rx="10"/></clipPath>'
-    s += f'<g clip-path="url(#zoomClip)"><svg x="{zx}" y="{zy}" width="{zw}" height="{zh}" viewBox="{vb}" preserveAspectRatio="xMidYMid slice">{world}</svg></g>'
-    s += f'<rect x="{zx + 10}" y="{zy + 10}" width="64" height="30" rx="8" fill="#000" opacity=".6"/>' + T(zx + 42, zy + 31, '拡大', 17, GOLD_L, JP, 700)
-    return s
-
-
-def scene(p, cx):
-    world = building() + people(820) + place(p['id'], cx) + pole_and_wires()
-    tall = TALL.get(p['id'], 1800)
-    over = floor_tags()
-    sx, sy = o(cx + WIDE.get(p['id'], 450) * S / 2, G - tall * S * .6)
-    over += f'<line x1="{sx}" y1="{sy}" x2="1196" y2="{196 + 360}" stroke="{GOLD}" stroke-width="2" opacity=".85"/><circle cx="{sx}" cy="{sy}" r="5" fill="{GOLD}"/>'
-    over += zoom_inset(world, cx, tall, p['short'], p['size'])
-    over += chrome(p['no'], p['name'], p['catch'], '設置イメージ（イラスト・夜）　入口のガラス扉の横、ビルの敷地の中に置いたところ')
-    return scene_svg(world, over)
-
-
-def scene_now():
-    world = building() + people(820) + pole_and_wires()
-    over = floor_tags()
-    x3, y3 = o(800, 320)
-    over += callout(x3, y3, 230, 180, ['3階がお店。でも外からは気づけない', '中は見えず、窓は電線にも隠れる'], 'start')
-    xe, ye = o(1195, 800)
-    over += callout(xe, ye, 1575, 520, ['入口はこのガラス扉', '隣のお店の扉と並び、わかりにくい'], 'end')
-    xb, yb = o(1376, 770)
-    over += callout(xb, yb, 1575, 760, ['今の看板は、案内板の', '3階の小さなプレートだけ'], 'end')
-    over += chrome('', '今のようす（夜）', '3階にバーがあること、入口がどこかが、ビルの前から伝わっていない', '今のようす（イラスト）　ストリートビュー（2024年11月）の建物をもとに描き起こしたもの')
-    return scene_svg(world, over)
-
-
-# ---- デザイン（看板の正面・寸法入り） ------------------------------------------------------
-def dim_h(x1, x2, y, label):
-    return (f'<g stroke="#8d93a3" stroke-width="1.5"><line x1="{x1}" x2="{x2}" y1="{y}" y2="{y}"/><line x1="{x1}" x2="{x1}" y1="{y - 8}" y2="{y + 8}"/>'
-            f'<line x1="{x2}" x2="{x2}" y1="{y - 8}" y2="{y + 8}"/></g>' + T((x1 + x2) / 2, y + 28, label, 18, '#aeb3c2', NUM, 600))
-
-
-def dim_v(x, y1, y2, label):
-    return (f'<g stroke="#8d93a3" stroke-width="1.5"><line x1="{x}" x2="{x}" y1="{y1}" y2="{y2}"/><line x1="{x - 8}" x2="{x + 8}" y1="{y1}" y2="{y1}"/>'
-            f'<line x1="{x - 8}" x2="{x + 8}" y1="{y2}" y2="{y2}"/></g>'
-            f'<text x="{x - 14}" y="{(y1 + y2) / 2}" font-family="{NUM}" font-size="18" font-weight="600" fill="#aeb3c2" text-anchor="middle" '
-            f'transform="rotate(-90 {x - 14} {(y1 + y2) / 2})">{esc(label)}</text>')
-
-
-def place_design(art_svg, w, h, box=(170, 150, 740, 700), dims=True, label_w=None, label_h=None, lit=True):
-    bx, by, bw, bh = box
-    k = min(bw / w, bh / h)
-    x0 = bx + (bw - w * k) / 2
-    y0 = by + (bh - h * k)
-    s = (f'<g opacity=".5" filter="url(#halo)"><rect x="{x0}" y="{y0}" width="{w * k}" height="{h * k * .8}" fill="#ffcf7a" opacity=".18"/></g>'
-         if lit else '')
-    s += f'<g transform="translate({x0},{y0}) scale({k})">{art_svg}</g>'
-    s += f'<line x1="{bx - 40}" x2="{bx + bw + 40}" y1="{y0 + h * k}" y2="{y0 + h * k}" stroke="#4a4f5c" stroke-width="2"/>'
-    if dims:
-        s += dim_h(x0, x0 + w * k, y0 + h * k + 26, label_w or f'{w} mm')
-        s += dim_v(x0 - 34, y0, y0 + h * k, label_h or f'{h} mm')
+            s += T(x + 16, (a + b) / 2 + 40, 'お店', 20, GOLD, JP, 700, 'start')
     return s
 
 
@@ -586,7 +712,7 @@ def wrap(text, n):
     """n 文字ほどで折り返す。なるべく「／」「、」「）」の後ろで折り、英数字の途中では折らない。"""
     out, rest = [], text
     while len(rest) > n:
-        cut = max((rest.rfind(c, 0, n + 1) + 1 for c in '／、）'), default=0)
+        cut = max((rest.rfind(c, 0, n + 1) + 1 for c in '／、）。'), default=0)
         if cut < n * .5:
             cut = n
             while cut > 1 and rest[cut - 1].isascii() and rest[cut - 1].isalnum() and rest[cut].isascii() and rest[cut].isalnum():
@@ -596,142 +722,161 @@ def wrap(text, n):
     return out + [rest] if rest else out
 
 
-def spec_panel(p, x=980, y=190):
-    s = f'<rect x="{x}" y="{y}" width="560" height="{100 + 98 * len(p["spec"])}" rx="18" fill="#0b0d13" opacity=".7" stroke="#2c303b"/>'
-    s += T(x + 32, y + 52, 'デザインのポイント', 24, GOLD, JP, 700, 'start')
-    for i, (k, v) in enumerate(p['spec']):
-        yy = y + 104 + i * 98
-        s += T(x + 32, yy, k, 18, '#9ea3b2', JP, 700, 'start')
-        lines = wrap(v, 24)
-        for li, line in enumerate(lines[:2]):
-            s += T(x + 32, yy + 34 + li * 28, line, 22, '#f2f2f5', JP, 500, 'start')
-    s += T(x + 32, y + 150 + 98 * len(p['spec']), '※イメージです。色・文字・大きさは、製作会社と相談して決めます。', 16, '#8d92a1', JP, 500, 'start')
-    return s
+# ---- 今のようす（前の提案と同じ絵） ---------------------------------------------------------
+def scene_now():
+    world = building() + people(820) + pole_and_wires()
+    vb = ' '.join(map(str, VB))
+    over = floor_tags(o)
+    x3, y3 = o(800, 320)
+    over += callout(x3, y3, 230, 180, ['3階がお店。でも外からは気づけない', '中は見えず、窓は電線にも隠れる'], 'start')
+    xe, ye = o(1195, 800)
+    over += callout(xe, ye, 1575, 520, ['入口はこのガラス扉', '隣のお店の扉と並び、わかりにくい'], 'end')
+    xb, yb = o(1376, 770)
+    over += callout(xb, yb, 1575, 760, ['今の看板は、案内板の', '3階の小さなプレートだけ'], 'end')
+    over += chrome('', '今のようす（夜）', '3階にバーがあること、入口がどこかが、ビルの前から伝わっていない',
+                   '今のようす（イラスト）　ストリートビュー（2024年11月）の建物をもとに描き起こしたもの')
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">{DEFS}'
+            f'<svg x="0" y="0" width="1600" height="1000" viewBox="{vb}" preserveAspectRatio="xMidYMid slice">{world}</svg>{over}</svg>')
 
 
-def design_svg(p):
-    body = '<rect x="0" y="0" width="1600" height="1000" fill="url(#bgDesign)"/><rect x="0" y="0" width="1600" height="1000" fill="url(#grid)"/>'
-    pid = p['id']
-    if pid == 'prism':
-        for i in range(3):
-            body += place_design(prism_face(i), 400, 1600, box=(110 + i * 270, 220, 230, 620), dims=(i == 0))
-            body += T(110 + i * 270 + 115, 205, f'面{i + 1}', 20, GOLD, JP, 700)
-        body += T(450, 935, '3つの面を広げたところ（どの面も光る）', 17, '#8d92a1', JP, 500)
-    elif pid == 'spin':
-        a, w, h = art_spin()
-        body += place_design(a, w, h, box=(120, 150, 260, 700))
-        band = (f'<rect x="0" y="0" width="848" height="1290" rx="8" fill="url(#faceLit)"/>'
-                f'<clipPath id="bandClip"><rect x="0" y="0" width="848" height="1290" rx="8"/></clipPath><g clip-path="url(#bandClip)">{spin_band()}</g>')
-        band += '<line x1="424" x2="424" y1="150" y2="1140" stroke="#3a3a42" stroke-width="3" stroke-dasharray="14 12"/>'
-        body += place_design(band, 848, 1290, box=(450, 200, 470, 600), label_w='848 mm（ひと回り）', label_h='1290 mm')
-        body += T(560, 190, '表', 22, GOLD, JP, 700) + T(810, 190, '裏', 22, GOLD, JP, 700)
-        body += T(685, 935, '円柱のまわりを広げたところ（回るたびに表と裏が交互に見える）', 17, '#8d92a1', JP, 500)
-    else:
-        a, w, h = ARTS[pid]()
-        body += place_design(a, w, h, lit=(pid != 'chalk'))
-    over = chrome(p['no'], p['name'], 'デザイン案（正面）・夜に点灯したところ' if pid != 'chalk' else 'デザイン案（正面）・夜にライトで照らしたところ',
-                  f'デザイン案　大きさの目安 {p["size"]}　相場の目安 {p["price"]}')
-    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">{DEFS}{body}'
-            f'{spec_panel(p)}{over}</svg>')
+# ---- 置いたイメージ（左: 建物と入口、右: スタンドのまわりを拡大） --------------------------------
+def place_svg(pr):
+    world = building() + people(975) + place_stand(pr) + pole_and_wires()
+    vb = ' '.join(f'{v:.2f}' for v in PV)
+    body = f'<rect width="1600" height="1000" fill="#0b0d14"/>'
+    body += f'<svg x="0" y="0" width="900" height="1000" viewBox="{vb}" preserveAspectRatio="xMidYMid slice">{world}</svg>'
+    over = floor_tags(po)
+    # 右の拡大
+    x, y, w, h = 916, 134, 668, 806
+    zx, zy, zw, zh = x + 14, y + 84, w - 28, h - 98
+    vh = 112
+    vw = vh * zw / zh
+    vy = G - STAND_H * S - (vh - STAND_H * S) * .55
+    over += f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="16" fill="#0b0d14" stroke="{GOLD}" stroke-width="1.5"/>'
+    over += T(x + 20, y + 38, '拡大：入口のガラス扉の横', 23, '#fff', JP, 700, 'start')
+    over += T(x + 20, y + 68, '光るスタンド（A1）に、このポスターを入れたところ', 18, '#c9cad3', JP, 500, 'start')
+    over += f'<clipPath id="zoomClip"><rect x="{zx}" y="{zy}" width="{zw}" height="{zh}" rx="10"/></clipPath>'
+    over += (f'<g clip-path="url(#zoomClip)"><svg x="{zx}" y="{zy}" width="{zw}" height="{zh}" '
+             f'viewBox="{CX - 4 - vw / 2:.2f} {vy:.2f} {vw:.2f} {vh:.2f}" preserveAspectRatio="xMidYMid slice">{world}</svg></g>')
+    over += f'<rect x="{zx}" y="{zy}" width="{zw}" height="{zh}" rx="10" fill="url(#vignette)"/>'
+    over += f'<rect x="{zx + 12}" y="{zy + 12}" width="66" height="32" rx="8" fill="#000" opacity=".6"/>' + T(zx + 45, zy + 34, '拡大', 18, GOLD_L, JP, 700)
+    sx, sy = po(CX + STAND_W * S / 2 + 1, G - STAND_H * S * .62)
+    over += f'<line x1="{sx:.1f}" y1="{sy:.1f}" x2="{x}" y2="{y + h / 2}" stroke="{GOLD}" stroke-width="2" opacity=".85"/><circle cx="{sx:.1f}" cy="{sy:.1f}" r="5" fill="{GOLD}"/>'
+    over += chrome(pr['no'], pr['name'], pr['catch'], '置いたイメージ（イラスト・夜）　ビルの敷地の中、入口のガラス扉の横に置いたところ')
+    return f'<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">{DEFS}{body}{over}</svg>'
 
 
-# ---- 一覧用の画像（看板だけ）・大きさ比べ ----------------------------------------------------
-def sign_alone(pid, k, cx, base, halo=True):
-    """看板だけを、地面 base の上の cx に、1mm = k の大きさで描く。"""
-    if pid == 'prism':
-        return prism_group(k, cx, base)
-    a, w, h = ARTS[pid]()
-    x0, y0 = cx - w * k / 2, base - h * k
-    s = ''
-    if halo and pid != 'chalk':
-        col = '#ff6fb4' if pid == 'neon' else ('#cfe7ff' if pid == 'digital' else '#ffd58c')
-        s += f'<g opacity=".45" filter="url(#softer)"><rect x="{x0}" y="{y0}" width="{w * k}" height="{h * k * .85}" fill="{col}"/></g>'
-    return s + f'<g transform="translate({x0},{y0}) scale({k})">{a}</g>'
+# ---- デザイン（ポスターの全体） ----------------------------------------------------------
+SHEET = (1200, 1800)
 
 
-def thumb_svg(p):
-    pid = p['id']
-    a_h = {'prism': 1700}.get(pid) or ARTS[pid]()[2]
-    a_w = {'prism': 760}.get(pid) or ARTS[pid]()[1]
-    k = min(560 / a_h, 520 / a_w)
-    body = '<rect x="0" y="0" width="800" height="800" fill="url(#bgDesign)"/>'
-    body += '<ellipse cx="400" cy="690" rx="300" ry="34" fill="url(#spill)" opacity=".55"/>'
-    body += '<line x1="60" x2="740" y1="690" y2="690" stroke="#3a3f4c" stroke-width="2"/>'
-    body += sign_alone(pid, k, 400, 690)
-    return f'<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800">{DEFS}{body}</svg>'
+def sheet_svg(pr):
+    W, H = SHEET
+    k = 1060 / PW
+    x0, y0 = 70, 60
+    body = f'<rect width="{W}" height="{H}" fill="url(#bgDesign)"/><rect width="{W}" height="{H}" fill="url(#grid)"/>'
+    body += f'<rect x="{x0 + 10}" y="{y0 + 18}" width="{PW * k}" height="{PH * k}" fill="#000" opacity=".55" filter="url(#softer)"/>'
+    body += f'<g transform="translate({x0},{y0}) scale({k:.5f})">{poster(pr)}</g>'
+    y = y0 + PH * k + 40
+    body += f'<rect x="{x0}" y="{y}" rx="12" width="104" height="50" fill="{GOLD}"/>' + T(x0 + 52, y + 35, '案' + pr['no'], 28, '#1a1408', JP, 700)
+    body += T(x0 + 124, y + 37, pr['name'], 36, '#fff', JP, 700, 'start')
+    body += T(x0, y + 92, f'差し込むポスター（A1・59.4 × 84.1cm）のデザイン案　{pr["style"]}', 22, '#c9cad3', JP, 500, 'start')
+    note = '「〇〇〇」の値段は、決まったら入れます。' if any(x['tbd'] for x in PRICES.values()) or CHARGE_AMT.count('〇') else ''
+    body += T(x0, y + 128, note + '写真はお店の写真です（印刷の前に撮り直すと、もっときれいになります）。', 20, '#9ea3b2', JP, 500, 'start')
+    body += T(W - 70, H - 30, 'ダイニングバー XⅢ クロスリー', 18, GOLD, JP, 700, 'end')
+    return f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">{DEFS}{body}</svg>'
 
 
-def person(x, base, k, label=True):
+def thumb_svg(pr):
+    return f'<svg xmlns="http://www.w3.org/2000/svg" width="{PW}" height="{PH}" viewBox="0 0 {PW} {PH}">{DEFS}{poster(pr)}</svg>'
+
+
+# ---- スタンドの大きさ（正面・横・たたんだところ・人） --------------------------------------------
+def dim_h(x1, x2, y, label, col='#aeb3c2'):
+    return (f'<g stroke="#8d93a3" stroke-width="1.5"><line x1="{x1}" x2="{x2}" y1="{y}" y2="{y}"/><line x1="{x1}" x2="{x1}" y1="{y - 8}" y2="{y + 8}"/>'
+            f'<line x1="{x2}" x2="{x2}" y1="{y - 8}" y2="{y + 8}"/></g>' + T((x1 + x2) / 2, y + 28, label, 19, col, JP, 700))
+
+
+def dim_v(x, y1, y2, label, side='left', col='#aeb3c2'):
+    tx = x - 16 if side == 'left' else x + 16
+    return (f'<g stroke="#8d93a3" stroke-width="1.5"><line x1="{x}" x2="{x}" y1="{y1}" y2="{y2}"/><line x1="{x - 8}" x2="{x + 8}" y1="{y1}" y2="{y1}"/>'
+            f'<line x1="{x - 8}" x2="{x + 8}" y1="{y2}" y2="{y2}"/></g>'
+            f'<text x="{tx}" y="{(y1 + y2) / 2}" font-family="{JP}" font-size="19" font-weight="700" fill="{col}" text-anchor="middle" '
+            f'transform="rotate(-90 {tx} {(y1 + y2) / 2})">{esc(label)}</text>')
+
+
+def person(x, base, k):
     h = 1700 * k
-    u = h / 17                                # 体の大きさの単位
+    u = h / 17
     s = (f'<g fill="#5f6577"><circle cx="{x}" cy="{base - h + u * 1.1}" r="{u * 1.1}"/>'
          f'<path d="M{x - u * 1.6} {base - h + u * 2.6} Q{x} {base - h + u * 2.2} {x + u * 1.6} {base - h + u * 2.6} '
          f'L{x + u * 2} {base - h + u * 9} L{x + u * 1.2} {base - h + u * 9} L{x + u * 1} {base} L{x + u * .2} {base} '
          f'L{x} {base - h + u * 10} L{x - u * .2} {base} L{x - u * 1} {base} L{x - u * 1.2} {base - h + u * 9} '
          f'L{x - u * 2} {base - h + u * 9} Z"/></g>')
-    if label:
-        s += T(x, base + 40, '人', 20, '#aeb3c2', JP, 700) + T(x, base + 66, '170cm', 18, '#8d92a1', NUM, 600)
-    return s
+    return s + T(x, base + 36, '人（170cm）', 19, '#aeb3c2', JP, 700)
 
 
-LINEUP_W = {'prism': 560}
-
-
-def lineup_width(k=0.3):
-    """大きさ比べの画像の幅（扉・人・10案を並べた分）。"""
-    x = 70 + 1300 * k + 110 + 120
-    for p in DATA['proposals']:
-        x += (LINEUP_W.get(p['id']) or ARTS[p['id']]()[1]) * k + 82
-    return int(x + 40)
-
-
-def lineup_svg():
-    H, base, k = 1000, 800, 0.3
-    W = lineup_width(k)
-    body = f'<rect x="0" y="0" width="{W}" height="{H}" fill="url(#bgDesign)"/><rect x="0" y="0" width="{W}" height="{H}" fill="url(#grid)"/>'
-    body += T(60, 78, '10案の大きさ比べ', 40, '#fff', JP, 700, 'start')
-    body += T(60, 122, '同じ縮尺で、人（170cm）と入口の扉の横に並べたところ', 22, '#b9bcc8', JP, 500, 'start')
+def stand_figure_svg():
+    W, H, base, k = 1600, 1000, 846, .4
+    body = f'<rect width="{W}" height="{H}" fill="url(#bgDesign)"/><rect width="{W}" height="{H}" fill="url(#grid)"/>'
     body += f'<line x1="40" x2="{W - 40}" y1="{base}" y2="{base}" stroke="#4a4f5c" stroke-width="3"/>'
-    # 入口のガラス扉（目安）と人
-    dx, dw, dh = 70, 1300 * k, 2100 * k
-    body += (f'<g fill="#cfd8e3" fill-opacity=".08" stroke="#9aa3ad" stroke-width="3">'
-             f'<rect x="{dx}" y="{base - dh}" width="{dw / 2}" height="{dh}"/><rect x="{dx + dw / 2}" y="{base - dh}" width="{dw / 2}" height="{dh}"/></g>')
-    body += T(dx + dw / 2, base + 40, '入口の扉', 20, '#aeb3c2', JP, 700) + T(dx + dw / 2, base + 66, '高さ約2.1m（目安）', 18, '#8d92a1', JP, 500)
-    x = dx + dw + 110
-    body += person(x, base, k)
-    x += 120
-    for p in DATA['proposals']:
-        pid = p['id']
-        w = LINEUP_W.get(pid) or ARTS[pid]()[1]
-        h = 1700 if pid == 'prism' else ARTS[pid]()[2]
-        cx = x + w * k / 2
-        body += sign_alone(pid, k, cx, base)
-        body += T(cx, base - h * k - 18, f'{h / 10:.0f}cm', 18, '#c9a45c', NUM, 600)
-        body += f'<rect x="{cx - 24}" y="{base + 18}" width="48" height="28" rx="7" fill="{GOLD}"/>' + T(cx, base + 39, p['no'], 18, '#1a1408', NUM, 700)
-        for i, line in enumerate(p['short_lines']):
-            body += T(cx, base + 76 + i * 26, line, 19, '#e6e7ec', JP, 700)
-        x += w * k + 82
-    return f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">{DEFS}{body}</svg>'
+    body += person(110, base, k)
+    # 正面（ポスターの入る所は斜線で）
+    x0 = 250
+    blank = (f'<rect width="{PW}" height="{PH}" fill="#2a2f3a"/><rect width="{PW}" height="{PH}" fill="url(#{"hatch"})"/>'
+             + T(PW / 2, PH / 2 - 20, 'A1 のポスター', 52, '#f4dfa8', JP, 700) + T(PW / 2, PH / 2 + 50, '59.4 × 84.1cm', 46, '#f4dfa8', NUM, 600))
+    body += '<defs><pattern id="hatch" width="24" height="24" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" x2="0" y1="0" y2="24" stroke="#fff" stroke-opacity=".07" stroke-width="10"/></pattern></defs>'
+    body += f'<g transform="translate({x0},{base - STAND_H * k}) scale({k})">{stand_svg(blank, lit=False, cord=False)}</g>'
+    body += dim_h(x0, x0 + STAND_W * k, base + 34, '幅 64cm')
+    body += dim_v(x0 - 26, base - STAND_H * k, base, '高さ 118.5cm')
+    body += dim_v(x0 + STAND_W * k + 26, base - STAND_H * k, base - STAND_H * k + BOARD_H * k, 'ボード面 88.4cm', 'right')
+    body += T(x0 + STAND_W * k / 2, base - STAND_H * k - 22, '正面', 24, '#fff', JP, 700)
+    # 横（A の形）
+    x1, top = 690, base - STAND_H * k
+    d = STAND_D * k
+    body += f'<path d="M{x1} {base} L{x1 + d * .5} {top}" stroke="#d6dade" stroke-width="12" stroke-linecap="round"/>'
+    body += f'<path d="M{x1 + d} {base} L{x1 + d * .5} {top}" stroke="#a9afb7" stroke-width="7" stroke-linecap="round"/>'
+    body += f'<path d="M{x1 + d * .14} {base - 150} L{x1 + d * .86} {base - 150}" stroke="#7d838c" stroke-width="3" stroke-dasharray="6 5"/>'
+    body += f'<circle cx="{x1 + d * .5}" cy="{top}" r="7" fill="#d6dade"/>'
+    body += dim_h(x1, x1 + d, base + 34, '奥行 49cm')
+    body += T(x1 + d / 2, top - 22, '横から', 24, '#fff', JP, 700)
+    # たたんだところ
+    x2 = 950
+    fh = 1225 * k
+    body += f'<rect x="{x2}" y="{base - fh}" width="{60 * k}" height="{fh}" rx="2" fill="url(#metal)"/>'
+    body += dim_v(x2 + 60 * k + 24, base - fh, base, 'たたむと 高さ 122.5cm', 'right')
+    body += T(x2 + 12, base + 34, '厚さ 6cm', 19, '#aeb3c2', JP, 700)
+    body += T(x2 + 12, base - fh - 22, 'たたむと', 24, '#fff', JP, 700)
+    # 説明
+    px = 1160
+    facts = [('光る', ['中の LED パネルが、', 'ポスターを後ろから照らす']), ('電源', ['コンセントにつなぐ', '（AC アダプター）']),
+             ('入れ替え', ['表の枠を開けて、', 'A1 のポスターを差し込む']), ('外に置ける', ['ポスターは水に強いもの', '（耐水）にする']),
+             ('値段', [f'{DATA["stand"]["price"]}（税込・送料無料）'])]
+    body += f'<rect x="{px}" y="200" width="400" height="{70 + 100 * len(facts)}" rx="18" fill="#0b0d13" opacity=".75" stroke="#2c303b"/>'
+    for i, (a, lines) in enumerate(facts):
+        yy = 252 + i * 100
+        body += T(px + 28, yy, a, 19, GOLD, JP, 700, 'start')
+        for li, line in enumerate(lines):
+            body += T(px + 28, yy + 32 + li * 28, line, 21, '#f2f2f5', JP, 500, 'start')
+    over = chrome('', 'スタンドの大きさ', f'{DATA["stand"]["shop"]}の{DATA["stand"]["name"]}（人と同じ縮尺）',
+                  '大きさは販売ページの値（幅64 × 奥行49 × 高さ118.5cm、ボード面 64 × 88.4cm）', foot='ダイニングバー XⅢ クロスリー｜入口の置き看板')
+    return f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">{DEFS}{body}{over}</svg>'
 
 
 # ---- 書き出し ---------------------------------------------------------------------
-PLACE_X = {'slim': 1290, 'andon': 1300}
-
-
 def render(b, svg, name, tmp, size=(1600, 1000), dsf=1.5, web=(1200, 750), jpg=True):
     """SVG を Edge で画像にする。jpg は保存用（大きい）、webp はページに出す用（小さい）。"""
-    import base64
     w, h = size
     page = tmp / 'render.html'
     page.write_text('<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#000}svg{display:block}</style>'
                     f'</head><body>{svg}</body></html>', encoding='utf-8')
     b.open(page.as_uri(), {'width': w, 'height': h, 'deviceScaleFactor': dsf, 'mobile': False})
-    b.wait(1.2)
+    b.wait(1.0)
     r = b.call('Page.captureScreenshot', {'format': 'png', 'clip': {'x': 0, 'y': 0, 'width': w, 'height': h, 'scale': 1}})
     im = Image.open(io.BytesIO(base64.b64decode(r['data']))).convert('RGB')
     if jpg:
         im.save(OUT / f'{name}.jpg', 'JPEG', quality=86, optimize=True, progressive=True)
-    im.resize(web, Image.LANCZOS).save(OUT / f'{name}.webp', 'WEBP', quality=80, method=6)
+    im.resize(web, Image.LANCZOS).save(OUT / f'{name}.webp', 'WEBP', quality=82, method=6)
     if b.errors:
         print('  エラー:', b.errors[:3])
     return im.size
@@ -740,27 +885,33 @@ def render(b, svg, name, tmp, size=(1600, 1000), dsf=1.5, web=(1200, 750), jpg=T
 def main():
     only = set(sys.argv[1].split(',')) if len(sys.argv) > 1 else None
     OUT.mkdir(parents=True, exist_ok=True)
+    if not only:
+        for f in OUT.glob('*'):          # 前の画像（前の提案の看板など）を残さない
+            f.unlink()
     tmp = Path(tempfile.mkdtemp())
     b = shoot.Browser()
     try:
         if not only or '00' in only:
             print('00 今のようす', render(b, scene_now(), 'sign-00-now', tmp))
-        if not only or 'lineup' in only:
-            lw = lineup_width()
-            print('大きさ比べ', render(b, lineup_svg(), 'sign-lineup', tmp, size=(lw, 1000), dsf=1, web=(lw // 2, 500)))
-        for p in DATA['proposals']:
-            if only and p['no'] not in only:
+        if not only or 'stand' in only:
+            print('スタンドの大きさ', render(b, stand_figure_svg(), 'sign-stand', tmp))
+        for pr in DATA['proposals']:
+            if only and pr['no'] not in only:
                 continue
-            cx = PLACE_X.get(p['id'], 1310)
-            print(p['no'], p['name'], render(b, scene(p, cx), f'sign-{p["no"]}-{p["id"]}-scene', tmp),
-                  render(b, design_svg(p), f'sign-{p["no"]}-{p["id"]}-design', tmp),
-                  render(b, thumb_svg(p), f'sign-{p["no"]}-{p["id"]}-thumb', tmp, size=(800, 800), dsf=1, web=(600, 600), jpg=False))
+            base = f'sign-{pr["no"]}-{pr["id"]}'
+            print(pr['no'], pr['name'],
+                  render(b, place_svg(pr), f'{base}-place', tmp),
+                  render(b, sheet_svg(pr), f'{base}-poster', tmp, size=SHEET, dsf=1.2, web=(800, 1200)),
+                  render(b, thumb_svg(pr), f'{base}-thumb', tmp, size=(PW, PH), dsf=1, web=(480, 680), jpg=False))
     finally:
         b.close()
-    # まとめてダウンロードする ZIP（画像はすでに JPEG なので圧縮しない）
+    # まとめてダウンロードする ZIP（画像はすでに JPEG なので圧縮しない）。古い名前の ZIP は消す。
+    for old in ZIP.parent.glob('xiii-sign-*.zip'):
+        if old != ZIP:
+            old.unlink()
     with zipfile.ZipFile(ZIP, 'w', zipfile.ZIP_STORED) as z:
         for f in sorted(OUT.glob('sign-*.jpg')):
-            z.write(f, f'xiii-sign-ideas/{f.name}')
+            z.write(f, f'xiii-sign-posters/{f.name}')
     print('ZIP', ZIP.name, f'{ZIP.stat().st_size // 1024} KB')
 
 
