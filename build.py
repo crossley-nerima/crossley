@@ -431,8 +431,8 @@ def h_sign_summary(ctx):
 
 
 def h_sign_changes(ctx):
-    """お店の意見と、それをどう直したか。"""
-    return ''.join(f'<li><p class="sg-changes__ask"><span>ご意見</span>{esc(c["ask"])}</p>'
+    """お店の意見・返事と、それをどう直したか（札は、いただいた日付）。"""
+    return ''.join(f'<li><p class="sg-changes__ask"><span>{esc(c.get("date", "ご意見"))}</span>{esc(c["ask"])}</p>'
                    f'<p class="sg-changes__done"><span>直したこと</span>{esc(c["done"])}</p></li>' for c in SIGNS['changes'])
 
 
@@ -617,8 +617,13 @@ def h_sign_timeline(ctx):
     out = []
     for i, t in enumerate(SIGNS['timeline'], 1):
         time = f'<span class="sg-step__time">{esc(t["time"])}</span>' if t['time'] else ''
-        out.append(f'<li class="sg-step"><span class="sg-step__no">{i}</span><div><p class="sg-step__head"><b>{esc(t["title"])}</b>'
-                   f'<span class="sg-step__who">{esc(t["who"])}</span>{time}</p><p>{esc(t["text"])}</p></div></li>')
+        cls, state = '', ''
+        if t.get('done'):
+            cls, state = ' is-done', '<span class="sg-step__state">済</span>'
+        elif t.get('now'):
+            cls, state = ' is-now', '<span class="sg-step__state sg-step__state--now">いまここ</span>'
+        out.append(f'<li class="sg-step{cls}"><span class="sg-step__no">{i}</span><div><p class="sg-step__head"><b>{esc(t["title"])}</b>'
+                   f'<span class="sg-step__who">{esc(t["who"])}</span>{state}{time}</p><p>{esc(t["text"])}</p></div></li>')
     return ''.join(out)
 
 
@@ -632,13 +637,18 @@ def h_sign_pick_list(ctx):
 
 
 def h_sign_price_fields(ctx):
-    """送るフォームの値段の欄（テーブルチャージと、まだ決まっていない値段）。"""
-    per = sign_charge()[0]
-    fields = [('charge', f'テーブルチャージ（{per}）' if per else 'テーブルチャージ', '例：¥500')]
+    """送るフォームの値段の欄（まだ決まっていない値段だけ。全部決まっていれば欄ごと出さない）。"""
+    per, _, charge_tbd = sign_charge()
+    fields = [('charge', f'テーブルチャージ（{per}）' if per else 'テーブルチャージ', '例：¥500')] if charge_tbd else []
     fields += [(x['id'], x['label'], '例：¥600〜') for x in sign_prices() if x['tbd']]
-    return ''.join(f'<label class="sg-send__price"><span>{esc(label)}</span>'
-                   f'<input type="text" name="price_{key}" data-label="{esc(label)}" placeholder="{esc(ph)}" autocomplete="off"></label>'
-                   for key, label, ph in fields)
+    if not fields:
+        return ''
+    return ('<div class="sg-send__prices" role="group" aria-labelledby="send-prices-h">'
+            '<p class="sg-send__label" id="send-prices-h">ポスターに入れる値段（決まっているものだけ）</p>'
+            + ''.join(f'<label class="sg-send__price"><span>{esc(label)}</span>'
+                      f'<input type="text" name="price_{key}" data-label="{esc(label)}" placeholder="{esc(ph)}" autocomplete="off"></label>'
+                      for key, label, ph in fields)
+            + '</div>')
 
 
 def h_sign_faq(ctx):

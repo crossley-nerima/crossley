@@ -1,4 +1,5 @@
-// 看板のポスター（仕上げの10案）のページ: かんたん診断・「気になる」の印・気になる案と値段を送る（LINE・コピー）・印刷。
+// 看板のポスター（仕上げの10案）のページ: かんたん診断・「気になる」の印・気になる案（と、まだ決まっていない値段）を送る（LINE・コピー）・印刷。
+// 値段の欄と枠の色の問いは、決まると出なくなる（そのときは、送る文面にも入らない）。
 (function () {
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };

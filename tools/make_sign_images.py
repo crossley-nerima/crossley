@@ -3,6 +3,7 @@
   python -I -X utf8 tools/make_sign_images.py [01,05,00,stand …]   … 番号を渡すと、その画像だけ作り直す
 
 スタンドは決まっている: モノタロウの LEDパネルA型スタンド 片面（A1）。幅640×奥行490×高さ1185mm、ボード面 640×884mm。
+枠の色はブラック（2026-10-31 にお店が決めた。signs.json の stand.frame）。
 その中に差し込むポスター（A1・594×841mm）を10案描く（案06「3枚の写真で見せる」をもとにした仕上げの10案）。
 1案につき3枚: 置いたイメージ（夜の入口・拡大つき）、デザイン（ポスターの全体）、一覧用の小さい画像。
 ほかに「今のようす」と「スタンドの大きさ」。
@@ -65,6 +66,18 @@ CHARGE = f'テーブルチャージ　{CHARGE_PER} {CHARGE_AMT}'
 PW, PH = 594, 841
 STAND_W, STAND_H, STAND_D, BOARD_H = 640, 1185, 490, 884
 LIP = 32                               # 表の枠の幅（ポスターのふちに 9〜10mm かかる）
+# 枠の色。ブラックは夜の暗い背景に溶けないよう、ふちを少し明るくして形を見せる。
+FRAME = DATA['stand'].get('frame', 'シルバー')
+if FRAME == 'ブラック':
+    METAL = ('#0c0d10', '#383b42', '#1b1d22', '#2e3137', '#0a0b0e')   # 横の明暗（左の影・光・真ん中・光・右の影）
+    METAL_V = ('#3b3e45', '#141519')                                  # 縦の明暗（上・下）
+    RIM_IN, RIM_OUT = '#4b5059', '#5d626d'                             # 窓のふち・外のふち
+    SIDE = ('#5d626d', '#202227', '#16171b')                          # 横から見た図: ふちの色・前の脚・後ろの脚
+else:
+    METAL = ('#8b929b', '#e2e6eb', '#c2c7ce', '#d9dde2', '#848a93')
+    METAL_V = ('#e6e9ed', '#9aa0a8')
+    RIM_IN, RIM_OUT = '#5b6068', '#6c727b'
+    SIDE = ('', '#d6dade', '#a9afb7')
 
 # ---- 建物の絵の座標 --------------------------------------------------------------------
 S = 0.07          # 建物の絵の縮尺（1mm = 0.07。1m = 70）
@@ -132,8 +145,8 @@ DEFS = f"""<defs>
 <linearGradient id="cyl" x1="0" x2="1"><stop offset="0" stop-color="#2b303d"/><stop offset=".45" stop-color="#4a5163"/><stop offset="1" stop-color="#262a35"/></linearGradient>
 <linearGradient id="pole" x1="0" x2="1"><stop offset="0" stop-color="#4c5059"/><stop offset=".5" stop-color="#8d9199"/><stop offset="1" stop-color="#3f434b"/></linearGradient>
 <linearGradient id="road" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2c36"/><stop offset="1" stop-color="#16171e"/></linearGradient>
-<linearGradient id="metal" x1="0" x2="1"><stop offset="0" stop-color="#8b929b"/><stop offset=".22" stop-color="#e2e6eb"/><stop offset=".5" stop-color="#c2c7ce"/><stop offset=".8" stop-color="#d9dde2"/><stop offset="1" stop-color="#848a93"/></linearGradient>
-<linearGradient id="metalV" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e6e9ed"/><stop offset="1" stop-color="#9aa0a8"/></linearGradient>
+<linearGradient id="metal" x1="0" x2="1"><stop offset="0" stop-color="{METAL[0]}"/><stop offset=".22" stop-color="{METAL[1]}"/><stop offset=".5" stop-color="{METAL[2]}"/><stop offset=".8" stop-color="{METAL[3]}"/><stop offset="1" stop-color="{METAL[4]}"/></linearGradient>
+<linearGradient id="metalV" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{METAL_V[0]}"/><stop offset="1" stop-color="{METAL_V[1]}"/></linearGradient>
 <radialGradient id="panelLit" cx=".5" cy=".42" r=".75"><stop offset="0" stop-color="#fff" stop-opacity=".2"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
 <radialGradient id="lamp" cx="1" cy=".62" r=".75"><stop offset="0" stop-color="#ffd9a0" stop-opacity=".30"/><stop offset="1" stop-color="#ffd9a0" stop-opacity="0"/></radialGradient>
 <radialGradient id="lobbySpill" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#eaf2ff" stop-opacity=".45"/><stop offset="1" stop-color="#eaf2ff" stop-opacity="0"/></radialGradient>
@@ -566,10 +579,11 @@ def poster(pr):
 # ---- スタンド（正面・mm。左上が 0,0。幅 640・高さ 1185。上の 884 がボード面） ----------------------
 def stand_svg(art, lit=True, cord=True):
     m = 'url(#metal)'
+    rim = f'stroke="{RIM_OUT}" stroke-width="3"'
     s = ''
-    s += f'<rect x="12" y="{BOARD_H - 30}" width="26" height="{STAND_H - BOARD_H + 14}" fill="{m}"/>'
-    s += f'<rect x="{STAND_W - 38}" y="{BOARD_H - 30}" width="26" height="{STAND_H - BOARD_H + 14}" fill="{m}"/>'
-    s += f'<rect x="38" y="{STAND_H - 120}" width="{STAND_W - 76}" height="14" fill="url(#metalV)"/>'
+    s += f'<rect x="12" y="{BOARD_H - 30}" width="26" height="{STAND_H - BOARD_H + 14}" fill="{m}" {rim}/>'
+    s += f'<rect x="{STAND_W - 38}" y="{BOARD_H - 30}" width="26" height="{STAND_H - BOARD_H + 14}" fill="{m}" {rim}/>'
+    s += f'<rect x="38" y="{STAND_H - 120}" width="{STAND_W - 76}" height="14" fill="url(#metalV)" {rim}/>'
     for x in (4, STAND_W - 46):
         s += f'<rect x="{x}" y="{STAND_H - 18}" width="42" height="18" rx="5" fill="#2a2c31"/>'
     if cord:
@@ -581,8 +595,8 @@ def stand_svg(art, lit=True, cord=True):
     if lit:
         s += f'<rect x="{px}" y="{py}" width="{PW}" height="{PH}" fill="url(#panelLit)" style="mix-blend-mode:screen"/>'
     s += (f'<path d="M0 0H{STAND_W}V{BOARD_H}H0Z M{LIP} {LIP}V{BOARD_H - LIP}H{STAND_W - LIP}V{LIP}Z" fill="{m}" fill-rule="evenodd"/>'
-          f'<rect x="{LIP}" y="{LIP}" width="{STAND_W - 2 * LIP}" height="{BOARD_H - 2 * LIP}" fill="none" stroke="#5b6068" stroke-width="2.5"/>'
-          f'<rect x="1.5" y="1.5" width="{STAND_W - 3}" height="{BOARD_H - 3}" rx="7" fill="none" stroke="#6c727b" stroke-width="3"/>')
+          f'<rect x="{LIP}" y="{LIP}" width="{STAND_W - 2 * LIP}" height="{BOARD_H - 2 * LIP}" fill="none" stroke="{RIM_IN}" stroke-width="2.5"/>'
+          f'<rect x="1.5" y="1.5" width="{STAND_W - 3}" height="{BOARD_H - 3}" rx="7" fill="none" stroke="{RIM_OUT}" stroke-width="3"/>')
     s += f'<path d="M{LIP} {LIP} H{LIP + 190} L{LIP} {LIP + 300} Z" fill="#fff" opacity=".07"/>'
     return s
 
@@ -787,7 +801,7 @@ def place_svg(pr):
     vy = G - STAND_H * S - (vh - STAND_H * S) * .55
     over += f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="16" fill="#0b0d14" stroke="{GOLD}" stroke-width="1.5"/>'
     over += T(x + 20, y + 38, '拡大：入口のガラス扉の横', 23, '#fff', JP, 700, 'start')
-    over += T(x + 20, y + 68, '光るスタンド（A1）に、このポスターを入れたところ', 18, '#c9cad3', JP, 500, 'start')
+    over += T(x + 20, y + 68, f'光るスタンド（A1・{FRAME}）に、このポスターを入れたところ', 18, '#c9cad3', JP, 500, 'start')
     over += f'<clipPath id="zoomClip"><rect x="{zx}" y="{zy}" width="{zw}" height="{zh}" rx="10"/></clipPath>'
     over += (f'<g clip-path="url(#zoomClip)"><svg x="{zx}" y="{zy}" width="{zw}" height="{zh}" '
              f'viewBox="{CX - 4 - vw / 2:.2f} {vy:.2f} {vw:.2f} {vh:.2f}" preserveAspectRatio="xMidYMid slice">{world}</svg></g>')
@@ -867,16 +881,20 @@ def stand_figure_svg():
     # 横（A の形）
     x1, top = 690, base - STAND_H * k
     d = STAND_D * k
-    body += f'<path d="M{x1} {base} L{x1 + d * .5} {top}" stroke="#d6dade" stroke-width="12" stroke-linecap="round"/>'
-    body += f'<path d="M{x1 + d} {base} L{x1 + d * .5} {top}" stroke="#a9afb7" stroke-width="7" stroke-linecap="round"/>'
+    rim, front, back = SIDE
+    for (xa, w, col) in ((x1, 12, front), (x1 + d, 7, back)):
+        leg = f'M{xa} {base} L{x1 + d * .5} {top}'
+        if rim:     # ブラックは、ふちの色を下に敷いて形を見せる
+            body += f'<path d="{leg}" stroke="{rim}" stroke-width="{w + 4}" stroke-linecap="round"/>'
+        body += f'<path d="{leg}" stroke="{col}" stroke-width="{w}" stroke-linecap="round"/>'
     body += f'<path d="M{x1 + d * .14} {base - 150} L{x1 + d * .86} {base - 150}" stroke="#7d838c" stroke-width="3" stroke-dasharray="6 5"/>'
-    body += f'<circle cx="{x1 + d * .5}" cy="{top}" r="7" fill="#d6dade"/>'
+    body += f'<circle cx="{x1 + d * .5}" cy="{top}" r="7" fill="{front}" stroke="{rim or front}" stroke-width="2"/>'
     body += dim_h(x1, x1 + d, base + 34, '奥行 49cm')
     body += T(x1 + d / 2, top - 22, '横から', 24, '#fff', JP, 700)
     # たたんだところ
     x2 = 950
     fh = 1225 * k
-    body += f'<rect x="{x2}" y="{base - fh}" width="{60 * k}" height="{fh}" rx="2" fill="url(#metal)"/>'
+    body += f'<rect x="{x2}" y="{base - fh}" width="{60 * k}" height="{fh}" rx="2" fill="url(#metal)" stroke="{RIM_OUT}" stroke-width="1.5"/>'
     body += dim_v(x2 + 60 * k + 24, base - fh, base, 'たたむと 高さ 122.5cm', 'right')
     body += T(x2 + 12, base + 34, '厚さ 6cm', 19, '#aeb3c2', JP, 700)
     body += T(x2 + 12, base - fh - 22, 'たたむと', 24, '#fff', JP, 700)
@@ -884,14 +902,14 @@ def stand_figure_svg():
     px = 1160
     facts = [('光る', ['中の LED パネルが、', 'ポスターを後ろから照らす']), ('電源', ['コンセントにつなぐ', '（AC アダプター）']),
              ('入れ替え', ['表の枠を開けて、', 'A1 のポスターを差し込む']), ('外に置ける', ['ポスターは水に強いもの', '（耐水）にする']),
-             ('値段', [f'{DATA["stand"]["price"]}（税込・送料無料）'])]
+             (f'値段（{FRAME}）', [f'{DATA["stand"]["price"]}（税込・送料無料）'])]
     body += f'<rect x="{px}" y="200" width="400" height="{70 + 100 * len(facts)}" rx="18" fill="#0b0d13" opacity=".75" stroke="#2c303b"/>'
     for i, (a, lines) in enumerate(facts):
         yy = 252 + i * 100
         body += T(px + 28, yy, a, 19, GOLD, JP, 700, 'start')
         for li, line in enumerate(lines):
             body += T(px + 28, yy + 32 + li * 28, line, 21, '#f2f2f5', JP, 500, 'start')
-    over = chrome('', 'スタンドの大きさ', f'{DATA["stand"]["shop"]}の{DATA["stand"]["name"]}（人と同じ縮尺）',
+    over = chrome('', 'スタンドの大きさ', f'{DATA["stand"]["shop"]}の{DATA["stand"]["name"]}・{FRAME}（人と同じ縮尺）',
                   '大きさは販売ページの値（幅64 × 奥行49 × 高さ118.5cm、ボード面 64 × 88.4cm）', foot='ダイニングバー XⅢ クロスリー｜入口の置き看板')
     return f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">{DEFS}{body}{over}</svg>'
 
