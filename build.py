@@ -331,16 +331,16 @@ def h_proposal(ctx):
     extra = (f'<p class="pp-panel__head pp-panel__head--sub"><strong>ほかの提案</strong><span>ホームページ以外の提案</span></p>'
              f'<ul class="pp-list"><li><a class="pp-item" href="{r}signs/index.html"{cur}>'
              f'<span class="pp-item__swatch pp-item__swatch--sign" aria-hidden="true">看板</span>'
-             f'<span class="pp-item__name">看板のポスターの提案<small>仕上げの10案</small></span>'
-             f'<span class="pp-item__structure">光る置き看板（A1）に入れるポスター（案06をもとに10案・置いたイメージつき）</span>'
-             f'<span class="pp-item__concept">「タバコ吸えます」と「2026年7月 NEW OPEN」を目立たせた、入口の置き看板のポスターの仕上げの案です。</span></a></li></ul>')
+             f'<span class="pp-item__name">看板のポスター<small>仕上がり（案09をもとに）</small></span>'
+             f'<span class="pp-item__structure">光る置き看板（A1）に入れるポスターの仕上がり（置いたイメージ・印刷用の PDF つき）</span>'
+             f'<span class="pp-item__concept">案09をもとに、タバコの表示を丸いシールにして、Instagram の QR コードを入れた、入口の置き看板のポスターです。</span></a></li></ul>')
     switch = (f'<details class="pp-switch"><summary>{len(ALL_PATTERNS)}案を切り替え</summary>'
               f'<div class="pp-panel"><p class="pp-panel__head"><strong>デザイン案を選ぶ</strong>'
               f'<span>中身は同じで、見た目と構成が違います</span></p>'
               f'<ul class="pp-list">{"".join(items)}</ul>{extra}</div></details>')
     if not p:
         return (f'<nav class="pp-bar" aria-label="提案の切り替え">'
-                f'<span class="pp-bar__now"><span>ほかの提案 </span><b>看板のポスター（仕上げの10案）</b></span>{switch}</nav>')
+                f'<span class="pp-bar__now"><span>ほかの提案 </span><b>看板のポスター（仕上がり）</b></span>{switch}</nav>')
     i = [x['no'] for x in ALL_PATTERNS].index(p['no'])
     prev = ALL_PATTERNS[i - 1]
     nxt = ALL_PATTERNS[(i + 1) % len(ALL_PATTERNS)]
@@ -408,18 +408,8 @@ def sign_base(x):
     return f'sign-{x["no"]}-{x["id"]}'
 
 
-def dots(n):
-    return '<span class="sg-dots" aria-hidden="true">' + ''.join('<i class="on"></i>' if k < n else '<i></i>' for k in range(3)) + '</span>'
-
-
 def src_links(keys):
     return '・'.join(f'<a href="{esc(SIGNS["sources"][k]["url"])}" target="_blank" rel="noopener">{esc(SIGNS["sources"][k]["title"])}</a>' for k in keys)
-
-
-def pick_button(no):
-    """「気になる」の印（押すと、ページの下の「気になる案を送る」にも印が付く）。"""
-    return (f'<button type="button" class="sg-pick" data-pick="{no}" aria-pressed="false">'
-            f'<span class="sg-pick__icon" aria-hidden="true"></span><span class="sg-pick__label">気になる</span></button>')
 
 
 def sign_any_tbd():
@@ -487,88 +477,46 @@ def h_sign_ask(ctx):
     if not sign_any_tbd():
         return ''
     return ('<p class="sg-ask"><b>お願い</b><span>「仮」の印の値段は、まだ決まっていません。決まったら教えてください。'
-            '10案すべてのポスターに入れて作り直します。</span><a class="sg-btn sg-btn--gold" href="#send">値段を送る</a></p>')
+            'ポスターと印刷用のデータに入れて作り直します。</span><a class="sg-btn sg-btn--gold" href="#send">値段を送る</a></p>')
 
 
-def h_sign_quiz(ctx):
-    out = []
-    for q in SIGNS['quiz']:
-        opts = ''.join(f'<label class="sg-chip"><input type="radio" name="{q["key"]}" value="{esc(o["value"])}"><span>{esc(o["label"])}</span></label>'
-                       for o in q['options'])
-        out.append(f'<div class="sg-quiz__q" role="group" aria-labelledby="quiz-{q["key"]}"><p id="quiz-{q["key"]}">{esc(q["q"])}</p><div>{opts}</div></div>')
-    return ''.join(out)
+SIGN_PDF = OUT / 'signs' / 'xiii-poster-a1-print.pdf'
+
+
+def h_sign_pdf(ctx):
+    """印刷用のデータ（PDF）を保存するボタン。"""
+    if not SIGN_PDF.exists():
+        raise FileNotFoundError('印刷用の PDF がありません（tools/make_sign_images.py を先に動かす）')
+    mb = SIGN_PDF.stat().st_size / 1024 / 1024
+    return (f'<div class="sg-download"><p><b>印刷用のデータ</b>印刷会社には、このファイルを送ります。'
+            f'A1（59.4 × 84.1cm）のまわりに 3mm の塗り足しをつけた PDF です。</p>'
+            f'<a class="sg-btn sg-btn--gold" href="{SIGN_PDF.name}" download>印刷用データを保存<small>PDF・{mb:.1f}MB</small></a></div>')
+
+
+def h_sign_final(ctx):
+    """仕上がり: ポスターのデザイン（大きく）と、直したところ・印刷用のデータ。その下に置いたイメージ。"""
+    f = SIGNS['final']
+    points = ''.join(f'<li>{esc(t)}</li>' for t in f['points'])
+    return (f'<div class="sg-final">'
+            f'{sign_img("sign-final-poster", "ポスターの仕上がり（A1）", "sg-shot sg-shot--poster", (800, 1200))}'
+            f'<div class="sg-final__side"><h3 class="sg-h3">直したところ</h3><ul class="sg-final__points">{points}</ul>'
+            f'{h_sign_pdf(ctx)}</div></div>'
+            f'<div class="sg-final__place">{sign_img("sign-final-place", "置いたイメージ（夜・イラスト）")}</div>')
 
 
 def h_sign_gallery(ctx):
+    """それまでの10案（参考）。押すと、そのポスターの大きい画像が開く。"""
+    base = SIGNS['final']['no']
     out = []
     for x in SIGNS['proposals']:
-        # かんたん診断（script.js）が使う: 3つのねらいの点数と、写真の並べ方
-        data = ' '.join(f'data-{k}="{esc(v)}"' for k, v in [('no', x['no']), ('layout', x['layout'])] + list(x['scores'].items()))
-        tags = ''.join(f'<span>{esc(t)}</span>' for t in x['tags'])
+        mark = '<span class="sg-g__base">もとにした案</span>' if x['no'] == base else ''
+        cls = ' is-base' if x['no'] == base else ''
         out.append(
-            f'<li class="sg-g" {data}><a class="sg-g__link" href="#sign-{x["no"]}">'
+            f'<li class="sg-g{cls}"><a class="sg-g__link" href="img/{sign_base(x)}-poster.jpg" target="_blank" rel="noopener">'
             f'<span class="sg-g__img"><img src="img/{sign_base(x)}-thumb.webp" width="480" height="680" '
-            f'alt="案{x["no"]}「{esc(x["name"])}」のポスター" loading="lazy" decoding="async"></span>'
-            f'<span class="sg-g__match" hidden>合いそう</span>'
-            f'<span class="sg-g__no">{x["no"]}</span><b class="sg-g__name">{esc(x["name"])}</b>'
-            f'<span class="sg-g__tags">{tags}</span>'
-            f'<span class="sg-g__catch">{esc(x["catch"])}</span></a>{pick_button(x["no"])}</li>')
+            f'alt="案{x["no"]}「{esc(x["name"])}」のポスター" loading="lazy" decoding="async"></span>{mark}'
+            f'<span class="sg-g__no">{x["no"]}</span><b class="sg-g__name">{esc(x["name"])}</b></a></li>')
     return ''.join(out)
-
-
-def h_sign_table(ctx):
-    goals = SIGNS['goals']
-    head = ''.join(f'<th scope="col">{esc(g["label"])}</th>' for g in goals)
-    rows = []
-    for x in SIGNS['proposals']:
-        sc = ''.join(f'<td>{dots(x["scores"][g["key"]])}<span class="visually-hidden">3段階中{x["scores"][g["key"]]}</span></td>' for g in goals)
-        rows.append(f'<tr><th scope="row"><a href="#sign-{x["no"]}"><span class="sg-no">{x["no"]}</span>{esc(x["name"])}</a></th>'
-                    f'<td>{esc(x["style"])}</td>{sc}</tr>')
-    return (f'<div class="sg-table-wrap"><table class="sg-table"><caption class="visually-hidden">10案の比較</caption>'
-            f'<thead><tr><th scope="col">案</th><th scope="col">色・作り</th>{head}</tr></thead><tbody>{"".join(rows)}</tbody></table></div>')
-
-
-def h_sign_cards(ctx):
-    labels = SIGNS['photo_labels']
-    out = []
-    for x in SIGNS['proposals']:
-        name = sign_base(x)
-        scores = ''.join(f'<li><span>{esc(g["label"])}</span>{dots(x["scores"][g["key"]])}<span class="visually-hidden">3段階中{x["scores"][g["key"]]}</span></li>'
-                         for g in SIGNS['goals'])
-        pros = ''.join(f'<li>{esc(t)}</li>' for t in x['pros'])
-        cons = ''.join(f'<li>{esc(t)}</li>' for t in x['cons'])
-        photos = '・'.join(labels[p] for p in x['photos'])
-        out.append(
-            f'<article class="sg-card" id="sign-{x["no"]}" aria-labelledby="sign-{x["no"]}-h">'
-            f'<header class="sg-card__head"><span class="sg-card__no">案{x["no"]}</span>'
-            f'<div><h3 id="sign-{x["no"]}-h">{esc(x["name"])}</h3><p class="sg-card__type">{esc(x["style"])}</p></div>{pick_button(x["no"])}</header>'
-            f'<p class="sg-card__catch">{esc(x["catch"])}</p>'
-            f'<div class="sg-card__shots">{sign_img(name + "-place", "置いたイメージ（夜・イラスト）")}'
-            f'{sign_img(name + "-poster", "ポスターのデザイン（A1）", "sg-shot sg-shot--poster", (800, 1200))}</div>'
-            f'<div class="sg-card__body"><div class="sg-card__text"><p>{esc(x["desc"])}</p>'
-            f'<div class="sg-pc"><div class="sg-pc__good"><h4>よいところ</h4><ul>{pros}</ul></div>'
-            f'<div class="sg-pc__care"><h4>気をつけるところ</h4><ul>{cons}</ul></div></div></div>'
-            f'<div class="sg-card__side"><ul class="sg-scores">{scores}</ul>'
-            f'<dl class="sg-facts"><div><dt>色・作り</dt><dd>{esc(x["style"])}</dd></div>'
-            f'<div><dt>使う写真</dt><dd>{esc(photos)}</dd></div>'
-            f'<div><dt>大きさ・紙</dt><dd>A1（59.4 × 84.1cm）・電飾フィルム</dd></div></dl></div></div>'
-            f'</article>')
-    return ''.join(out)
-
-
-def h_sign_choose(ctx):
-    by = {x['no']: x for x in SIGNS['proposals']}
-    out = []
-    for c in SIGNS['choose']:
-        items = ''.join(f'<li><a href="#sign-{n}"><span class="sg-no">{n}</span>{esc(by[n]["name"])}</a></li>' for n in c['items'])
-        rec = ' sg-choose__item--rec' if c.get('recommend') else ''
-        out.append(f'<div class="sg-choose__item{rec}"><h3>{esc(c["name"])}</h3><p>{esc(c["text"])}</p><ul>{items}</ul></div>')
-    return ''.join(out)
-
-
-def h_sign_mix_tip(ctx):
-    t = SIGNS['mix_tip']
-    return f'<h3>{esc(t["title"])}</h3><p>{esc(t["text"])}</p>'
 
 
 def man(n):
@@ -631,11 +579,6 @@ def h_sign_timeline_note(ctx):
     return f'<p class="sg-sec__note">{esc(SIGNS["timeline_note"])}</p>'
 
 
-def h_sign_pick_list(ctx):
-    return ''.join(f'<label class="sg-pickrow"><input type="checkbox" name="pick" value="{x["no"]}" data-label="案{x["no"]} {esc(x["name"])}">'
-                   f'<span><b>案{x["no"]}</b> {esc(x["name"])}<small>{esc(x["style"])}</small></span></label>' for x in SIGNS['proposals'])
-
-
 def h_sign_price_fields(ctx):
     """送るフォームの値段の欄（まだ決まっていない値段だけ。全部決まっていれば欄ごと出さない）。"""
     per, _, charge_tbd = sign_charge()
@@ -667,20 +610,6 @@ def h_sign_glossary(ctx):
 
 def h_sign_sources(ctx):
     return ''.join(f'<li><a href="{esc(v["url"])}" target="_blank" rel="noopener">{esc(v["title"])}</a></li>' for v in SIGNS['sources'].values())
-
-
-SIGN_ZIP = OUT / 'signs' / 'xiii-sign-posters.zip'
-
-
-def h_sign_zip(ctx):
-    import zipfile
-    if not SIGN_ZIP.exists():
-        raise FileNotFoundError('看板の画像の ZIP がありません（tools/make_sign_images.py を先に動かす）')
-    with zipfile.ZipFile(SIGN_ZIP) as zf:
-        n = len(zf.namelist())
-    mb = SIGN_ZIP.stat().st_size / 1024 / 1024
-    return (f'<a class="sg-btn sg-btn--gold" href="{SIGN_ZIP.name}" download>画像をまとめて保存'
-            f'<small>ZIP・{n}枚・約{mb:.0f}MB</small></a>')
 
 
 def build_signs():
@@ -1043,12 +972,11 @@ HELPERS = {
     'menu': h_menu, 'menu_nav': h_menu_nav, 'food': h_food, 'faq': h_faq, 'info': h_info, 'hours_table': h_hours_table, 'map': h_map,
     'route': h_route, 'route_map': h_route_map, 'streetview': h_streetview, 'notices': h_notices, 'feature': h_feature, 'feature_list': h_feature_list, 'shop_questions': h_shop_questions, 'data': h_data, 'credit': h_credit, 'features': h_features, 'icon': h_icon, 'access': h_access, 'addr': h_addr,
     'sign_summary': h_sign_summary, 'sign_changes': h_sign_changes, 'sign_now': h_sign_now, 'sign_goals': h_sign_goals,
-    'sign_stand': h_sign_stand, 'sign_contents': h_sign_contents, 'sign_ask': h_sign_ask, 'sign_quiz': h_sign_quiz,
-    'sign_gallery': h_sign_gallery, 'sign_table': h_sign_table, 'sign_cards': h_sign_cards, 'sign_choose': h_sign_choose,
-    'sign_mix_tip': h_sign_mix_tip, 'sign_budget': h_sign_budget, 'sign_print': h_sign_print, 'sign_order_tips': h_sign_order_tips,
-    'sign_timeline': h_sign_timeline, 'sign_timeline_note': h_sign_timeline_note, 'sign_pick_list': h_sign_pick_list,
+    'sign_stand': h_sign_stand, 'sign_contents': h_sign_contents, 'sign_ask': h_sign_ask, 'sign_final': h_sign_final,
+    'sign_pdf': h_sign_pdf, 'sign_gallery': h_sign_gallery, 'sign_budget': h_sign_budget, 'sign_print': h_sign_print,
+    'sign_order_tips': h_sign_order_tips, 'sign_timeline': h_sign_timeline, 'sign_timeline_note': h_sign_timeline_note,
     'sign_price_fields': h_sign_price_fields, 'sign_faq': h_sign_faq, 'sign_rules': h_sign_rules, 'sign_glossary': h_sign_glossary,
-    'sign_sources': h_sign_sources, 'sign_zip': h_sign_zip,
+    'sign_sources': h_sign_sources,
     'tel_href': h_tel_href, 'line_add_href': h_line_add_href, 'line_qr': h_line_qr, 'line_msg_base': h_line_msg_base, 'insta_href': h_insta_href, 'year': h_year,
     'map_url': lambda ctx: esc(map_url()), 'route_url': lambda ctx: esc(route_url()),
     'root': lambda ctx: ctx['root'],

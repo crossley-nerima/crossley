@@ -1,70 +1,29 @@
-// 看板のポスター（仕上げの10案）のページ: かんたん診断・「気になる」の印・気になる案（と、まだ決まっていない値段）を送る（LINE・コピー）・印刷。
-// 値段の欄と枠の色の問いは、決まると出なくなる（そのときは、送る文面にも入らない）。
+// 看板のポスター（仕上がり）のページ: 返事を送る（このまま印刷してOK か、直してほしいところ。LINE・コピー）・印刷。
+// 値段の欄は、まだ決まっていない値段があるときだけ出る（そのときは、送る文面にも入る）。
 (function () {
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
 
-  // ---- かんたん診断: いちばん目立たせたいこと・写真の並べ方から、合いそうな案（3つまで）に印を付ける
-  var quiz = $('.sg-quiz'), cards = $$('.sg-g'), result = $('.sg-quiz__result'), reset = $('.sg-quiz__reset');
-  var NAMES = {};
-  cards.forEach(function (c) { NAMES[c.getAttribute('data-no')] = $('.sg-g__name', c).textContent; });
-  function val(name) { var x = $('input[name="' + name + '"]:checked', quiz); return x ? x.value : ''; }
-  function diagnose() {
-    var priority = val('priority'), layout = val('layout');
-    var answered = priority || layout;
-    reset.hidden = !answered;
-    cards.forEach(function (c) { c.classList.remove('is-match', 'is-dim'); $('.sg-g__match', c).hidden = true; });
-    if (!answered) { result.textContent = ''; return; }
-    var list = cards.map(function (c) {
-      var d = function (k) { return c.getAttribute('data-' + k); };
-      // 写真の並べ方は、目立たせたいことの1段階より少し重く見る（選んだ並べ方の案が、上位に入るように）
-      var score = (priority ? parseFloat(d(priority)) * 10 : 0)
-        + (layout && layout !== 'any' && d('layout') === layout ? 12 : 0)
-        + (parseFloat(d('newopen')) + parseFloat(d('smoke')) + parseFloat(d('mood'))) / 10;   // 同じ点なら、全体に強い案を先に
-      return { el: c, no: d('no'), score: score };
-    });
-    list.sort(function (a, b) { return b.score - a.score; });
-    var top = list.slice(0, 3);
-    top.forEach(function (x) { x.el.classList.add('is-match'); $('.sg-g__match', x.el).hidden = false; });
-    list.slice(3).forEach(function (x) { x.el.classList.add('is-dim'); });
-    result.textContent = '合いそうなのは ' + top.map(function (x) { return '案' + x.no + '「' + NAMES[x.no] + '」'; }).join('・') + ' です。';
-  }
-  if (quiz) {
-    quiz.addEventListener('change', diagnose);
-    quiz.addEventListener('reset', function () { setTimeout(diagnose, 0); });
-  }
-
-  // ---- 気になる案: 一覧・くわしい説明の「気になる」と、送るフォームのチェックをそろえ、この端末に残す
-  // 前の10案（案の番号の中身が違う）の印が残らないよう、仕上げの10案では別の名前で残す
-  var KEY = 'xiii-poster-picks-final', form = $('.sg-send');
+  // ---- 返事を送る: 書いた内容はこの端末に残す（10案から選んでいたときとは、別の名前で残す）
+  var KEY = 'xiii-poster-final-reply', form = $('.sg-send');
   var saved = {};
   try { saved = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { saved = {}; }
   var priceInputs = form ? $$('input[name^="price_"]', form) : [];
   function save() {
-    var data = { picks: $$('input[name=pick]:checked', form).map(function (x) { return x.value; }), prices: {} };
-    var f = $('input[name=frame]:checked', form);
-    if (f) data.frame = f.value;
+    var data = { prices: {} };
+    var ok = $('input[name=ok]:checked', form);
+    if (ok) data.ok = ok.value;
     priceInputs.forEach(function (x) { if (x.value.trim()) data.prices[x.name] = x.value; });
     data.note = form.elements.note.value;
     try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) { /* 残せなくても送れる */ }
   }
-  function syncButtons() {
-    var picked = $$('input[name=pick]:checked', form).map(function (x) { return x.value; });
-    $$('.sg-pick').forEach(function (b) {
-      var on = picked.indexOf(b.getAttribute('data-pick')) >= 0;
-      b.setAttribute('aria-pressed', on ? 'true' : 'false');
-      $('.sg-pick__label', b).textContent = on ? '気になる 済' : '気になる';
-    });
-  }
   function message() {
-    var picks = $$('input[name=pick]:checked', form).map(function (x) { return '・' + x.getAttribute('data-label'); });
-    var lines = ['【看板のポスター（仕上げの10案）への返事】', '', '気になる案：', picks.length ? picks.join('\n') : '・（まだ選んでいません）'];
-    var f = $('input[name=frame]:checked', form);
-    if (f) lines.push('', 'スタンドの枠の色：' + f.value);
+    var ok = $('input[name=ok]:checked', form);
+    var lines = ['【看板のポスター（仕上がり）への返事】', '', 'この仕上がりで：' + (ok ? ok.value : '（まだ選んでいません）')];
     var prices = priceInputs.filter(function (x) { return x.value.trim(); })
       .map(function (x) { return '・' + x.getAttribute('data-label') + '：' + x.value.trim(); });
     if (prices.length) lines.push('', 'ポスターに入れる値段：', prices.join('\n'));
-    if (form.elements.note.value.trim()) lines.push('', 'ひとこと：' + form.elements.note.value.trim());
+    if (form.elements.note.value.trim()) lines.push('', '直してほしいところ・ひとこと：', form.elements.note.value.trim());
     lines.push('', '（ダイニングバー XⅢ クロスリー）');
     return lines.join('\n');
   }
@@ -74,27 +33,18 @@
     $('.sg-send__line', form).href = 'https://line.me/R/share?text=' + encodeURIComponent(m);
   }
   if (form) {
-    (saved.picks || []).forEach(function (no) { var x = $('input[name=pick][value="' + no + '"]', form); if (x) x.checked = true; });
-    if (saved.frame) { var fx = $('input[name=frame][value="' + saved.frame + '"]', form); if (fx) fx.checked = true; }
+    if (saved.ok) { var ox = $('input[name=ok][value="' + saved.ok + '"]', form); if (ox) ox.checked = true; }
     priceInputs.forEach(function (x) { x.value = (saved.prices || {})[x.name] || ''; });
     form.elements.note.value = saved.note || '';
-    form.addEventListener('input', function () { save(); syncButtons(); refresh(); });
-    form.addEventListener('change', function () { save(); syncButtons(); refresh(); });
-    $$('.sg-pick').forEach(function (b) {
-      b.addEventListener('click', function (e) {
-        e.preventDefault();
-        var x = $('input[name=pick][value="' + b.getAttribute('data-pick') + '"]', form);
-        x.checked = !x.checked;
-        save(); syncButtons(); refresh();
-      });
-    });
+    form.addEventListener('input', function () { save(); refresh(); });
+    form.addEventListener('change', function () { save(); refresh(); });
     $('.sg-send__copy', form).addEventListener('click', function () {
       var btn = this;
       if (navigator.clipboard) navigator.clipboard.writeText(message()).then(function () {
         btn.textContent = 'コピーしました'; setTimeout(function () { btn.textContent = '文面をコピー'; }, 2000);
       });
     });
-    syncButtons(); refresh();
+    refresh();
   }
 
   // ---- 印刷・PDF（印刷用の見た目は style.css の @media print）

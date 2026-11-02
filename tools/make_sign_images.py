@@ -1,12 +1,14 @@
 """看板の提案（1階入口の光る置き看板に差し込むポスター・10案）のイメージ画像を作る。
 
-  python -I -X utf8 tools/make_sign_images.py [01,05,00,stand …]   … 番号を渡すと、その画像だけ作り直す
+  python -I -X utf8 tools/make_sign_images.py [final,pdf,00,stand,01 …]   … 名前を渡すと、その画像だけ作り直す
+      （final は仕上がりの画像、pdf は印刷用の PDF、00 は今のようす、stand はスタンドの大きさ、01〜10 はそれまでの10案）
 
 スタンドは決まっている: モノタロウの LEDパネルA型スタンド 片面（A1）。幅640×奥行490×高さ1185mm、ボード面 640×884mm。
 枠の色はブラック（2026-10-31 にお店が決めた。signs.json の stand.frame）。
-その中に差し込むポスター（A1・594×841mm）を10案描く（案06「3枚の写真で見せる」をもとにした仕上げの10案）。
-1案につき3枚: 置いたイメージ（夜の入口・拡大つき）、デザイン（ポスターの全体）、一覧用の小さい画像。
-ほかに「今のようす」と「スタンドの大きさ」。
+その中に差し込むポスター（A1・594×841mm）の仕上がりを描く（2026-11-02 にお店が決めた: 案09をもとに、
+タバコは丸いシールで少し控えめに、Instagram の QR コードを足す）。仕上がりは、置いたイメージ・デザイン・一覧用の画像と、
+印刷用の PDF（A1 のまわりに塗り足し 3mm）。それまでの10案（案06をもとにした仕上げの10案）は、参考にデザインと一覧用の画像だけ作る。
+ほかに「今のようす」と「スタンドの大きさ」。QR コードの中身は tools/qr-instagram.txt（tools/make_qr.py で作る）。
 
 文字や値段は signs.json と site.json から読む（値段の計算は build.py の sign_prices と同じもの）。
 値段が決まったら site.json を直して、この画像とページを作り直す。
@@ -20,7 +22,6 @@ import json
 import math
 import sys
 import tempfile
-import zipfile
 from pathlib import Path
 
 from PIL import Image
@@ -33,7 +34,8 @@ import build  # noqa: E402  値段の計算（sign_prices・sign_charge）をペ
 
 IMG = ROOT / 'docs' / 'assets' / 'img'
 OUT = ROOT / 'docs' / 'signs' / 'img'
-ZIP = ROOT / 'docs' / 'signs' / 'xiii-sign-posters.zip'
+PDF = ROOT / 'docs' / 'signs' / 'xiii-poster-a1-print.pdf'
+QR_FILE = ROOT / 'tools' / 'qr-instagram.txt'
 DATA = json.loads((ROOT / 'signs.json').read_text(encoding='utf-8'))
 SITE = json.loads((ROOT / 'site.json').read_text(encoding='utf-8'))
 
@@ -61,6 +63,17 @@ OPEN_EN, OPEN_JP, OPEN_D = (DATA['open'][k] for k in ('en', 'jp', 'date'))      
 PRICES = {x['id']: x for x in build.sign_prices()}
 CHARGE_PER, CHARGE_AMT, _ = build.sign_charge()
 CHARGE = f'テーブルチャージ　{CHARGE_PER} {CHARGE_AMT}'
+
+
+def _qr():
+    """Instagram の QR コードのます目（True＝黒）。中身が site.json の instagram_url と違えば止める。"""
+    head, *rows = QR_FILE.read_text(encoding='utf-8').split('\n')
+    if head.split('\t')[0] != SITE['instagram_url']:
+        raise SystemExit('QR コードの中身が site.json の instagram_url と違います（tools/make_qr.py で作り直してください）')
+    return [[c == '1' for c in r] for r in rows if r]
+
+
+QR = _qr()
 
 # ---- スタンド（mm）。ボード面 640×884 の中に A1 のポスター（594×841）が入る -------------------
 PW, PH = 594, 841
@@ -560,8 +573,69 @@ def poster_polaroid(p):
     return s
 
 
+# ---- 仕上がり（2026-11-02 お店の返事: 案09をもとに、タバコは丸いシールで控えめに、Instagram の QR コードを足す） ----------
+def insta_glyph(cx, cy, s, color):
+    """Instagram の印（角の丸い四角・丸・点）。s は一辺の長さ。"""
+    w = s * .09
+    return (f'<rect x="{cx - s / 2 + w / 2:.2f}" y="{cy - s / 2 + w / 2:.2f}" width="{s - w:.2f}" height="{s - w:.2f}" rx="{s * .28:.2f}" '
+            f'fill="none" stroke="{color}" stroke-width="{w:.2f}"/>'
+            f'<circle cx="{cx}" cy="{cy}" r="{s * .22:.2f}" fill="none" stroke="{color}" stroke-width="{w:.2f}"/>'
+            f'<circle cx="{cx + s * .26:.2f}" cy="{cy - s * .26:.2f}" r="{s * .055:.2f}" fill="{color}"/>')
+
+
+def qr_tile(x, y, size, dark=INK, light='#f6f2ea', border=GOLD):
+    """QR コードの札（まわりに4ます分の余白）。黒は明るい地に置く（白黒が逆だと読めないスマホがあるため）。
+    横に続く黒のます目は1本にまとめ、境目に細い線が出ないよう crispEdges で描く。"""
+    n = len(QR)
+    m = size / (n + 8)
+    d = []
+    for r, row in enumerate(QR):
+        c = 0
+        while c < n:
+            if not row[c]:
+                c += 1
+                continue
+            c0 = c
+            while c < n and row[c]:
+                c += 1
+            d.append(f'M{x + (c0 + 4) * m:.3f} {y + (r + 4) * m:.3f}h{(c - c0) * m:.3f}v{m:.3f}h{-(c - c0) * m:.3f}z')
+    return (f'<rect x="{x}" y="{y}" width="{size}" height="{size}" rx="{m * 1.6:.2f}" fill="{light}" stroke="{border}" stroke-width="1.2"/>'
+            f'<path d="{"".join(d)}" fill="{dark}" shape-rendering="crispEdges"/>')
+
+
+def poster_final(p, b=0):
+    """仕上がり: 案09「写真を上いっぱいに」をもとに、タバコは丸いシール（案02のシールより小さく、控えめに）、
+    右下に Instagram の QR コード。b は印刷用の塗り足し（mm）。ふちまである写真と地の色だけ、外へ広げる。"""
+    g = f'{p}-g'
+    W = PW + 2 * b
+    s = (f'<defs>{gold_grad(g)}{shade(p + "-t", .93, 0)}<linearGradient id="{p}-b" x1="0" y1="0" x2="0" y2="1">'
+         f'<stop offset="0" stop-color="#0c0b0e" stop-opacity="0"/><stop offset="1" stop-color="#0c0b0e"/></linearGradient></defs>')
+    s += f'<rect x="{-b}" y="{-b}" width="{W}" height="{PH + 2 * b}" fill="#0c0b0e"/>'
+    s += ph('counter-dark', -b, -b, W, 410 + b, f'{p}-p0', .6, .58)
+    s += f'<rect x="{-b}" y="{-b}" width="{W}" height="{250 + b}" fill="url(#{p}-t)"/><rect x="{-b}" y="320" width="{W}" height="92" fill="url(#{p}-b)"/>'
+    s += head_small(g)
+    s += f'<rect x="40" y="350" width="356" height="42" rx="6" fill="{GOLD}"/>'
+    s += open_text(54, 379, 25, 18, '#141008', gap=14, anchor='start')
+    s += ph('tables', 40, 416, 253, 142, f'{p}-p1', .5, .62)
+    s += ph('darts', 301, 416, 253, 142, f'{p}-p2', .48, .42)
+    s += smoke_badge(488, 402, 60)
+    s += T(297, 592, f'{SMOKE_S}・{SMOKE_N}', 15, '#e6dfd0', JPB, 500)
+    s += line(608, 40, 554, op=.5)
+    # 左: チャージと値段・営業時間、右: Instagram の QR コード（12.4cm 角）
+    s += T(46, 648, CHARGE, 19, GOLD_L, JPB, 700, 'start')
+    s += plist(48, 686, 312, rows('beer', 'whisky', 'cocktail', 'food', 'darts'), 16.5, '#ebe5d8', GOLD_L, '#7d6c48', 25)
+    s += T(46, 816, f'OPEN {HOURS} ／ {CLOSED}', 13.5, '#bdb6a8', JPB, 500, 'start')
+    qs, qx, qy = 124, 430, 624
+    cx = qx + qs / 2
+    s += qr_tile(qx, qy, qs)
+    s += insta_glyph(cx - 39, 773, 13, GOLD_L) + T(cx - 27, 778, 'Instagram', 15, GOLD_L, NUM, 700, 'start')
+    s += T(cx, 800, INSTA, 13, '#ebe5d8', JPB, 500)
+    return s
+
+
 # 案の id → (ポスターを描く関数, 光ったときのまわりの色)
 POSTERS = {
+    'final': (poster_final, '#e6f5c4'),
     'base': (poster_base, '#ffe2a6'), 'corner': (poster_corner, '#ffe2a6'), 'smokebig': (poster_smokebig, '#ffe2a6'),
     'openbig': (poster_openbig, '#ffe2a6'), 'stack': (poster_stack, '#ffe2a6'), 'tall': (poster_tall, '#ffe2a6'),
     'red': (poster_red, '#ffc2b0'), 'circle': (poster_circle, '#ffe2a6'), 'wide': (poster_wide, '#e6f5c4'),
@@ -569,9 +643,14 @@ POSTERS = {
 }
 
 
+def badge_of(pr):
+    """画像の金の札の文字（仕上がりは「仕上がり」、10案は「案09」のように）。"""
+    return pr.get('badge') or '案' + pr['no']
+
+
 def poster(pr):
     func, _ = POSTERS[pr['id']]
-    p = 'p' + pr['no']
+    p = 'pf' if pr['id'] == 'final' else 'p' + pr['no']
     return (f'<clipPath id="{p}-all"><rect width="{PW}" height="{PH}"/></clipPath>'
             f'<g clip-path="url(#{p}-all)">{func(p)}</g>')
 
@@ -716,11 +795,13 @@ def people(x=850):
 
 
 # ---- 画像の枠（題名・説明・吹き出し） ------------------------------------------------------
-def chrome(no, title, sub, caption, w=1600, h=1000, foot='ダイニングバー XⅢ クロスリー｜入口の置き看板のポスター'):
-    badge = (f'<rect x="40" y="36" rx="12" width="{96 if no else 0}" height="46" fill="{GOLD}"/>'
-             f'{T(88, 69, "案" + no, 26, "#1a1408", JP, 700) if no else ""}')
-    tx = 152 if no else 44
-    s = f'<rect x="0" y="0" width="{w}" height="120" fill="#000" opacity=".45"/>{badge}'
+def chrome(badge, title, sub, caption, w=1600, h=1000, foot='ダイニングバー XⅢ クロスリー｜入口の置き看板のポスター'):
+    """画像の上の帯（左に金の札・題名・説明）と、下の帯（説明・店名）。badge は札の文字（「案09」「仕上がり」。なしなら札を出さない）。"""
+    bw = max(96, 26 * len(badge) + 34) if badge else 0
+    s = f'<rect x="0" y="0" width="{w}" height="120" fill="#000" opacity=".45"/>'
+    if badge:
+        s += f'<rect x="40" y="36" rx="12" width="{bw}" height="46" fill="{GOLD}"/>' + T(40 + bw / 2, 69, badge, 26, '#1a1408', JP, 700)
+    tx = 40 + bw + 16 if badge else 44
     s += T(tx, 70, title, 34, '#fff', JP, 700, 'start')
     s += T(tx, 104, sub, 19, '#cfd0d8', JP, 500, 'start')
     s += f'<rect x="0" y="{h - 48}" width="{w}" height="48" fill="#000" opacity=".6"/>'
@@ -809,7 +890,7 @@ def place_svg(pr):
     over += f'<rect x="{zx + 12}" y="{zy + 12}" width="66" height="32" rx="8" fill="#000" opacity=".6"/>' + T(zx + 45, zy + 34, '拡大', 18, GOLD_L, JP, 700)
     sx, sy = po(CX + STAND_W * S / 2 + 1, G - STAND_H * S * .62)
     over += f'<line x1="{sx:.1f}" y1="{sy:.1f}" x2="{x}" y2="{y + h / 2}" stroke="{GOLD}" stroke-width="2" opacity=".85"/><circle cx="{sx:.1f}" cy="{sy:.1f}" r="5" fill="{GOLD}"/>'
-    over += chrome(pr['no'], pr['name'], pr['catch'], '置いたイメージ（イラスト・夜）　ビルの敷地の中、入口のガラス扉の横に置いたところ')
+    over += chrome(badge_of(pr), pr['name'], pr['catch'], '置いたイメージ（イラスト・夜）　ビルの敷地の中、入口のガラス扉の横に置いたところ')
     return f'<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">{DEFS}{body}{over}</svg>'
 
 
@@ -825,9 +906,12 @@ def sheet_svg(pr):
     body += f'<rect x="{x0 + 10}" y="{y0 + 18}" width="{PW * k}" height="{PH * k}" fill="#000" opacity=".55" filter="url(#softer)"/>'
     body += f'<g transform="translate({x0},{y0}) scale({k:.5f})">{poster(pr)}</g>'
     y = y0 + PH * k + 40
-    body += f'<rect x="{x0}" y="{y}" rx="12" width="104" height="50" fill="{GOLD}"/>' + T(x0 + 52, y + 35, '案' + pr['no'], 28, '#1a1408', JP, 700)
-    body += T(x0 + 124, y + 37, pr['name'], 36, '#fff', JP, 700, 'start')
-    body += T(x0, y + 92, f'差し込むポスター（A1・59.4 × 84.1cm）のデザイン案　{pr["style"]}', 22, '#c9cad3', JP, 500, 'start')
+    badge = badge_of(pr)
+    bw = max(104, 28 * len(badge) + 36)
+    body += f'<rect x="{x0}" y="{y}" rx="12" width="{bw}" height="50" fill="{GOLD}"/>' + T(x0 + bw / 2, y + 35, badge, 28, '#1a1408', JP, 700)
+    body += T(x0 + bw + 20, y + 37, pr['name'], 36, '#fff', JP, 700, 'start')
+    kind = '仕上がり' if pr['id'] == 'final' else 'デザイン案'
+    body += T(x0, y + 92, f'差し込むポスター（A1・59.4 × 84.1cm）の{kind}　{pr["style"]}', 22, '#c9cad3', JP, 500, 'start')
     note = '「〇〇〇」の値段は、決まったら入れます。' if any(x['tbd'] for x in PRICES.values()) or CHARGE_AMT.count('〇') else ''
     body += T(x0, y + 128, note + '写真はお店の写真です（印刷の前に撮り直すと、もっときれいになります）。', 20, '#9ea3b2', JP, 500, 'start')
     body += T(W - 70, H - 30, 'ダイニングバー XⅢ クロスリー', 18, GOLD, JP, 700, 'end')
@@ -933,37 +1017,100 @@ def render(b, svg, name, tmp, size=(1600, 1000), dsf=1.5, web=(1200, 750), jpg=T
     return im.size
 
 
+# ---- 印刷用の PDF（仕上がり） ------------------------------------------------------------
+BLEED = 3        # 塗り足し（mm）。仕上がりの A1（594×841）のまわりに 3mm ずつ広げる
+PRINT_K = 8      # 1mm を 8 ピクセルで描く（約 200dpi。大判の印刷は原寸で 150〜200dpi あれば足りる。写真の元は 100dpi ほど）
+
+
+def print_svg():
+    """印刷用: 塗り足しまで描いた A1（600×847mm）。"""
+    W, H = PW + 2 * BLEED, PH + 2 * BLEED
+    body = (f'<clipPath id="pp-all"><rect x="{-BLEED}" y="{-BLEED}" width="{W}" height="{H}"/></clipPath>'
+            f'<g clip-path="url(#pp-all)">{poster_final("pp", BLEED)}</g>')
+    return f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="{-BLEED} {-BLEED} {W} {H}">{DEFS}{body}</svg>'
+
+
+def jpeg_pdf(path, jpg, px, size_mm, bleed_mm, title):
+    """JPEG 1枚を、1ページの PDF にする。ページは size_mm（塗り足しこみ）、その内側の仕上がりを TrimBox に書く。"""
+    pt = 72 / 25.4
+    W, H, t = size_mm[0] * pt, size_mm[1] * pt, bleed_mm * pt
+    content = f'q {W:.3f} 0 0 {H:.3f} 0 0 cm /Im0 Do Q'.encode()
+    title_hex = 'FEFF' + title.encode('utf-16-be').hex().upper()
+    objs = [
+        b'<< /Type /Catalog /Pages 2 0 R >>',
+        b'<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+        (f'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {W:.3f} {H:.3f}] /BleedBox [0 0 {W:.3f} {H:.3f}] '
+         f'/TrimBox [{t:.3f} {t:.3f} {W - t:.3f} {H - t:.3f}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>').encode(),
+        (f'<< /Type /XObject /Subtype /Image /Width {px[0]} /Height {px[1]} /ColorSpace /DeviceRGB /BitsPerComponent 8 '
+         f'/Filter /DCTDecode /Length {len(jpg)} >>\nstream\n').encode() + jpg + b'\nendstream',
+        f'<< /Length {len(content)} >>\nstream\n'.encode() + content + b'\nendstream',
+        f'<< /Title <{title_hex}> /Creator (tools/make_sign_images.py) >>'.encode(),
+    ]
+    out = bytearray(b'%PDF-1.4\n%\xe2\xe3\xcf\xd3\n')
+    offsets = []
+    for i, o in enumerate(objs, 1):
+        offsets.append(len(out))
+        out += f'{i} 0 obj\n'.encode() + o + b'\nendobj\n'
+    xref = len(out)
+    out += f'xref\n0 {len(objs) + 1}\n0000000000 65535 f \n'.encode()
+    out += b''.join(f'{off:010d} 00000 n \n'.encode() for off in offsets)
+    out += f'trailer\n<< /Size {len(objs) + 1} /Root 1 0 R /Info {len(objs)} 0 R >>\nstartxref\n{xref}\n%%EOF\n'.encode()
+    path.write_bytes(bytes(out))
+
+
+def render_print(b, tmp):
+    """印刷用の PDF を作る（4800×6776 ピクセルを1回で撮る。分けて撮ってつなぐと、つなぎ目に黒い線が出たため）。"""
+    W, H = PW + 2 * BLEED, PH + 2 * BLEED
+    page = tmp / 'print.html'
+    page.write_text('<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#000}svg{display:block}</style>'
+                    f'</head><body>{print_svg()}</body></html>', encoding='utf-8')
+    b.open(page.as_uri(), {'width': W, 'height': H, 'deviceScaleFactor': PRINT_K, 'mobile': False})
+    b.wait(2.0)
+    r = b.call('Page.captureScreenshot', {'format': 'png', 'clip': {'x': 0, 'y': 0, 'width': W, 'height': H, 'scale': 1}})
+    im = Image.open(io.BytesIO(base64.b64decode(r['data']))).convert('RGB')
+    if im.size != (W * PRINT_K, H * PRINT_K):
+        raise SystemExit(f'印刷用の画像の大きさが違います: {im.size}')
+    if b.errors:
+        print('  エラー:', b.errors[:3])
+    buf = io.BytesIO()
+    im.save(buf, 'JPEG', quality=92, subsampling=0, optimize=True)     # 色の境目がにじまないよう、色を間引かない
+    jpeg_pdf(PDF, buf.getvalue(), im.size, (W, H), BLEED, 'ダイニングバー XⅢ クロスリー 入口の置き看板のポスター（A1・印刷用）')
+    # 確かめる用の小さい画像（ページには出さない）
+    im.resize((W, H), Image.LANCZOS).save(tmp / 'print-preview.png')
+    return im.size, f'{PDF.stat().st_size / 1024 / 1024:.1f}MB'
+
+
 def main():
     only = set(sys.argv[1].split(',')) if len(sys.argv) > 1 else None
     OUT.mkdir(parents=True, exist_ok=True)
     if not only:
         for f in OUT.glob('*'):          # 前の画像（前の提案の看板など）を残さない
             f.unlink()
+        for old in OUT.parent.glob('xiii-sign-*.zip'):   # 前にあった「画像をまとめて保存」の ZIP（今は印刷用の PDF を渡す）
+            old.unlink()
     tmp = Path(tempfile.mkdtemp())
     b = shoot.Browser()
+    final = DATA['final']
     try:
         if not only or '00' in only:
             print('00 今のようす', render(b, scene_now(), 'sign-00-now', tmp))
         if not only or 'stand' in only:
             print('スタンドの大きさ', render(b, stand_figure_svg(), 'sign-stand', tmp))
-        for pr in DATA['proposals']:
+        if not only or 'final' in only:
+            print('仕上がり',
+                  render(b, place_svg(final), 'sign-final-place', tmp),
+                  render(b, sheet_svg(final), 'sign-final-poster', tmp, size=SHEET, dsf=1.2, web=(800, 1200)))
+        if not only or 'pdf' in only:
+            print('印刷用 PDF', PDF.name, *render_print(b, tmp), '（確かめる用の画像:', tmp / 'print-preview.png', '）')
+        for pr in DATA['proposals']:     # それまでの10案（参考）: デザインと一覧用の画像だけ
             if only and pr['no'] not in only:
                 continue
             base = f'sign-{pr["no"]}-{pr["id"]}'
             print(pr['no'], pr['name'],
-                  render(b, place_svg(pr), f'{base}-place', tmp),
                   render(b, sheet_svg(pr), f'{base}-poster', tmp, size=SHEET, dsf=1.2, web=(800, 1200)),
                   render(b, thumb_svg(pr), f'{base}-thumb', tmp, size=(PW, PH), dsf=1, web=(480, 680), jpg=False))
     finally:
         b.close()
-    # まとめてダウンロードする ZIP（画像はすでに JPEG なので圧縮しない）。古い名前の ZIP は消す。
-    for old in ZIP.parent.glob('xiii-sign-*.zip'):
-        if old != ZIP:
-            old.unlink()
-    with zipfile.ZipFile(ZIP, 'w', zipfile.ZIP_STORED) as z:
-        for f in sorted(OUT.glob('sign-*.jpg')):
-            z.write(f, f'xiii-sign-posters/{f.name}')
-    print('ZIP', ZIP.name, f'{ZIP.stat().st_size // 1024} KB')
 
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-/* 看板のポスターの提案（1階入口の光る置き看板・10案）。イメージ画像と同じ、夜の黒と金。 */
+/* 看板のポスター（1階入口の光る置き看板・仕上がり）。イメージ画像と同じ、夜の黒と金。 */
 :root {
   --bg: #101217;
   --bg-2: #161921;
@@ -67,64 +67,18 @@ h1, h2, h3 { line-height: 1.4; }
 .sg-goals b { color: var(--gold-2); font-size: 17px; }
 .sg-goals span { color: var(--muted); font-size: 14px; }
 
-/* ●の段階 */
-.sg-dots { display: inline-flex; gap: 4px; vertical-align: middle; }
-.sg-dots i { width: 11px; height: 11px; border-radius: 50%; border: 1.5px solid var(--gold); }
-.sg-dots i.on { background: var(--gold); }
-
-/* 比較表 */
+/* 表（予算） */
 .sg-table-wrap { overflow-x: auto; border-radius: var(--r); border: 1px solid var(--line); }
 .sg-table { width: 100%; min-width: 640px; border-collapse: collapse; font-size: 14px; }
 .sg-table th, .sg-table td { padding: 12px 14px; border-bottom: 1px solid #2a2f3b; text-align: left; white-space: nowrap; }
 .sg-table thead th { background: var(--panel-2); color: var(--muted); font-weight: 700; font-size: 13px; }
 .sg-table tbody tr:last-child th, .sg-table tbody tr:last-child td { border-bottom: 0; }
 .sg-table tbody tr:hover { background: rgba(217, 182, 111, .06); }
-.sg-table th[scope=row] a { text-decoration: none; font-weight: 700; }
-.sg-table th[scope=row] a:hover { color: var(--gold-2); }
 .sg-price { color: var(--gold-2); font-weight: 700; }
-.sg-no { display: inline-grid; place-items: center; min-width: 30px; height: 24px; margin-right: 8px; padding: 0 6px; border-radius: 6px; background: var(--gold); color: #1a1408; font-size: 12px; font-weight: 700; }
 
-/* 案のカード */
-.sg-sec--cards { padding-top: clamp(40px, 6vw, 64px); }
-.sg-card { padding: clamp(20px, 3vw, 32px); border-radius: 20px; background: var(--panel); border: 1px solid var(--line); scroll-margin-top: calc(var(--pp-h, 0px) + 16px); }
-.sg-card + .sg-card { margin-top: 24px; }
-.sg-card__head { display: flex; align-items: center; gap: 14px; }
-.sg-card__no { flex: none; padding: 6px 12px; border-radius: 10px; background: var(--gold); color: #1a1408; font-weight: 700; }
-.sg-card h3 { margin: 0; font-size: clamp(20px, 2.6vw, 26px); }
-.sg-card__type { margin: 0; color: var(--muted); font-size: 13px; }
-.sg-card__catch { margin: 12px 0 18px; color: var(--gold-2); font-weight: 700; font-size: 16px; }
-.sg-card__shots { display: grid; grid-template-columns: minmax(0, 2.4fr) minmax(0, 1fr); gap: 16px; align-items: start; }
 .sg-shot--poster img { aspect-ratio: 800 / 1200; }
-.sg-card__body { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: clamp(20px, 3vw, 36px); margin-top: 20px; }
-.sg-card__side { display: grid; gap: 14px; align-content: start; }
-.sg-card__text p { margin: 0 0 14px; }
-.sg-scores { list-style: none; margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--panel-2); display: grid; gap: 6px; }
-.sg-scores li { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14px; }
-.sg-facts { margin: 0; display: grid; gap: 0; }
-.sg-facts > div { padding: 10px 0; border-bottom: 1px solid #2c313d; }
-.sg-facts > div:last-child { border-bottom: 0; }
-.sg-facts dt { color: var(--muted); font-size: 13px; font-weight: 700; }
-.sg-facts dd { margin: 2px 0 0; font-size: 14px; }
-.sg-facts dd ul { margin: 0; padding-left: 1.2em; }
-.sg-facts__price b { display: block; color: var(--gold-2); font-size: 22px; }
-.sg-facts__price small { display: block; color: var(--muted); font-size: 13px; line-height: 1.7; }
 .sg-src { font-size: 12px; color: var(--muted); }
 .sg-src a { color: var(--muted); }
-
-/* 選び方 */
-.sg-choose { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
-.sg-choose__item { padding: 18px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); }
-.sg-choose__item--rec { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold) inset; }
-.sg-choose__item--rec h3::after { content: "おすすめ"; margin-left: .6em; padding: 1px 8px; border-radius: 6px; background: var(--gold); color: #1a1408; font-size: 12px; vertical-align: 2px; }
-.sg-choose__item h3 { margin: 0 0 4px; font-size: 17px; }
-.sg-choose__item p { margin: 0 0 10px; color: var(--muted); font-size: 14px; }
-.sg-choose__item ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-.sg-choose__item a { display: flex; align-items: center; gap: 4px; padding: 8px 10px; border-radius: 10px; background: var(--panel-2); text-decoration: none; font-size: 14px; font-weight: 700; }
-.sg-choose__item a small { margin-left: auto; color: var(--gold-2); font-weight: 500; }
-.sg-tip { margin-top: 20px; padding: 18px 20px; border-radius: 14px; border: 1px dashed var(--gold); background: rgba(217, 182, 111, .06); }
-.sg-tip h3 { margin: 0 0 4px; font-size: 16px; color: var(--gold-2); }
-.sg-tip p { margin: 0; font-size: 14px; }
-.sg-tip p + p { margin-top: 6px; }
 
 /* 決まり・見積もり */
 .sg-two { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(28px, 5vw, 56px); align-items: start; }
@@ -142,15 +96,11 @@ h1, h2, h3 { line-height: 1.4; }
 .sg-footer p { margin: 0 0 4px; }
 
 @media (max-width: 860px) {
-  .sg-now, .sg-two, .sg-card__body { grid-template-columns: 1fr; }
+  .sg-now, .sg-two { grid-template-columns: 1fr; }
   .sg-goals { grid-template-columns: 1fr; }
 }
-@media (max-width: 720px) {
-  .sg-card__shots { grid-template-columns: 1fr; }
-  .sg-shot--poster { max-width: 420px; }
-}
 
-/* ---- わかりやすさのための追加（要約・見比べる・診断・気になる・流れ・送る・質問・言葉・印刷） ---- */
+/* ---- わかりやすさのための追加（要約・流れ・送る・質問・言葉・印刷） ---- */
 .sg-btn--line { background: #06c755; border-color: #06c755; color: #fff; }
 .sg-btn--line:hover { background: #05b44d; }
 button.sg-btn { font-family: inherit; cursor: pointer; }
@@ -167,65 +117,29 @@ button.sg-btn { font-family: inherit; cursor: pointer; }
 .sg-summary b { color: var(--gold-2); font-size: 16px; }
 .sg-summary span { font-size: 15px; }
 
-/* かんたん診断 */
-.sg-quiz { margin: 0 0 22px; padding: 20px; border-radius: 18px; background: var(--panel); border: 1px solid var(--line); }
-.sg-quiz__title { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
-.sg-quiz__title b { display: block; color: var(--ink); font-size: 18px; }
-.sg-quiz__q { display: grid; grid-template-columns: 12em 1fr; gap: 6px 14px; align-items: center; padding: 10px 0; border-top: 1px solid #2c313d; }
-.sg-quiz__q p { margin: 0; font-weight: 700; }
-.sg-quiz__q > div { display: flex; flex-wrap: wrap; gap: 8px; }
+/* 選ぶボタン（返事を送るフォーム） */
 .sg-chip { position: relative; display: inline-block; cursor: pointer; }
 .sg-chip input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; z-index: 1; }
 .sg-chip span { display: block; padding: 8px 16px; border-radius: 999px; border: 1px solid #3a4050; background: var(--panel-2); font-size: 14px; line-height: 1.5; }
 .sg-chip input:checked + span { background: var(--gold); color: #1a1408; border-color: var(--gold); font-weight: 700; }
 .sg-chip input:focus-visible + span { outline: 2px solid var(--gold-2); outline-offset: 2px; }
-.sg-quiz__result { margin: 12px 0 0; min-height: 1.8em; color: var(--gold-2); font-weight: 700; }
-.sg-quiz__reset { margin-top: 6px; padding: 0; border: 0; background: none; color: var(--muted); font: 13px var(--ja); text-decoration: underline; cursor: pointer; }
 
-/* 見比べる一覧 */
+/* これまでの10案（一覧） */
 .sg-gallery { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
-.sg-g { position: relative; display: flex; flex-direction: column; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); transition: opacity .25s, border-color .25s, transform .25s; }
+.sg-g { position: relative; display: flex; flex-direction: column; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); }
 .sg-g__link { display: flex; flex-direction: column; flex: 1; padding: 0 0 12px; text-decoration: none; }
 .sg-g__img { display: block; border-radius: 15px 15px 0 0; overflow: hidden; background: #14161c; }
 .sg-g__img img { width: 100%; aspect-ratio: 480 / 680; object-fit: cover; }
 .sg-g__no { margin: 10px 12px 0; align-self: flex-start; padding: 1px 8px; border-radius: 6px; background: var(--gold); color: #1a1408; font-weight: 700; font-size: 12px; }
 .sg-g__name { margin: 4px 12px 0; font-size: 15px; line-height: 1.45; }
-.sg-g__price { margin: 2px 12px 0; color: var(--gold-2); font-weight: 700; font-size: 15px; }
-.sg-g__tags { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 12px 0; }
-.sg-g__tags span { padding: 0 7px; border-radius: 6px; background: var(--panel-2); color: #c9ccd5; font-size: 11px; }
-.sg-g__catch { margin: 6px 12px 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
-.sg-g__match { position: absolute; top: 10px; left: 10px; padding: 3px 10px; border-radius: 999px; background: var(--gold); color: #1a1408; font-weight: 700; font-size: 12px; box-shadow: 0 4px 14px rgba(0, 0, 0, .4); }
-.sg-g.is-match { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold) inset; transform: translateY(-2px); }
-.sg-g.is-dim { opacity: .38; }
-.sg-g > .sg-pick { margin: 0 12px 12px; }
+.sg-g.is-base { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold) inset; }
+.sg-g__base { position: absolute; top: 10px; left: 10px; padding: 3px 10px; border-radius: 999px; background: var(--gold); color: #1a1408; font-weight: 700; font-size: 12px; box-shadow: 0 4px 14px rgba(0, 0, 0, .4); }
 
-/* 「気になる」の印（ハートは文字で描かず、形で出す） */
-.sg-pick { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; padding: 6px 14px; border-radius: 999px;
-  border: 1px solid #4a5060; background: transparent; color: var(--ink); font: 700 13px var(--ja); cursor: pointer; }
-.sg-pick__icon { position: relative; width: 14px; height: 13px; flex: none; }
-.sg-pick__icon::before, .sg-pick__icon::after { content: ""; position: absolute; top: 0; width: 8px; height: 12px; border-radius: 8px 8px 0 0; background: currentColor; opacity: .55; }
-.sg-pick__icon::before { left: 6px; transform: rotate(-45deg); transform-origin: 0 100%; }
-.sg-pick__icon::after { left: 0; transform: rotate(45deg); transform-origin: 100% 100%; }
-.sg-pick[aria-pressed="true"] { background: #ff6b8a; border-color: #ff6b8a; color: #fff; }
-.sg-pick[aria-pressed="true"] .sg-pick__icon::before, .sg-pick[aria-pressed="true"] .sg-pick__icon::after { opacity: 1; }
-.sg-card__head .sg-pick { margin-left: auto; flex: none; }
-
-/* 表で比べる（たたんでおく） */
+/* たたんでおく所 */
 .sg-more { margin-top: 22px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel); }
 .sg-more > summary { padding: 14px 18px; cursor: pointer; font-weight: 700; }
 .sg-more[open] > summary { border-bottom: 1px solid #2c313d; }
-.sg-more .sg-goals { margin: 16px; }
-.sg-more .sg-table-wrap { margin: 0 16px 16px; }
-
-/* よいところ・気をつけるところ */
-.sg-pc { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 14px; }
-.sg-pc h4 { margin: 0 0 4px; font-size: 14px; }
-.sg-pc ul { margin: 0; padding-left: 1.2em; font-size: 14px; }
-.sg-pc__good, .sg-pc__care { padding: 12px 14px; border-radius: 12px; }
-.sg-pc__good { background: rgba(76, 175, 120, .12); }
-.sg-pc__good h4 { color: #8fe0b0; }
-.sg-pc__care { background: rgba(255, 176, 32, .1); }
-.sg-pc__care h4 { color: #ffc970; }
+.sg-more .sg-gallery { margin: 16px; }
 
 /* これからの流れ */
 .sg-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; position: relative; }
@@ -244,20 +158,10 @@ button.sg-btn { font-family: inherit; cursor: pointer; }
 .sg-step.is-done .sg-step__no { background: transparent; border: 2px solid var(--gold); color: var(--gold); }
 .sg-step.is-now .sg-step__no { box-shadow: 0 0 0 5px rgba(217, 182, 111, .25); }
 
-/* 気になる案を送る */
+/* 返事を送る */
 .sg-sec--send { background: linear-gradient(180deg, #1a1d26, var(--bg)); }
 .sg-send { display: grid; gap: 18px; max-width: 760px; padding: clamp(18px, 3vw, 28px); border-radius: 20px; background: var(--panel); border: 1px solid var(--gold); }
 .sg-send__label, .sg-send__q > p { margin: 0 0 8px; font-weight: 700; }
-.sg-send__picks { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.sg-send__picks .sg-send__label { grid-column: 1 / -1; margin: 0; }
-.sg-pickrow { position: relative; display: block; cursor: pointer; }
-.sg-pickrow input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; z-index: 1; }
-.sg-pickrow span { display: block; padding: 10px 12px 10px 40px; border-radius: 12px; border: 1px solid #3a4050; background: var(--panel-2); font-size: 14px; line-height: 1.5; position: relative; }
-.sg-pickrow span::before { content: ""; position: absolute; left: 12px; top: 50%; width: 18px; height: 18px; margin-top: -9px; border-radius: 5px; border: 2px solid #6a7080; box-sizing: border-box; }
-.sg-pickrow span small { display: block; color: var(--gold-2); font-size: 12px; }
-.sg-pickrow input:checked + span { border-color: #ff6b8a; background: rgba(255, 107, 138, .12); }
-.sg-pickrow input:checked + span::before { background: #ff6b8a; border-color: #ff6b8a; box-shadow: inset 0 0 0 3px var(--panel-2); }
-.sg-pickrow input:focus-visible + span { outline: 2px solid var(--gold-2); outline-offset: 2px; }
 .sg-send__q > div { display: flex; flex-wrap: wrap; gap: 8px; }
 .sg-send__field { display: grid; gap: 6px; font-weight: 700; font-size: 14px; }
 .sg-send input[type=text], .sg-send textarea { -webkit-appearance: none; appearance: none; display: block; width: 100%; margin: 0; padding: 11px 12px; border-radius: 10px;
@@ -282,30 +186,22 @@ button.sg-btn { font-family: inherit; cursor: pointer; }
 @media (max-width: 1080px) { .sg-gallery { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 860px) {
   .sg-summary { grid-template-columns: 1fr; }
-  .sg-quiz__q { grid-template-columns: 1fr; }
-  .sg-pc { grid-template-columns: 1fr; }
   .sg-words { grid-template-columns: 1fr; }
 }
 @media (max-width: 600px) {
   .sg-gallery { grid-template-columns: 1fr 1fr; gap: 8px; }
-  .sg-g__catch { display: none; }
-  .sg-send__picks { grid-template-columns: 1fr; }
-  .sg-card__head { flex-wrap: wrap; }
-  .sg-card__head .sg-pick { margin-left: 0; }
 }
 
-/* 印刷・PDF: 白い紙に。操作するもの（診断・送るフォーム・ボタン）は出さない */
+/* 印刷・PDF: 白い紙に。操作するもの（送るフォーム・ボタン）は出さない */
 @media print {
   :root { --bg: #fff; --bg-2: #fff; --panel: #fff; --panel-2: #f3f3f3; --ink: #111; --muted: #555; --gold: #9a7a35; --gold-2: #7a5a1a; --line: #ccc; }
   body { background: #fff; color: #111; font-size: 11pt; }
-  .pp-bar, .sg-hero__acts, .sg-toc, .sg-quiz, .sg-pick, .sg-dl, .sg-sec--send, .sg-download, .sg-quiz__result { display: none !important; }
+  .pp-bar, .sg-hero__acts, .sg-toc, .sg-dl, .sg-sec--send, .sg-download .sg-btn, #history { display: none !important; }
   .sg-hero { background: #fff; padding: 0 0 12px; }
   .sg-sec { padding: 18px 0; }
-  .sg-card, .sg-g, .sg-summary li, .sg-step, .sg-faq__item, .sg-choose__item, .sg-contents li, .sg-total, .sg-stand, .sg-changes li { break-inside: avoid; }
+  .sg-final, .sg-summary li, .sg-step, .sg-faq__item, .sg-contents li, .sg-total, .sg-stand, .sg-changes li { break-inside: avoid; }
   .sg-ask .sg-btn { display: none; }
   .sg-meter { border: 1px solid #999; }
-  .sg-card { border: 1px solid #ccc; }
-  .sg-g.is-dim { opacity: 1; }
   .sg-more, .sg-faq__item { border: 0; }
   a { text-decoration: none; }
 }
@@ -400,4 +296,17 @@ button.sg-btn { font-family: inherit; cursor: pointer; }
   .sg-budget th, .sg-budget td { border-bottom: 0 !important; }
   .sg-budget th[scope=row] { min-width: 0; }
   .sg-budget td:last-child { grid-column: 1 / -1; padding-top: 0; color: #c9ccd5; font-size: 13px; }
+}
+
+/* ---- 仕上がり（2026-11-02。案09をもとに） ---- */
+.sg-final { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(20px, 4vw, 44px); align-items: start; }
+.sg-final .sg-shot--poster { max-width: 520px; }
+.sg-final__points { margin: 0 0 20px; padding: 0; list-style: none; display: grid; gap: 8px; }
+.sg-final__points li { position: relative; padding: 12px 14px 12px 42px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); font-size: 15px; }
+.sg-final__points li::before { content: ""; position: absolute; left: 16px; top: 20px; width: 12px; height: 6px; border-left: 2.5px solid var(--gold); border-bottom: 2.5px solid var(--gold); transform: rotate(-45deg); }
+.sg-final__place { margin-top: clamp(24px, 4vw, 40px); }
+.sg-download b { display: block; margin-bottom: 2px; color: var(--gold-2); font-size: 16px; }
+@media (max-width: 860px) {
+  .sg-final { grid-template-columns: 1fr; }
+  .sg-final .sg-shot--poster { max-width: 460px; }
 }
