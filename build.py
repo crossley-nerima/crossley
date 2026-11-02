@@ -381,7 +381,10 @@ def sign_prices():
             value, tbd = (f'¥{min(known):,}〜', False) if known else ('¥〇〇〇〜', True)
         else:
             value, tbd = raw(x['key'])
-        out.append({'id': x['id'], 'label': x['label'], 'value': value, 'tbd': tbd})
+        # 英語の表記（仕上がりのポスター）。「1play {price}」のように書き方があれば、¥ の金額を入れる
+        price = re.search(r'¥[\d,〇]+', value)
+        en_value = x['en_value'].format(price=price.group(0)) if x.get('en_value') and price else value
+        out.append({'id': x['id'], 'label': x['label'], 'value': value, 'tbd': tbd, 'en': x.get('en', x['label']), 'en_value': en_value})
     return out
 
 
@@ -447,13 +450,16 @@ def h_sign_stand(ctx):
 
 
 def sign_price_rows():
-    """値段の目安（まだ決まっていない値には「仮」の印）。"""
+    """値段の目安（ポスターと同じ英語の表記に、日本語を小さく添える。いちばん上はチャージ。まだ決まっていない値には「仮」の印）。"""
+    _, amount, charge_tbd = sign_charge()
+    rows = [(SIGNS['charge_en'], 'チャージ', amount, charge_tbd)]
+    rows += [(x['en'], x['label'], x['en_value'], x['tbd']) for x in sign_prices()]
     out = ''
-    for x in sign_prices():
-        if x['tbd']:
-            used_tbd.add(f'看板の値段 {x["label"]}')
-        v = tbd_span(x['value']) if x['tbd'] else esc(x['value'])
-        out += f'<div><dt>{esc(x["label"])}</dt><dd>{v}</dd></div>'
+    for en, ja, value, tbd in rows:
+        if tbd:
+            used_tbd.add(f'看板の値段 {ja}')
+        v = tbd_span(value) if tbd else esc(value)
+        out += f'<div><dt>{esc(en)}<small>{esc(ja)}</small></dt><dd>{v}</dd></div>'
     return f'<dl class="sg-prices">{out}</dl>'
 
 
@@ -463,7 +469,8 @@ def h_sign_contents(ctx):
         if c.get('key'):
             v = show(c['key'])
         elif c.get('prices'):
-            v = sign_price_rows() + '<small>お酒は、その種類のいちばん安い値段に「〜」を付けて載せます。</small>'
+            v = sign_price_rows() + ('<small>ポスターでは英語で書きます（チャージの「お一人様」は外しました）。'
+                                     'お酒は、その種類のいちばん安い値段に「〜」を付けています。</small>')
         elif c.get('hours'):
             v = esc(f'{SITE["hours"]} ／ {SITE["closed"]}')
         else:

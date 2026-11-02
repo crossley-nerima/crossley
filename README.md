@@ -77,7 +77,8 @@
   2026-10-31 にお店が決めた。`signs.json` の `stand.frame` で、イメージ画像のスタンドの色も変わる）。その中に差し込む A1（594 × 841mm）のポスターを作っている。
 - 流れ: 最初の10案 → 案06に決定（2026-10-30）→ 案06をもとにした仕上げの10案 → **案09をもとにした仕上がりに決定（2026-11-02）**。
   仕上がりは、案09「写真を上いっぱいに」の形で、タバコは丸いシール「タバコ吸えます」（案02のシールより小さく、控えめに）、右下に Instagram の QR コード（12.4cm 角）。
-  中身は `signs.json` の `final`、絵は `tools/make_sign_images.py` の `poster_final`。意見と直したことは `signs.json` の `changes`。
+  値段の目安は英語の表記（Charge・Beer・Whisky・Cocktail・Food・Darts 1play。`signs.json` の `charge_en` と `poster_prices` の `en`・`en_value`。
+  チャージの「お一人様」は書かない）。中身は `signs.json` の `final`、絵は `tools/make_sign_images.py` の `poster_final`。意見と直したことは `signs.json` の `changes`。
 - 印刷用の PDF は `docs/signs/xiii-poster-a1-print.pdf`。A1 のまわりに塗り足し 3mm（600 × 847mm。仕上がりの大きさは TrimBox に書いてある）、
   1mm を 8 ピクセル（約200dpi）の画像1枚の PDF（文字の書体がなくても崩れない）。印刷会社から違う指定があれば、`BLEED`・`PRINT_K` を直して作り直す。
 - QR コードの中身は `site.json` の `instagram_url`（お店が送ってくれた Instagram の QR コードと同じページ。アプリの QR コードは追跡用の文字が付いて長いので、

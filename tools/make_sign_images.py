@@ -24,7 +24,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageFont
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -126,6 +126,17 @@ def T(x, y, s, size, fill=WHITE, fam=JP, w=700, anchor='middle', ls=0, extra='')
             f'text-anchor="{anchor}" letter-spacing="{ls}" {extra}>{esc(s)}</text>')
 
 
+_BAHN = Path(r'C:\Windows\Fonts\bahnschrift.ttf')
+_BAHN_FONT = ImageFont.truetype(str(_BAHN), 100) if _BAHN.exists() else None
+
+
+def text_w(s, size, fam=JPB):
+    """文字の幅（点線の長さを決めるのに使う）。英語の書体（NUM＝Bahnschrift）は実際の書体で測る。ほかは目安（tw）。"""
+    if fam == NUM and _BAHN_FONT:
+        return _BAHN_FONT.getlength(s) / 100 * size
+    return tw(s, size)
+
+
 def tw(s, size):
     """文字の幅のおおよそ（点線の長さを決めるのに使う）。"""
     w = 0.0
@@ -217,16 +228,21 @@ def rows(*ids):
     return [(PRICES[i]['label'], PRICES[i]['value']) for i in ids]
 
 
-def plist(x, y, w, items, size, lab, val, lead=None, lh=None, fam=JPB, wl=500, wv=700, extra=''):
-    """値段の一覧（名前は左、値段は右。あいだを点線でつなぐ）。"""
+def rows_en(*ids):
+    """値段の一覧（英語の表記。仕上がりのポスター）。"""
+    return [(PRICES[i]['en'], PRICES[i]['en_value']) for i in ids]
+
+
+def plist(x, y, w, items, size, lab, val, lead=None, lh=None, fam=JPB, wl=500, wv=700, extra='', fam_l=None):
+    """値段の一覧（名前は左、値段は右。あいだを点線でつなぐ）。fam_l は名前だけ別の書体にするとき。"""
     lh = lh or size * 1.55
     s = ''
     for i, (k, v) in enumerate(items):
         yy = y + i * lh
-        s += T(x, yy, k, size, lab, fam, wl, 'start', extra=extra)
+        s += T(x, yy, k, size, lab, fam_l or fam, wl, 'start', extra=extra)
         s += T(x + w, yy, v, size, val, fam, wv, 'end', extra=extra)
         if lead:
-            a, b = x + tw(k, size) + size * .45, x + w - tw(v, size) - size * .45
+            a, b = x + text_w(k, size, fam_l or fam) + size * .45, x + w - tw(v, size) - size * .45
             if b - a > size:
                 s += (f'<line x1="{a:.1f}" x2="{b:.1f}" y1="{yy - size * .32:.1f}" y2="{yy - size * .32:.1f}" stroke="{lead}" '
                       f'stroke-width="{size * .1:.2f}" stroke-dasharray="0 {size * .34:.2f}" stroke-linecap="round"/>')
@@ -621,10 +637,11 @@ def poster_final(p, b=0):
     s += smoke_badge(488, 402, 60)
     s += T(297, 592, f'{SMOKE_S}・{SMOKE_N}', 15, '#e6dfd0', JPB, 500)
     s += line(608, 40, 554, op=.5)
-    # 左: チャージと値段・営業時間、右: Instagram の QR コード（12.4cm 角）
-    s += T(46, 648, CHARGE, 19, GOLD_L, JPB, 700, 'start')
-    s += plist(48, 686, 312, rows('beer', 'whisky', 'cocktail', 'food', 'darts'), 16.5, '#ebe5d8', GOLD_L, '#7d6c48', 25)
-    s += T(46, 816, f'OPEN {HOURS} ／ {CLOSED}', 13.5, '#bdb6a8', JPB, 500, 'start')
+    # 左: 値段の目安（英語の表記。いちばん上にチャージ）と営業時間、右: Instagram の QR コード（12.4cm 角）
+    s += plist(48, 652, 312, [(DATA['charge_en'], CHARGE_AMT)], 19, GOLD_L, GOLD_L, '#7d6c48', fam_l=NUM, wl=700)
+    s += plist(48, 690, 312, rows_en('beer', 'whisky', 'cocktail', 'food', 'darts'), 18, '#ebe5d8', GOLD_L, '#7d6c48', 25.5,
+               fam_l=NUM, wl=600)
+    s += T(46, 818, f'OPEN {HOURS} ／ {CLOSED}', 13.5, '#bdb6a8', JPB, 500, 'start')
     qs, qx, qy = 124, 430, 624
     cx = qx + qs / 2
     s += qr_tile(qx, qy, qs)

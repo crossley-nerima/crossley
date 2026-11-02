@@ -243,6 +243,7 @@ button.sg-btn { font-family: inherit; cursor: pointer; }
 .sg-prices { margin: 4px 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 6px 22px; }
 .sg-prices > div { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 6px 0; border-bottom: 1px dotted #3a4050; }
 .sg-prices dt { font-size: 14px; }
+.sg-prices dt small { display: inline; margin: 0 0 0 6px; color: var(--muted); font-size: 12px; }
 .sg-prices dd { margin: 0; font-weight: 700; color: var(--gold-2); white-space: nowrap; }
 .sg-ask { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 18px 0 0; padding: 16px 18px; border-radius: 14px;
   border: 1px dashed var(--gold); background: rgba(217, 182, 111, .07); font-size: 14px; }
