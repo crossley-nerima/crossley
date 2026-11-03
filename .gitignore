@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 crossley.txt
 tools/osm-cache.json
+tools/fonts/cache/

@@ -331,16 +331,16 @@ def h_proposal(ctx):
     extra = (f'<p class="pp-panel__head pp-panel__head--sub"><strong>ほかの提案</strong><span>ホームページ以外の提案</span></p>'
              f'<ul class="pp-list"><li><a class="pp-item" href="{r}signs/index.html"{cur}>'
              f'<span class="pp-item__swatch pp-item__swatch--sign" aria-hidden="true">看板</span>'
-             f'<span class="pp-item__name">看板のポスター<small>仕上がり（案09をもとに）</small></span>'
-             f'<span class="pp-item__structure">光る置き看板（A1）に入れるポスターの仕上がり（置いたイメージ・印刷用の PDF つき）</span>'
-             f'<span class="pp-item__concept">案09をもとに、タバコの表示を丸いシールにして、Instagram の QR コードを入れた、入口の置き看板のポスターです。</span></a></li></ul>')
+             f'<span class="pp-item__name">看板のポスター<small>書体の10案</small></span>'
+             f'<span class="pp-item__structure">光る置き看板（A1）に入れるポスター。NEW OPEN の札と値段の一覧の書体を、10案から選ぶ</span>'
+             f'<span class="pp-item__concept">案09をもとにした仕上がりの、丸で囲んでいただいた所の書体の候補です（置いたイメージ・印刷用の PDF つき）。</span></a></li></ul>')
     switch = (f'<details class="pp-switch"><summary>{len(ALL_PATTERNS)}案を切り替え</summary>'
               f'<div class="pp-panel"><p class="pp-panel__head"><strong>デザイン案を選ぶ</strong>'
               f'<span>中身は同じで、見た目と構成が違います</span></p>'
               f'<ul class="pp-list">{"".join(items)}</ul>{extra}</div></details>')
     if not p:
         return (f'<nav class="pp-bar" aria-label="提案の切り替え">'
-                f'<span class="pp-bar__now"><span>ほかの提案 </span><b>看板のポスター（仕上がり）</b></span>{switch}</nav>')
+                f'<span class="pp-bar__now"><span>ほかの提案 </span><b>看板のポスター（書体の10案）</b></span>{switch}</nav>')
     i = [x['no'] for x in ALL_PATTERNS].index(p['no'])
     prev = ALL_PATTERNS[i - 1]
     nxt = ALL_PATTERNS[(i + 1) % len(ALL_PATTERNS)]
@@ -490,13 +490,22 @@ def h_sign_ask(ctx):
 SIGN_PDF = OUT / 'signs' / 'xiii-poster-a1-print.pdf'
 
 
+def final_font():
+    """仕上がりに使っている書体の案（signs.json の final の font）。"""
+    no = SIGNS['final'].get('font', '00')
+    return next(t for t in SIGNS['fonts']['list'] if t['no'] == no)
+
+
 def h_sign_pdf(ctx):
-    """印刷用のデータ（PDF）を保存するボタン。"""
+    """印刷用のデータ（PDF）を保存するボタン。書体の案を選んでいる間は、どの書体のデータかを書く。"""
     if not SIGN_PDF.exists():
         raise FileNotFoundError('印刷用の PDF がありません（tools/make_sign_images.py を先に動かす）')
     mb = SIGN_PDF.stat().st_size / 1024 / 1024
+    t = final_font()
+    which = (f'いまは「{t["no"]} {t["name"]}」のデータです。書体が決まったら、選んだ書体で作り直します。'
+             if SIGNS['fonts'].get('choosing') else '')
     return (f'<div class="sg-download"><p><b>印刷用のデータ</b>印刷会社には、このファイルを送ります。'
-            f'A1（59.4 × 84.1cm）のまわりに 3mm の塗り足しをつけた PDF です。</p>'
+            f'A1（59.4 × 84.1cm）のまわりに 3mm の塗り足しをつけた PDF です。{esc(which)}</p>'
             f'<a class="sg-btn sg-btn--gold" href="{SIGN_PDF.name}" download>印刷用データを保存<small>PDF・{mb:.1f}MB</small></a></div>')
 
 
@@ -506,9 +515,93 @@ def h_sign_final(ctx):
     points = ''.join(f'<li>{esc(t)}</li>' for t in f['points'])
     return (f'<div class="sg-final">'
             f'{sign_img("sign-final-poster", "ポスターの仕上がり（A1）", "sg-shot sg-shot--poster", (800, 1200))}'
-            f'<div class="sg-final__side"><h3 class="sg-h3">直したところ</h3><ul class="sg-final__points">{points}</ul>'
+            f'<div class="sg-final__side"><h4 class="sg-h3">直したところ</h4><ul class="sg-final__points">{points}</ul>'
             f'{h_sign_pdf(ctx)}</div></div>'
             f'<div class="sg-final__place">{sign_img("sign-final-place", "置いたイメージ（夜・イラスト）")}</div>')
+
+
+def font_base(t):
+    """書体の案の画像の名前（tools/make_sign_images.py の type_base と同じ）。"""
+    return f'sign-font-{t["no"]}-{t["id"]}'
+
+
+def h_sign_fonts(ctx):
+    """書体の10案。上に丸で囲んだ所の拡大、その下に案の説明とポスター全体。「‹ ›」・小さい画像・左右にすべらせて切り替える
+    （切り替えは script.js。JavaScript が動かなくても、案の説明は全部下に並び、小さい画像からその案へ飛べる）。"""
+    fonts = SIGNS['fonts']['list']
+    for t in fonts:
+        for kind in ('zoom', 'view', 'thumb'):
+            if not (SIGN_IMG / f'{font_base(t)}-{kind}.webp').exists():
+                raise FileNotFoundError(f'書体の案の画像 {font_base(t)}-{kind} がありません（tools/make_sign_images.py fonts を先に動かす）')
+    n = sum(1 for t in fonts if not t.get('now'))
+    first = next(i for i, t in enumerate(fonts) if not t.get('now'))     # 最初に見せるのは 01（00 はいまの書体）
+    cur = fonts[first]
+
+    def label(t):
+        return 'いまの書体（くらべる用）' if t.get('now') else f'{t["no"]}／{n}'
+
+    panels, thumbs = [], []
+    for i, t in enumerate(fonts):
+        base = font_base(t)
+        title = f'書体{t["no"]}「{t["name"]}」' if not t.get('now') else 'いまの書体'
+        num = '' if t.get('now') else f'<b>{t["no"]}</b>'      # いまの書体は番号を出さない（「いまの書体」とだけ）
+        pc =f'<li class="is-good"><b>よいところ</b>{esc(t["good"])}</li>' if t.get('good') else ''
+        pc += f'<li class="is-care"><b>気をつけるところ</b>{esc(t["care"])}</li>' if t.get('care') else ''
+        panels.append(
+            f'<article class="sg-type__panel{" is-now" if t.get("now") else ""}" id="font-{t["no"]}" data-i="{i}" '
+            f'data-zoom="img/{base}-zoom.webp" data-big="img/{base}-poster.jpg" data-label="{esc(label(t))}" data-name="{esc(t["name"])}" '
+            f'data-alt="{esc(title)}の、丸で囲んだ所（NEW OPEN の札と、値段の一覧）">'
+            f'<div class="sg-type__info"><p class="sg-type__head"><span class="sg-type__no">{"くらべる用" if t.get("now") else t["no"]}</span>'
+            f'<b class="sg-type__name">{esc(t["name"])}</b></p>'
+            f'<p class="sg-type__mood">{esc(t["mood"])}</p>'
+            f'<dl class="sg-type__fonts"><div><dt>英語・数字</dt><dd>{esc(t["en_name"])}</dd></div>'
+            f'<div><dt>日本語</dt><dd>{esc(t["ja_name"])}</dd></div></dl>'
+            + (f'<ul class="sg-type__pc">{pc}</ul>' if pc else '')
+            + f'<button type="button" class="sg-btn sg-type__pick" data-font="{t["no"]}" aria-pressed="false">'
+            f'<span class="sg-type__pick-off">これがいい</span><span class="sg-type__pick-on">選んでいます</span></button></div>'
+            f'<a class="sg-type__whole" href="img/{base}-poster.jpg" target="_blank" rel="noopener">'
+            f'<img src="img/{base}-view.webp" width="1000" height="1416" alt="{esc(title)}のポスター全体" loading="lazy" decoding="async">'
+            f'<span>ポスター全体</span></a></article>')
+        thumbs.append(
+            f'<li><a class="sg-type__thumb{" is-now" if t.get("now") else ""}" href="#font-{t["no"]}" data-i="{i}">'
+            f'<img src="img/{base}-thumb.webp" width="360" height="252" alt="" loading="lazy" decoding="async">'
+            f'<span>{num}{esc(t["name"])}</span>'
+            f'<i class="sg-type__star">選んでいます</i></a></li>')
+    base = font_base(cur)
+    return (f'<div class="sg-type" data-first="{first}">'
+            f'<div class="sg-type__stage"><div class="sg-type__nav">'
+            f'<button type="button" class="sg-type__step" data-step="-1" aria-label="前の案">‹</button>'
+            f'<p class="sg-type__now" aria-live="polite"><b>{esc(label(cur))}</b><span>{esc(cur["name"])}</span></p>'
+            f'<button type="button" class="sg-type__step" data-step="1" aria-label="次の案">›</button></div>'
+            f'<figure class="sg-type__zoom"><a class="sg-type__big" href="img/{base}-poster.jpg" target="_blank" rel="noopener">'
+            f'<img class="sg-type__img" src="img/{base}-zoom.webp" width="1000" height="700" '
+            f'alt="書体{cur["no"]}「{esc(cur["name"])}」の、丸で囲んだ所（NEW OPEN の札と、値段の一覧）"></a>'
+            f'<figcaption>丸で囲んでいただいた所を大きくしたもの（上：NEW OPEN の札、下：値段の一覧と営業時間）。'
+            f'押すと、ポスター全体の大きい画像が開きます。</figcaption></figure>'
+            f'<div class="sg-type__panels">{"".join(panels)}</div></div>'
+            f'<ol class="sg-type__thumbs" aria-label="書体の案の一覧">{"".join(thumbs)}</ol></div>')
+
+
+def h_sign_font_chips(ctx):
+    """返事を送るフォームの「気に入った書体」（いくつでも選べる。書体の10案の「これがいい」と同じものにつながる）。"""
+    return ''.join(f'<label class="sg-chip"><input type="checkbox" name="font" value="{t["no"]}" data-name="{esc(t["name"])}">'
+                   f'<span>{esc(t["name"] if t.get("now") else t["no"] + " " + t["name"])}</span></label>' for t in SIGNS['fonts']['list'])
+
+
+def h_sign_gist(ctx, k):
+    """たたんだ所の見出しの下に出す、ひとこと（開かなくても、決まったことがわかるように）。"""
+    st, b = SIGNS['stand'], SIGNS['budget']
+    need = [i for i in b['items'] if i['need']]
+    gists = {
+        'changes': f'これまでに {len(SIGNS["changes"])} 回、いただいたご意見のとおりに直しました',
+        'stand': f'{st["shop"]}の{st["name"]}・{st["frame"]}・{st["price"]}',
+        'budget': f'必要なもの ¥{sum(i["min"] for i in need):,}〜¥{sum(i["max"] for i in need):,}（予算 {man(b["limit"])}まで）',
+        'faq': f'{len(SIGNS["faq"])} 個の質問と答え',
+        'rules': f'{len(SIGNS["rules"])} 個（ビルの敷地の中に置く・管理会社の承諾・たばこの標識 など）',
+        'words': f'{len(SIGNS["glossary"])} 個の言葉',
+        'sources': f'{len(SIGNS["sources"])} 件（値段・決まりを確かめたページ）',
+    }
+    return esc(gists[k])
 
 
 def h_sign_gallery(ctx):
@@ -983,7 +1076,7 @@ HELPERS = {
     'sign_pdf': h_sign_pdf, 'sign_gallery': h_sign_gallery, 'sign_budget': h_sign_budget, 'sign_print': h_sign_print,
     'sign_order_tips': h_sign_order_tips, 'sign_timeline': h_sign_timeline, 'sign_timeline_note': h_sign_timeline_note,
     'sign_price_fields': h_sign_price_fields, 'sign_faq': h_sign_faq, 'sign_rules': h_sign_rules, 'sign_glossary': h_sign_glossary,
-    'sign_sources': h_sign_sources,
+    'sign_sources': h_sign_sources, 'sign_fonts': h_sign_fonts, 'sign_font_chips': h_sign_font_chips, 'sign_gist': h_sign_gist,
     'tel_href': h_tel_href, 'line_add_href': h_line_add_href, 'line_qr': h_line_qr, 'line_msg_base': h_line_msg_base, 'insta_href': h_insta_href, 'year': h_year,
     'map_url': lambda ctx: esc(map_url()), 'route_url': lambda ctx: esc(route_url()),
     'root': lambda ctx: ctx['root'],

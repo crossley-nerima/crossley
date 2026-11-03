@@ -1,7 +1,8 @@
 """看板の提案（1階入口の光る置き看板に差し込むポスター・10案）のイメージ画像を作る。
 
-  python -I -X utf8 tools/make_sign_images.py [final,pdf,00,stand,01 …]   … 名前を渡すと、その画像だけ作り直す
-      （final は仕上がりの画像、pdf は印刷用の PDF、00 は今のようす、stand はスタンドの大きさ、01〜10 はそれまでの10案）
+  python -I -X utf8 tools/make_sign_images.py [final,pdf,fonts,font03,00,stand,01 …]   … 名前を渡すと、その画像だけ作り直す
+      （final は仕上がりの画像、pdf は印刷用の PDF、fonts は書体の案すべて、font03 は書体の案03だけ、
+        00 は今のようす、stand はスタンドの大きさ、01〜10 はそれまでの10案）
 
 スタンドは決まっている: モノタロウの LEDパネルA型スタンド 片面（A1）。幅640×奥行490×高さ1185mm、ボード面 640×884mm。
 枠の色はブラック（2026-10-31 にお店が決めた。signs.json の stand.frame）。
@@ -10,20 +11,31 @@
 印刷用の PDF（A1 のまわりに塗り足し 3mm）。それまでの10案（案06をもとにした仕上げの10案）は、参考にデザインと一覧用の画像だけ作る。
 ほかに「今のようす」と「スタンドの大きさ」。QR コードの中身は tools/qr-instagram.txt（tools/make_qr.py で作る）。
 
+書体の案（2026-11-03 お店の返事: 丸で囲んだ所＝NEW OPEN の札と、値段の一覧の書体の候補がほしい）は、仕上がりのその所の
+書体だけを変えたもの（signs.json の fonts）。書体は Google Fonts の無料の書体（SIL Open Font License。看板・印刷に使ってよい）で、
+ポスターに使う字だけを Google Fonts から取ってきて（tools/fonts/cache に残す。リポジトリには入れない）、SVG に埋め込んで描く。
+仕上がりと印刷用の PDF の書体は signs.json の final の font（書体の案の番号。00 はいまの書体＝パソコンの書体）。
+
 文字や値段は signs.json と site.json から読む（値段の計算は build.py の sign_prices と同じもの）。
 値段が決まったら site.json を直して、この画像とページを作り直す。
 建物はストリートビューの写真を加工せず、イラストで描き起こす（Google の画像は加工して公開できないため）。
-SVG で描き、画面なしの Edge で書き出す。ページ用の小さい WebP と、まとめてダウンロードする ZIP も作る。
+SVG で描き、画面なしの Edge で書き出す。ページ用の小さい WebP も作る。
 """
 import base64
+import hashlib
 import html
 import io
 import json
 import math
+import os
+import re
 import sys
 import tempfile
+import urllib.parse
+import urllib.request
 from pathlib import Path
 
+from fontTools.ttLib import TTFont
 from PIL import Image, ImageFont
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -249,14 +261,231 @@ def plist(x, y, w, items, size, lab, val, lead=None, lh=None, fam=JPB, wl=500, w
     return s
 
 
+# ---- 書体の案（丸で囲んだ所＝NEW OPEN の札と、値段の一覧・営業時間の書体） ------------------------------------
+# 2026-11-03 お店の返事: その所の書体の候補がほしい。書体は Google Fonts の無料の書体（SIL Open Font License）。
+# ポスターに使う字だけを Google Fonts から取ってきて（tools/fonts/cache に残す）、SVG に埋め込んで描く。
+# 00（いまの書体）は、パソコンに入っている書体（Bahnschrift・Noto Sans JP）。
+FONT_CACHE = ROOT / 'tools' / 'fonts' / 'cache'
+WIN_FONTS = Path(os.environ.get('WINDIR', r'C:\Windows')) / 'Fonts'
+LOCAL_FONTS = {'Bahnschrift': 'bahnschrift.ttf', 'Noto Sans JP': 'NotoSansJP-VF.ttf'}
+BAND_PAD = 2.1     # NEW OPEN の札の右の余白（いまの書体で、札の幅が前と同じ 356 になる値）
 
 
+def _type_text():
+    """Google Fonts から取ってくる字（英数字すべてと、丸で囲んだ所に使う字）。"""
+    s = ''.join(chr(c) for c in range(0x20, 0x7f)) + OPEN_EN + OPEN_JP + DATA['charge_en'] + CHARGE_AMT
+    s += f'OPEN {HOURS} ／ {CLOSED}' + ''.join(x['en'] + x['en_value'] for x in PRICES.values())
+    s += ''.join(t.get('open', {}).get('text', '') for t in DATA['fonts']['list'])
+    return ''.join(sorted(set(s)))
 
 
+TYPE_TEXT = _type_text()
 
 
+def _get(url):
+    req = urllib.request.Request(url, headers={'User-Agent': 'make_sign_images.py (crossley)'})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        return r.read()
 
 
+class Face:
+    """書体1つ（1つの太さ）。css は SVG で使う名前。字の幅は、書体のファイルを PIL で開いて測る。"""
+
+    def __init__(self, family, weight, italic=False):
+        self.family, self.weight, self.italic = family, weight, italic
+        self.local = family in LOCAL_FONTS
+        slug = re.sub(r'[^a-z0-9]', '', family.lower())
+        self.css = family if self.local else f'x-{slug}-{weight}{"i" if italic else ""}'
+        self.path = WIN_FONTS / LOCAL_FONTS[family] if self.local else None
+        self._pil = self._cmap = None
+        self.delta = {}     # 数字を高さのそろった形（lnum）にしたときの、字の幅の差（大きさ 100 のとき）
+
+    @property
+    def w(self):
+        """SVG に書く太さ。取ってきた書体は1つの太さだけなので 400（太さを足して描かれないように）。"""
+        return self.weight if self.local else 400
+
+    def fetch(self):
+        """ポスターに使う字だけを Google Fonts から取ってくる（前に取ったものがあれば、それを使う）。"""
+        if self.path:
+            return self
+        key = hashlib.sha1(TYPE_TEXT.encode()).hexdigest()[:10]
+        path = FONT_CACHE / f'{self.css}-{key}.ttf'
+        if not path.exists():
+            axes = f'ital,wght@1,{self.weight}' if self.italic else f'wght@{self.weight}'
+            css = _get('https://fonts.googleapis.com/css2?family=' + urllib.parse.quote_plus(self.family) + ':' + axes
+                       + '&text=' + urllib.parse.quote(TYPE_TEXT)).decode()
+            m = re.search(r"url\((https://[^)]+)\)\s*format\('truetype'\)", css)
+            if not m:
+                raise SystemExit(f'書体を取ってこられません: {self.family} {self.weight}')
+            FONT_CACHE.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(_get(m.group(1)))
+        self.path = path
+        return self
+
+    @property
+    def pil(self):
+        if self._pil is None:
+            f = ImageFont.truetype(str(self.fetch().path), 100)
+            if self.local:      # 太さを変えられる書体（パソコンの書体）は、使う太さにして測る
+                try:
+                    f.set_variation_by_axes([self.weight if a.get('name') in (b'Weight', 'Weight') else a['default']
+                                             for a in f.get_variation_axes()])
+                except OSError:
+                    pass
+            self._pil = f
+        return self._pil
+
+    def has(self, ch):
+        if self._cmap is None:
+            with TTFont(str(self.fetch().path), lazy=True) as t:
+                self._cmap = set(t.getBestCmap())
+        return ord(ch) in self._cmap
+
+    def use_lnum(self):
+        """数字を、高さのそろった形（lnum）で描くときの幅を測れるようにする（PIL は書体の切り替えをしないため、差を足す）。"""
+        if self.local or self.delta:
+            return
+        with TTFont(str(self.fetch().path), lazy=True) as t:
+            cmap, hmtx, upm = t.getBestCmap(), t['hmtx'], t['head'].unitsPerEm
+            subs = {}
+            gsub = t['GSUB'].table if 'GSUB' in t else None
+            for fr in (gsub.FeatureList.FeatureRecord if gsub else []):
+                if fr.FeatureTag == 'lnum':
+                    for i in fr.Feature.LookupListIndex:
+                        for st in gsub.LookupList.Lookup[i].SubTable:
+                            subs.update(getattr(getattr(st, 'ExtSubTable', st), 'mapping', None) or {})
+            for ch in '0123456789':
+                g = cmap.get(ord(ch))
+                if g in subs:
+                    self.delta[ch] = (hmtx[subs[g]][0] - hmtx[g][0]) / upm * 100
+
+    def rule(self):
+        """SVG に埋め込む @font-face（パソコンの書体は要らない）。"""
+        if self.local:
+            return ''
+        data = base64.b64encode(self.fetch().path.read_bytes()).decode()
+        return f"@font-face{{font-family:'{self.css}';src:url(data:font/ttf;base64,{data}) format('truetype')}}"
+
+
+_FACES = {}
+
+
+def face(family, weight, italic=False):
+    key = (family, int(weight), bool(italic))
+    if key not in _FACES:
+        _FACES[key] = Face(*key)
+    return _FACES[key]
+
+
+class Stack:
+    """字を描く書体の並び（前の書体にない字は、次の書体で描く。ブラウザと同じ）。"""
+
+    def __init__(self, *faces):
+        self.faces = faces
+        self.css = ','.join(f"'{f.css}'" for f in faces)
+        self.w = faces[0].w
+
+    def width(self, s, size, ls=0):
+        total, run, cur = 0.0, '', None
+        for ch in s:
+            f = next((f for f in self.faces if f.has(ch)), self.faces[-1])
+            total += f.delta.get(ch, 0)
+            if f is not cur and run:
+                total += cur.pil.getlength(run)
+                run = ''
+            cur = f
+            run += ch
+        if run:
+            total += cur.pil.getlength(run)
+        return total / 100 * size + ls * len(s)
+
+
+def plist_s(x, y, w, items, size, lab, val, lead, s_lab, s_val, lh=None):
+    """値段の一覧（書体の案の形。名前と値段の幅を実際の書体で測って、あいだを点線でつなぐ）。"""
+    lh = lh or size * 1.55
+    s = ''
+    for i, (k, v) in enumerate(items):
+        yy = y + i * lh
+        s += T(x, yy, k, size, lab, s_lab.css, s_lab.w, 'start')
+        s += T(x + w, yy, v, size, val, s_val.css, s_val.w, 'end')
+        a, b = x + s_lab.width(k, size) + size * .45, x + w - s_val.width(v, size) - size * .45
+        if b - a > size:
+            s += (f'<line x1="{a:.1f}" x2="{b:.1f}" y1="{yy - size * .32:.1f}" y2="{yy - size * .32:.1f}" stroke="{lead}" '
+                  f'stroke-width="{size * .1:.2f}" stroke-dasharray="0 {size * .34:.2f}" stroke-linecap="round"/>')
+    return s
+
+
+class Type:
+    """書体の案1つ（signs.json の fonts の1つ）。丸で囲んだ所（NEW OPEN の札・値段の一覧・営業時間）に使う書体。
+    en は英語と数字、ja は日本語（どちらも [書体, 太い字の太さ, ふつうの字の太さ]）。英語の書体にない字（〜・年など）は日本語の書体で描く。"""
+
+    def __init__(self, t):
+        en, ja, op = t['en'], t['ja'], t.get('open', {})
+        self.en_b, self.en_r = face(en[0], en[1]), face(en[0], en[2])
+        self.ja_b, self.ja_r = face(ja[0], ja[1]), face(ja[0], ja[2])
+        lab = t.get('label')                       # 値段の名前だけ別の書体にするとき（[書体, 太さ, 斜体か]）
+        self.lab = face(*lab) if lab else self.en_r
+        self.open_f = face(op['family'], op.get('weight', 400)) if 'family' in op else self.en_b
+        self.open_size, self.open_ls, self.open_text = op.get('size', 25), op.get('ls', 5), op.get('text', OPEN_EN)
+        self.ja_size = t.get('ja_size', 18)
+        self.k = t.get('scale', 1)                  # 値段の一覧の字の大きさ（書体によって見た目の大きさが違うので合わせる）
+        self.kh = t.get('hours_scale', self.k)
+        self.upper, self.glow, self.lnum = t.get('upper', False), t.get('glow'), t.get('lnum', False)
+        self.s_open, self.s_ja = Stack(self.open_f, self.ja_b), Stack(self.ja_b)
+        self.s_charge, self.s_label = Stack(self.en_b, self.ja_b), Stack(self.lab, self.ja_r)
+        self.s_price = Stack(self.ja_b) if t.get('price') == 'ja' else Stack(self.en_b, self.ja_b)
+        self.s_hours = Stack(self.ja_r) if t.get('hours') == 'ja' else Stack(self.en_r, self.ja_r)
+
+    def tx(self, s):
+        return s.upper() if self.upper else s
+
+    def defs(self, p):
+        """書体の埋め込みと、光る効果（ネオン。字のまわりに金色の光をぼかして重ねる）。"""
+        stacks = (self.s_open, self.s_ja, self.s_charge, self.s_label, self.s_price, self.s_hours)
+        faces = {id(f): f for st in stacks for f in st.faces}
+        if self.lnum:       # 数字を高さのそろった形に（細身の書体は、数字の高さがそろっていない形が元になっているため）
+            for f in (self.en_b, self.en_r, self.lab):
+                f.use_lnum()
+        css = ''.join(f.rule() for f in faces.values())
+        s = f'<style>{css}</style>' if css else ''
+        if self.glow:
+            s += (f'<filter id="{p}-glow" x="-5%" y="-30%" width="110%" height="160%">'
+                  f'<feGaussianBlur in="SourceAlpha" stdDeviation="{self.glow}" result="b"/>'
+                  '<feFlood flood-color="#ffb347" flood-opacity=".8"/><feComposite in2="b" operator="in" result="g"/>'
+                  '<feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge></filter>')
+        return s
+
+    def band_width(self):
+        t = self.tx(self.open_text)
+        return 14 + self.s_open.width(t, self.open_size, self.open_ls) + 14 + self.s_ja.width(OPEN_JP, self.ja_size) + BAND_PAD
+
+    def band(self, x, y, h, fg):
+        """NEW OPEN の札（金の地に「NEW OPEN　2026年7月オープン」）。札の幅は字の幅に合わせ、字の上下の真ん中を札の真ん中にそろえる。"""
+        t = self.tx(self.open_text)
+        _, y0, _, y1 = self.open_f.pil.getbbox(t, anchor='ls')
+        base = y + h / 2 - (y0 + y1) / 2 / 100 * self.open_size
+        return (f'<rect x="{x}" y="{y}" width="{self.band_width():.1f}" height="{h}" rx="6" fill="{GOLD}"/>'
+                f'<text x="{x + 14}" y="{base:.1f}" text-anchor="start" fill="{fg}">'
+                f'<tspan font-family="{self.s_open.css}" font-weight="{self.s_open.w}" font-size="{self.open_size}" '
+                f'letter-spacing="{self.open_ls}">{esc(t)}</tspan>'
+                f'<tspan font-family="{self.s_ja.css}" font-weight="{self.s_ja.w}" font-size="{self.ja_size}" dx="14">{esc(OPEN_JP)}</tspan></text>')
+
+    def prices(self, p, x, w):
+        """値段の目安（いちばん上にチャージ）と、その下の営業時間。"""
+        k = self.k
+        s = plist_s(x, 652, w, [(self.tx(DATA['charge_en']), self.tx(CHARGE_AMT))], 19 * k, GOLD_L, GOLD_L, '#7d6c48',
+                    self.s_charge, self.s_price)
+        s += plist_s(x, 690, w, [(self.tx(a), self.tx(b)) for a, b in rows_en('beer', 'whisky', 'cocktail', 'food', 'darts')],
+                     18 * k, '#ebe5d8', GOLD_L, '#7d6c48', self.s_label, self.s_price, 25.5)
+        if self.glow:
+            s = f'<g filter="url(#{p}-glow)">{s}</g>'
+        s += T(x - 2, 818, self.tx(f'OPEN {HOURS}') + f' ／ {CLOSED}', 13.5 * self.kh, '#bdb6a8', self.s_hours.css, self.s_hours.w, 'start')
+        return f'<g style="font-variant-numeric:lining-nums">{s}</g>' if self.lnum else s
+
+
+TYPES = {t['no']: Type(t) for t in DATA['fonts']['list']}
+FINAL_TYPE = TYPES[DATA['final'].get('font', '00')]      # 仕上がりと印刷用の PDF の書体
 
 
 # ---- 仕上げの10案（案06「3枚の写真で見せる」をもとに） -----------------------------------------
@@ -619,29 +848,27 @@ def qr_tile(x, y, size, dark=INK, light='#f6f2ea', border=GOLD):
             f'<path d="{"".join(d)}" fill="{dark}" shape-rendering="crispEdges"/>')
 
 
-def poster_final(p, b=0):
+def poster_final(p, b=0, F=None):
     """仕上がり: 案09「写真を上いっぱいに」をもとに、タバコは丸いシール（案02のシールより小さく、控えめに）、
-    右下に Instagram の QR コード。b は印刷用の塗り足し（mm）。ふちまである写真と地の色だけ、外へ広げる。"""
+    右下に Instagram の QR コード。b は印刷用の塗り足し（mm）。ふちまである写真と地の色だけ、外へ広げる。
+    F は丸で囲んだ所（NEW OPEN の札・値段の一覧・営業時間）の書体（書体の案。なければ final の font の書体）。"""
+    F = F or FINAL_TYPE
     g = f'{p}-g'
     W = PW + 2 * b
-    s = (f'<defs>{gold_grad(g)}{shade(p + "-t", .93, 0)}<linearGradient id="{p}-b" x1="0" y1="0" x2="0" y2="1">'
+    s = (f'<defs>{F.defs(p)}{gold_grad(g)}{shade(p + "-t", .93, 0)}<linearGradient id="{p}-b" x1="0" y1="0" x2="0" y2="1">'
          f'<stop offset="0" stop-color="#0c0b0e" stop-opacity="0"/><stop offset="1" stop-color="#0c0b0e"/></linearGradient></defs>')
     s += f'<rect x="{-b}" y="{-b}" width="{W}" height="{PH + 2 * b}" fill="#0c0b0e"/>'
     s += ph('counter-dark', -b, -b, W, 410 + b, f'{p}-p0', .6, .58)
     s += f'<rect x="{-b}" y="{-b}" width="{W}" height="{250 + b}" fill="url(#{p}-t)"/><rect x="{-b}" y="320" width="{W}" height="92" fill="url(#{p}-b)"/>'
     s += head_small(g)
-    s += f'<rect x="40" y="350" width="356" height="42" rx="6" fill="{GOLD}"/>'
-    s += open_text(54, 379, 25, 18, '#141008', gap=14, anchor='start')
+    s += F.band(40, 350, 42, '#141008')
     s += ph('tables', 40, 416, 253, 142, f'{p}-p1', .5, .62)
     s += ph('darts', 301, 416, 253, 142, f'{p}-p2', .48, .42)
     s += smoke_badge(488, 402, 60)
     s += T(297, 592, f'{SMOKE_S}・{SMOKE_N}', 15, '#e6dfd0', JPB, 500)
     s += line(608, 40, 554, op=.5)
     # 左: 値段の目安（英語の表記。いちばん上にチャージ）と営業時間、右: Instagram の QR コード（12.4cm 角）
-    s += plist(48, 652, 312, [(DATA['charge_en'], CHARGE_AMT)], 19, GOLD_L, GOLD_L, '#7d6c48', fam_l=NUM, wl=700)
-    s += plist(48, 690, 312, rows_en('beer', 'whisky', 'cocktail', 'food', 'darts'), 18, '#ebe5d8', GOLD_L, '#7d6c48', 25.5,
-               fam_l=NUM, wl=600)
-    s += T(46, 818, f'OPEN {HOURS} ／ {CLOSED}', 13.5, '#bdb6a8', JPB, 500, 'start')
+    s += F.prices(p, 48, 312)
     qs, qx, qy = 124, 430, 624
     cx = qx + qs / 2
     s += qr_tile(qx, qy, qs)
@@ -915,22 +1142,26 @@ def place_svg(pr):
 SHEET = (1200, 1800)
 
 
-def sheet_svg(pr):
+def sheet_svg(pr, art=None, lines=None):
+    """デザインの画像（ポスターの全体と、下に札・題名・説明）。art はポスターの絵、lines は下の説明の2行（なければ案の説明）。"""
     W, H = SHEET
     k = 1060 / PW
     x0, y0 = 70, 60
     body = f'<rect width="{W}" height="{H}" fill="url(#bgDesign)"/><rect width="{W}" height="{H}" fill="url(#grid)"/>'
     body += f'<rect x="{x0 + 10}" y="{y0 + 18}" width="{PW * k}" height="{PH * k}" fill="#000" opacity=".55" filter="url(#softer)"/>'
-    body += f'<g transform="translate({x0},{y0}) scale({k:.5f})">{poster(pr)}</g>'
+    body += f'<g transform="translate({x0},{y0}) scale({k:.5f})">{art or poster(pr)}</g>'
     y = y0 + PH * k + 40
     badge = badge_of(pr)
     bw = max(104, 28 * len(badge) + 36)
     body += f'<rect x="{x0}" y="{y}" rx="12" width="{bw}" height="50" fill="{GOLD}"/>' + T(x0 + bw / 2, y + 35, badge, 28, '#1a1408', JP, 700)
     body += T(x0 + bw + 20, y + 37, pr['name'], 36, '#fff', JP, 700, 'start')
-    kind = '仕上がり' if pr['id'] == 'final' else 'デザイン案'
-    body += T(x0, y + 92, f'差し込むポスター（A1・59.4 × 84.1cm）の{kind}　{pr["style"]}', 22, '#c9cad3', JP, 500, 'start')
-    note = '「〇〇〇」の値段は、決まったら入れます。' if any(x['tbd'] for x in PRICES.values()) or CHARGE_AMT.count('〇') else ''
-    body += T(x0, y + 128, note + '写真はお店の写真です（印刷の前に撮り直すと、もっときれいになります）。', 20, '#9ea3b2', JP, 500, 'start')
+    if not lines:
+        kind = '仕上がり' if pr['id'] == 'final' else 'デザイン案'
+        note = '「〇〇〇」の値段は、決まったら入れます。' if any(x['tbd'] for x in PRICES.values()) or CHARGE_AMT.count('〇') else ''
+        lines = (f'差し込むポスター（A1・59.4 × 84.1cm）の{kind}　{pr["style"]}',
+                 note + '写真はお店の写真です（印刷の前に撮り直すと、もっときれいになります）。')
+    body += T(x0, y + 92, lines[0], 22, '#c9cad3', JP, 500, 'start')
+    body += T(x0, y + 128, lines[1], 20, '#9ea3b2', JP, 500, 'start')
     body += T(W - 70, H - 30, 'ダイニングバー XⅢ クロスリー', 18, GOLD, JP, 700, 'end')
     return f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">{DEFS}{body}</svg>'
 
@@ -1016,8 +1247,8 @@ def stand_figure_svg():
 
 
 # ---- 書き出し ---------------------------------------------------------------------
-def render(b, svg, name, tmp, size=(1600, 1000), dsf=1.5, web=(1200, 750), jpg=True):
-    """SVG を Edge で画像にする。jpg は保存用（大きい）、webp はページに出す用（小さい）。"""
+def capture(b, svg, tmp, size=(1600, 1000), dsf=1.5):
+    """SVG を Edge で画像にする（保存はしない）。"""
     w, h = size
     page = tmp / 'render.html'
     page.write_text('<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#000}svg{display:block}</style>'
@@ -1025,13 +1256,64 @@ def render(b, svg, name, tmp, size=(1600, 1000), dsf=1.5, web=(1200, 750), jpg=T
     b.open(page.as_uri(), {'width': w, 'height': h, 'deviceScaleFactor': dsf, 'mobile': False})
     b.wait(1.0)
     r = b.call('Page.captureScreenshot', {'format': 'png', 'clip': {'x': 0, 'y': 0, 'width': w, 'height': h, 'scale': 1}})
-    im = Image.open(io.BytesIO(base64.b64decode(r['data']))).convert('RGB')
-    if jpg:
-        im.save(OUT / f'{name}.jpg', 'JPEG', quality=86, optimize=True, progressive=True)
-    im.resize(web, Image.LANCZOS).save(OUT / f'{name}.webp', 'WEBP', quality=82, method=6)
     if b.errors:
         print('  エラー:', b.errors[:3])
+    return Image.open(io.BytesIO(base64.b64decode(r['data']))).convert('RGB')
+
+
+def render(b, svg, name, tmp, size=(1600, 1000), dsf=1.5, web=(1200, 750), jpg=True):
+    """SVG を Edge で画像にする。jpg は保存用（大きい）、webp はページに出す用（小さい。web が None なら作らない）。"""
+    im = capture(b, svg, tmp, size, dsf)
+    if jpg:
+        im.save(OUT / f'{name}.jpg', 'JPEG', quality=86, optimize=True, progressive=True)
+    if web:
+        im.resize(web, Image.LANCZOS).save(OUT / f'{name}.webp', 'WEBP', quality=82, method=6)
     return im.size
+
+
+# ---- 書体の案の画像（ポスター全体・丸で囲んだ所の拡大・一覧用・大きい画像） ------------------------------
+TYPE_K = 3        # 書体の案のポスターを、1mm＝3ピクセルで描く
+ZOOM = ((30, 336, 424, 402), (30, 626, 424, 830))    # 丸で囲んだ所（上: NEW OPEN の札、下: 値段の一覧と営業時間。mm）
+
+
+def type_base(t):
+    return f'sign-font-{t["no"]}-{t["id"]}'
+
+
+def type_art(t):
+    p = 'ft' + t['no']
+    return (f'<clipPath id="{p}-all"><rect width="{PW}" height="{PH}"/></clipPath>'
+            f'<g clip-path="url(#{p}-all)">{poster_final(p, 0, TYPES[t["no"]])}</g>')
+
+
+def where_svg():
+    """書体を変える所（丸で囲んでいただいた所）の目印: いまの仕上がりのポスターに、黄色の枠を重ねる。"""
+    marks = ''
+    for x, y, w, h in ((28, 338, FINAL_TYPE.band_width() + 24, 66), (32, 626, 344, 206)):
+        marks += (f'<rect x="{x}" y="{y}" width="{w:.1f}" height="{h}" rx="20" fill="none" stroke="#000" stroke-opacity=".55" stroke-width="11"/>'
+                  f'<rect x="{x}" y="{y}" width="{w:.1f}" height="{h}" rx="20" fill="none" stroke="#ffe14d" stroke-width="6"/>')
+    return f'<svg xmlns="http://www.w3.org/2000/svg" width="{PW}" height="{PH}" viewBox="0 0 {PW} {PH}">{DEFS}{poster(DATA["final"])}{marks}</svg>'
+
+
+def render_type(b, tmp, t):
+    """書体の案: ページに出すポスター全体（view）・丸で囲んだ所を大きくしたもの（zoom）・一覧用（thumb）・題名つきの大きい画像（poster）。"""
+    base = type_base(t)
+    art = type_art(t)
+    im = capture(b, f'<svg xmlns="http://www.w3.org/2000/svg" width="{PW}" height="{PH}" viewBox="0 0 {PW} {PH}">{DEFS}{art}</svg>',
+                 tmp, (PW, PH), TYPE_K)
+    im.resize((1000, 1416), Image.LANCZOS).save(OUT / f'{base}-view.webp', 'WEBP', quality=82, method=6)
+    top, bottom = (im.crop(tuple(round(v * TYPE_K) for v in box)) for box in ZOOM)
+    gap = 6 * TYPE_K
+    z = Image.new('RGB', (top.width, top.height + gap + bottom.height), '#1c2029')
+    z.paste(top, (0, 0))
+    z.paste(bottom, (0, top.height + gap))
+    for name, w in (('zoom', 1000), ('thumb', 360)):
+        z.resize((w, round(w * z.height / z.width)), Image.LANCZOS).save(OUT / f'{base}-{name}.webp', 'WEBP', quality=84, method=6)
+    pr = {'id': 'font', 'badge': 'いまの書体' if t.get('now') else '書体' + t['no'], 'name': t['name']}
+    lines = ('いまの仕上がりの書体です（くらべる用）' if t.get('now') else '丸で囲んだ所（NEW OPEN の札と、値段の一覧）の書体だけを変えた案',
+             f'英語・数字：{t["en_name"]}　／　日本語：{t["ja_name"]}')
+    render(b, sheet_svg(pr, art, lines), f'{base}-poster', tmp, size=SHEET, dsf=1.2, web=None)
+    return im.size, z.size
 
 
 # ---- 印刷用の PDF（仕上がり） ------------------------------------------------------------
@@ -1119,6 +1401,12 @@ def main():
                   render(b, sheet_svg(final), 'sign-final-poster', tmp, size=SHEET, dsf=1.2, web=(800, 1200)))
         if not only or 'pdf' in only:
             print('印刷用 PDF', PDF.name, *render_print(b, tmp), '（確かめる用の画像:', tmp / 'print-preview.png', '）')
+        if not only or 'fonts' in only:
+            print('書体を変える所の目印', render(b, where_svg(), 'sign-font-where', tmp, size=(PW, PH), dsf=1, web=(480, 680), jpg=False))
+        for t in DATA['fonts']['list']:  # 書体の案（丸で囲んだ所の書体だけを変えたもの）
+            if only and 'fonts' not in only and f'font{t["no"]}' not in only:
+                continue
+            print('書体', t['no'], t['name'], *render_type(b, tmp, t))
         for pr in DATA['proposals']:     # それまでの10案（参考）: デザインと一覧用の画像だけ
             if only and pr['no'] not in only:
                 continue
