@@ -61,6 +61,7 @@
     fontInputs.forEach(function (x) { on[x.value] = x.checked; });
     $$('.sg-type__pick').forEach(function (b) { b.setAttribute('aria-pressed', on[b.getAttribute('data-font')] ? 'true' : 'false'); });
     thumbs.forEach(function (t, i) { t.classList.toggle('is-picked', !!on[fontOf(i)]); });
+    $$('.sg-whole__item').forEach(function (a) { a.classList.toggle('is-picked', !!on[a.getAttribute('data-font')]); });
   }
   if (viewer && panels.length) {
     var img = $('.sg-type__img', viewer), big = $('.sg-type__big', viewer), now = $('.sg-type__now', viewer);
@@ -122,8 +123,9 @@
   }
   refresh();
 
-  // ---- たたんだ所（決まったこと・参考）: 目次などから飛んだときは開く。「すべて開く」
-  var folds = $$('.sg-fold');
+  // ---- たたんだ所（これからの流れ・決まったこと・参考）: 目次などから飛んだときは開く。
+  // 「すべて開く」は、決まったこと・参考の中のものだけを開く
+  var folds = $$('.sg-fold--group .sg-folds > .sg-fold');
   function openTo(el) {
     for (var d = el.closest ? el.closest('details') : null; d; d = d.parentElement ? d.parentElement.closest('details') : null) d.open = true;
   }

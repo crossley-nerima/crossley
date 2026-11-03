@@ -19,8 +19,8 @@
       <button class="sg-btn sg-print" type="button">このページを印刷</button>
     </div>
     <nav class="sg-toc" aria-label="このページの目次">
-      <a href="#summary">要点</a><a href="#fonts">書体の10案</a><a href="#send">返事を送る</a><a href="#flow">これからの流れ</a>
-      <a href="#done">決まったこと・参考（たたんであります）</a>
+      <a href="#summary">要点</a><a href="#fonts">書体の10案</a><a href="#whole">ポスター全体で並べた10案</a><a href="#send">返事を送る</a>
+      <a href="#flow">これからの流れ</a><a href="#done">決まったこと・参考</a>
     </nav>
   </div>
 </header>
@@ -40,12 +40,20 @@
         <figure class="sg-where__img"><img src="img/sign-font-where.webp" width="480" height="680" alt="ポスターの、書体を変える所（黄色の枠）。NEW OPEN の札と、値段の一覧" loading="lazy" decoding="async"><figcaption>黄色の枠の所だけ、書体を変えています</figcaption></figure>
         <div class="sg-where__text">
           <p>丸で囲んでいただいた所（<b>NEW OPEN の札</b>と、<b>値段の一覧・営業時間</b>）の書体だけを変えた10案です。ロゴ・BAR・写真・タバコのシール・QR コードは、そのままです。</p>
-          <p>「‹ ›」か、下の小さい画像で切り替えて、くらべてください（スマホは、画像を左右にすべらせても切り替わります）。いまの書体も、くらべられるように並べています。</p>
+          <p>「‹ ›」か、下の小さい画像で切り替えて、くらべてください（スマホは、画像を左右にすべらせても切り替わります）。いまの書体も、くらべられるように並べています。ポスター全体で並べたものは、この下にあります。</p>
           <p>気に入った案は「これがいい」を押してください。いくつ選んでもかまいません。</p>
         </div>
       </div>
       {{sign_fonts}}
       <p class="sg-sec__note">書体はどれも無料で、お店の看板や印刷に使ってよいもの（Google Fonts の書体）です。英語と日本語を別の案から選ぶこともできます（返事のひとことに書いてください）。</p>
+    </div>
+  </section>
+
+  <section class="sg-sec" id="whole" aria-labelledby="whole-h">
+    <div class="sg-wrap">
+      <h2 id="whole-h"><span class="sg-sec__en">ALL 10 POSTERS</span>ポスター全体で並べた10案</h2>
+      <p class="sg-sec__lead">10案を、ポスター全体で並べました。押すと、その案の大きい画像が開きます。10案を1枚にまとめた画像は、保存して LINE などで送れます。</p>
+      {{sign_whole}}
     </div>
   </section>
 
@@ -69,117 +77,123 @@
     </div>
   </section>
 
-  <section class="sg-sec sg-sec--alt" id="flow" aria-labelledby="flow-h">
+  <section class="sg-sec sg-sec--alt sg-sec--folds" aria-label="これからの流れと、決まったこと・参考">
     <div class="sg-wrap">
-      <h2 id="flow-h"><span class="sg-sec__en">FLOW</span>これからの流れ</h2>
-      <p class="sg-sec__lead">入口に置くまでの流れです。「いまここ」が、いまのところです。</p>
-      <ol class="sg-steps">{{sign_timeline}}</ol>
-      {{sign_timeline_note}}
-    </div>
-  </section>
-
-  <section class="sg-sec" id="done" aria-labelledby="done-h">
-    <div class="sg-wrap">
-      <h2 id="done-h"><span class="sg-sec__en">DECIDED &amp; NOTES</span>決まったこと・参考</h2>
-      <p class="sg-sec__lead">決まったことや、いまは見なくてよいことは、たたんであります。見出しを押すと開きます。</p>
-      <p class="sg-folds__all"><button class="sg-btn sg-fold-all" type="button" aria-pressed="false">すべて開く</button></p>
-      <div class="sg-folds">
-        <details class="sg-fold" id="final">
-          <summary><span class="sg-fold__tag sg-fold__tag--fixed">決まり</span><h3>ポスターの形（案09をもとに）</h3><small class="sg-fold__gist">写真を上いっぱいに・丸いシール・QR コード・値段は英語の表記。書体は、上の10案から選んだものにします</small></summary>
+      <p class="sg-folds__hint">これからの流れと、決まったこと・参考は、たたんであります。見出しを押すと開きます。</p>
+      <div class="sg-folds sg-folds--top">
+        <details class="sg-fold" id="flow">
+          <summary><span class="sg-fold__tag sg-fold__tag--next">これから</span><h2>これからの流れ</h2><small class="sg-fold__gist">{{sign_gist k="flow"}}</small></summary>
           <div class="sg-fold__body">
-            <p class="sg-sec__lead">ポスターを押すと、大きい画像が開きます。下は、入口に置いたときのイメージ（夜）です。</p>
-            {{sign_final}}
+            <p class="sg-sec__lead">入口に置くまでの流れです。「いまここ」が、いまのところです。</p>
+            <ol class="sg-steps">{{sign_timeline}}</ol>
+            {{sign_timeline_note}}
           </div>
         </details>
 
-        <details class="sg-fold" id="changes">
-          <summary><span class="sg-fold__tag sg-fold__tag--done">済</span><h3>いただいたご意見と、直したこと</h3><small class="sg-fold__gist">{{sign_gist k="changes"}}</small></summary>
+        <details class="sg-fold sg-fold--group" id="done">
+          <summary><span class="sg-fold__tag sg-fold__tag--ref">まとめ</span><h2>決まったこと・参考</h2><small class="sg-fold__gist">ポスターの形・ご意見と直したこと・スタンド・載せていること・予算・印刷の頼み方・よくある質問・置くときの決まり・言葉の説明・これまでの10案・出どころ</small></summary>
           <div class="sg-fold__body">
-            <div class="sg-now">
-              <ol class="sg-changes">{{sign_changes}}</ol>
-              <div>
-                <h4 class="sg-h3">いまの入口（夜）</h4>
-                {{sign_now}}
-                <ul class="sg-goals">{{sign_goals}}</ul>
-              </div>
+            <p class="sg-folds__all"><button class="sg-btn sg-fold-all" type="button" aria-pressed="false">すべて開く</button><span>中も、それぞれたたんであります。</span></p>
+            <div class="sg-folds">
+              <details class="sg-fold" id="final">
+                <summary><span class="sg-fold__tag sg-fold__tag--fixed">決まり</span><h3>ポスターの形（案09をもとに）</h3><small class="sg-fold__gist">写真を上いっぱいに・丸いシール・QR コード・値段は英語の表記。書体は、上の10案から選んだものにします</small></summary>
+                <div class="sg-fold__body">
+                  <p class="sg-sec__lead">ポスターを押すと、大きい画像が開きます。下は、入口に置いたときのイメージ（夜）です。</p>
+                  {{sign_final}}
+                </div>
+              </details>
+
+              <details class="sg-fold" id="changes">
+                <summary><span class="sg-fold__tag sg-fold__tag--done">済</span><h3>いただいたご意見と、直したこと</h3><small class="sg-fold__gist">{{sign_gist k="changes"}}</small></summary>
+                <div class="sg-fold__body">
+                  <div class="sg-now">
+                    <ol class="sg-changes">{{sign_changes}}</ol>
+                    <div>
+                      <h4 class="sg-h3">いまの入口（夜）</h4>
+                      {{sign_now}}
+                      <ul class="sg-goals">{{sign_goals}}</ul>
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              <details class="sg-fold" id="stand">
+                <summary><span class="sg-fold__tag sg-fold__tag--fixed">決まり</span><h3>スタンド</h3><small class="sg-fold__gist">{{sign_gist k="stand"}}</small></summary>
+                <div class="sg-fold__body">
+                  <p class="sg-sec__lead">お店が選んだ、光る置き看板です（枠の色はブラック）。ポスターは、このスタンドの表の枠を開けて差し込みます。</p>
+                  <div class="sg-stand">{{sign_stand}}</div>
+                </div>
+              </details>
+
+              <details class="sg-fold" id="contents">
+                <summary><span class="sg-fold__tag sg-fold__tag--fixed">決まり</span><h3>ポスターに載せていること</h3><small class="sg-fold__gist">BAR・ロゴ・3F・NEW OPEN・タバコ・値段の目安（英語）・写真・営業時間・Instagram の QR コード</small></summary>
+                <div class="sg-fold__body">
+                  <p class="sg-sec__lead">値段は、いただいたものを入れました。ホームページの案と同じところから入れているので、変わったときも全部そろって直せます。</p>
+                  <ul class="sg-contents">{{sign_contents}}</ul>
+                  {{sign_ask}}
+                </div>
+              </details>
+
+              <details class="sg-fold" id="budget">
+                <summary><span class="sg-fold__tag sg-fold__tag--fixed">決まり</span><h3>予算（5万円まで）</h3><small class="sg-fold__gist">{{sign_gist k="budget"}}</small></summary>
+                <div class="sg-fold__body">
+                  <p class="sg-sec__lead">スタンド（ブラック）とポスター1枚で、予算の4分の3ほどです。残りで、予備のポスターや延長コードもそろえられます。書体を変えても、金額は変わりません。</p>
+                  {{sign_budget}}
+                </div>
+              </details>
+
+              <details class="sg-fold" id="print-guide">
+                <summary><span class="sg-fold__tag sg-fold__tag--later">あとで</span><h3>ポスターの印刷の頼み方</h3><small class="sg-fold__gist">書体が決まったら、電飾フィルムの A1 で印刷に出します（注文するときに確かめることつき）</small></summary>
+                <div class="sg-fold__body sg-two">
+                  <div>
+                    <h4 class="sg-h3">印刷の頼み方</h4>
+                    <ol class="sg-rules">{{sign_print}}</ol>
+                  </div>
+                  <div>
+                    <h4 class="sg-h3">注文するときに確かめること</h4>
+                    <ul class="sg-quote">{{sign_order_tips}}</ul>
+                    {{sign_pdf}}
+                  </div>
+                </div>
+              </details>
+
+              <details class="sg-fold" id="faq">
+                <summary><span class="sg-fold__tag sg-fold__tag--ref">参考</span><h3>よくある質問</h3><small class="sg-fold__gist">{{sign_gist k="faq"}}</small></summary>
+                <div class="sg-fold__body">
+                  <div class="sg-faq">{{sign_faq}}</div>
+                </div>
+              </details>
+
+              <details class="sg-fold" id="rules">
+                <summary><span class="sg-fold__tag sg-fold__tag--later">あとで</span><h3>置くときの決まり・注意</h3><small class="sg-fold__gist">{{sign_gist k="rules"}}</small></summary>
+                <div class="sg-fold__body">
+                  <ol class="sg-rules sg-rules--grid">{{sign_rules}}</ol>
+                </div>
+              </details>
+
+              <details class="sg-fold" id="words">
+                <summary><span class="sg-fold__tag sg-fold__tag--ref">参考</span><h3>言葉の説明</h3><small class="sg-fold__gist">{{sign_gist k="words"}}</small></summary>
+                <div class="sg-fold__body">
+                  <dl class="sg-words">{{sign_glossary}}</dl>
+                </div>
+              </details>
+
+              <details class="sg-fold" id="history">
+                <summary><span class="sg-fold__tag sg-fold__tag--ref">参考</span><h3>これまでの10案</h3><small class="sg-fold__gist">案06をもとにした、仕上げの10案（仕上がりは、この中の案09をもとにしています）</small></summary>
+                <div class="sg-fold__body">
+                  <p class="sg-sec__lead">押すと、そのポスターの大きい画像が開きます。</p>
+                  <ul class="sg-gallery">{{sign_gallery}}</ul>
+                </div>
+              </details>
+
+              <details class="sg-fold" id="sources">
+                <summary><span class="sg-fold__tag sg-fold__tag--ref">参考</span><h3>値段・決まりの出どころ</h3><small class="sg-fold__gist">{{sign_gist k="sources"}}</small></summary>
+                <div class="sg-fold__body">
+                  <p class="sg-sec__lead">金額は、2026年10月にそれぞれの販売ページで確かめたものです（税込）。注文する前に、もう一度ページで確かめてください。イメージ画像はイラストで、建物は Googleストリートビュー（2024年11月）をもとに描き起こしたものです。ポスターの写真は、ホームページの案と同じお店の写真です。</p>
+                  <ul class="sg-sources">{{sign_sources}}</ul>
+                </div>
+              </details>
             </div>
-          </div>
-        </details>
-
-        <details class="sg-fold" id="stand">
-          <summary><span class="sg-fold__tag sg-fold__tag--fixed">決まり</span><h3>スタンド</h3><small class="sg-fold__gist">{{sign_gist k="stand"}}</small></summary>
-          <div class="sg-fold__body">
-            <p class="sg-sec__lead">お店が選んだ、光る置き看板です（枠の色はブラック）。ポスターは、このスタンドの表の枠を開けて差し込みます。</p>
-            <div class="sg-stand">{{sign_stand}}</div>
-          </div>
-        </details>
-
-        <details class="sg-fold" id="contents">
-          <summary><span class="sg-fold__tag sg-fold__tag--fixed">決まり</span><h3>ポスターに載せていること</h3><small class="sg-fold__gist">BAR・ロゴ・3F・NEW OPEN・タバコ・値段の目安（英語）・写真・営業時間・Instagram の QR コード</small></summary>
-          <div class="sg-fold__body">
-            <p class="sg-sec__lead">値段は、いただいたものを入れました。ホームページの案と同じところから入れているので、変わったときも全部そろって直せます。</p>
-            <ul class="sg-contents">{{sign_contents}}</ul>
-            {{sign_ask}}
-          </div>
-        </details>
-
-        <details class="sg-fold" id="budget">
-          <summary><span class="sg-fold__tag sg-fold__tag--fixed">決まり</span><h3>予算（5万円まで）</h3><small class="sg-fold__gist">{{sign_gist k="budget"}}</small></summary>
-          <div class="sg-fold__body">
-            <p class="sg-sec__lead">スタンド（ブラック）とポスター1枚で、予算の4分の3ほどです。残りで、予備のポスターや延長コードもそろえられます。書体を変えても、金額は変わりません。</p>
-            {{sign_budget}}
-          </div>
-        </details>
-
-        <details class="sg-fold" id="print-guide">
-          <summary><span class="sg-fold__tag sg-fold__tag--later">あとで</span><h3>ポスターの印刷の頼み方</h3><small class="sg-fold__gist">書体が決まったら、電飾フィルムの A1 で印刷に出します（注文するときに確かめることつき）</small></summary>
-          <div class="sg-fold__body sg-two">
-            <div>
-              <h4 class="sg-h3">印刷の頼み方</h4>
-              <ol class="sg-rules">{{sign_print}}</ol>
-            </div>
-            <div>
-              <h4 class="sg-h3">注文するときに確かめること</h4>
-              <ul class="sg-quote">{{sign_order_tips}}</ul>
-              {{sign_pdf}}
-            </div>
-          </div>
-        </details>
-
-        <details class="sg-fold" id="faq">
-          <summary><span class="sg-fold__tag sg-fold__tag--ref">参考</span><h3>よくある質問</h3><small class="sg-fold__gist">{{sign_gist k="faq"}}</small></summary>
-          <div class="sg-fold__body">
-            <div class="sg-faq">{{sign_faq}}</div>
-          </div>
-        </details>
-
-        <details class="sg-fold" id="rules">
-          <summary><span class="sg-fold__tag sg-fold__tag--later">あとで</span><h3>置くときの決まり・注意</h3><small class="sg-fold__gist">{{sign_gist k="rules"}}</small></summary>
-          <div class="sg-fold__body">
-            <ol class="sg-rules sg-rules--grid">{{sign_rules}}</ol>
-          </div>
-        </details>
-
-        <details class="sg-fold" id="words">
-          <summary><span class="sg-fold__tag sg-fold__tag--ref">参考</span><h3>言葉の説明</h3><small class="sg-fold__gist">{{sign_gist k="words"}}</small></summary>
-          <div class="sg-fold__body">
-            <dl class="sg-words">{{sign_glossary}}</dl>
-          </div>
-        </details>
-
-        <details class="sg-fold" id="history">
-          <summary><span class="sg-fold__tag sg-fold__tag--ref">参考</span><h3>これまでの10案</h3><small class="sg-fold__gist">案06をもとにした、仕上げの10案（仕上がりは、この中の案09をもとにしています）</small></summary>
-          <div class="sg-fold__body">
-            <p class="sg-sec__lead">押すと、そのポスターの大きい画像が開きます。</p>
-            <ul class="sg-gallery">{{sign_gallery}}</ul>
-          </div>
-        </details>
-
-        <details class="sg-fold" id="sources">
-          <summary><span class="sg-fold__tag sg-fold__tag--ref">参考</span><h3>値段・決まりの出どころ</h3><small class="sg-fold__gist">{{sign_gist k="sources"}}</small></summary>
-          <div class="sg-fold__body">
-            <p class="sg-sec__lead">金額は、2026年10月にそれぞれの販売ページで確かめたものです（税込）。注文する前に、もう一度ページで確かめてください。イメージ画像はイラストで、建物は Googleストリートビュー（2024年11月）をもとに描き起こしたものです。ポスターの写真は、ホームページの案と同じお店の写真です。</p>
-            <ul class="sg-sources">{{sign_sources}}</ul>
           </div>
         </details>
       </div>

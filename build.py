@@ -530,7 +530,7 @@ def h_sign_fonts(ctx):
     （切り替えは script.js。JavaScript が動かなくても、案の説明は全部下に並び、小さい画像からその案へ飛べる）。"""
     fonts = SIGNS['fonts']['list']
     for t in fonts:
-        for kind in ('zoom', 'view', 'thumb'):
+        for kind in ('zoom', 'card', 'thumb'):
             if not (SIGN_IMG / f'{font_base(t)}-{kind}.webp').exists():
                 raise FileNotFoundError(f'書体の案の画像 {font_base(t)}-{kind} がありません（tools/make_sign_images.py fonts を先に動かす）')
     n = sum(1 for t in fonts if not t.get('now'))
@@ -560,7 +560,7 @@ def h_sign_fonts(ctx):
             + f'<button type="button" class="sg-btn sg-type__pick" data-font="{t["no"]}" aria-pressed="false">'
             f'<span class="sg-type__pick-off">これがいい</span><span class="sg-type__pick-on">選んでいます</span></button></div>'
             f'<a class="sg-type__whole" href="img/{base}-poster.jpg" target="_blank" rel="noopener">'
-            f'<img src="img/{base}-view.webp" width="1000" height="1416" alt="{esc(title)}のポスター全体" loading="lazy" decoding="async">'
+            f'<img src="img/{base}-card.webp" width="600" height="850" alt="{esc(title)}のポスター全体" loading="lazy" decoding="async">'
             f'<span>ポスター全体</span></a></article>')
         thumbs.append(
             f'<li><a class="sg-type__thumb{" is-now" if t.get("now") else ""}" href="#font-{t["no"]}" data-i="{i}">'
@@ -582,10 +582,39 @@ def h_sign_fonts(ctx):
             f'<ol class="sg-type__thumbs" aria-label="書体の案の一覧">{"".join(thumbs)}</ol></div>')
 
 
+SIGN_FONT_ALL = SIGN_IMG / 'sign-font-all.jpg'
+
+
+def h_sign_whole(ctx):
+    """ポスター全体で並べた10案（押すと、その案の大きい画像が開く）と、10案を1枚にまとめた画像を保存するボタン。"""
+    if not SIGN_FONT_ALL.exists():
+        raise FileNotFoundError('10案を1枚にまとめた画像がありません（tools/make_sign_images.py fonts を先に動かす）')
+    items = ''.join(
+        f'<li><a class="sg-whole__item" href="img/{font_base(t)}-poster.jpg" target="_blank" rel="noopener" data-font="{t["no"]}">'
+        f'<img src="img/{font_base(t)}-card.webp" width="600" height="850" alt="書体{t["no"]}「{esc(t["name"])}」のポスター全体" loading="lazy" decoding="async">'
+        f'<span><b>{t["no"]}</b>{esc(t["name"])}</span><i class="sg-type__star">選んでいます</i></a></li>'
+        for t in SIGNS['fonts']['list'] if not t.get('now'))
+    mb = SIGN_FONT_ALL.stat().st_size / 1024 / 1024
+    return (f'<ul class="sg-whole">{items}</ul>'
+            f'<div class="sg-whole__all"><a class="sg-btn sg-btn--gold" href="img/{SIGN_FONT_ALL.name}" download="xiii-poster-fonts-10.jpg">'
+            f'10案を1枚にまとめた画像を保存<small>JPEG・{mb:.1f}MB</small></a>'
+            f'<a class="sg-btn" href="img/{SIGN_FONT_ALL.name}" target="_blank" rel="noopener">1枚の画像を開いて見る</a></div>')
+
+
 def h_sign_font_chips(ctx):
     """返事を送るフォームの「気に入った書体」（いくつでも選べる。書体の10案の「これがいい」と同じものにつながる）。"""
     return ''.join(f'<label class="sg-chip"><input type="checkbox" name="font" value="{t["no"]}" data-name="{esc(t["name"])}">'
                    f'<span>{esc(t["name"] if t.get("now") else t["no"] + " " + t["name"])}</span></label>' for t in SIGNS['fonts']['list'])
+
+
+def flow_gist():
+    """これからの流れの、いまのところ（「いまは 4. 書体を選ぶ（お店）・このあと 4 つで入口に置けます」）。"""
+    steps = SIGNS['timeline']
+    i = next((n for n, t in enumerate(steps, 1) if t.get('now')), 0)
+    if not i:
+        return f'全部で {len(steps)} つ'
+    t = steps[i - 1]
+    return f'いまは {i}.「{t["title"]}」（{t["who"]}）。このあと {len(steps) - i} つで、入口に置けます'
 
 
 def h_sign_gist(ctx, k):
@@ -600,6 +629,7 @@ def h_sign_gist(ctx, k):
         'rules': f'{len(SIGNS["rules"])} 個（ビルの敷地の中に置く・管理会社の承諾・たばこの標識 など）',
         'words': f'{len(SIGNS["glossary"])} 個の言葉',
         'sources': f'{len(SIGNS["sources"])} 件（値段・決まりを確かめたページ）',
+        'flow': flow_gist(),
     }
     return esc(gists[k])
 
@@ -1077,6 +1107,7 @@ HELPERS = {
     'sign_order_tips': h_sign_order_tips, 'sign_timeline': h_sign_timeline, 'sign_timeline_note': h_sign_timeline_note,
     'sign_price_fields': h_sign_price_fields, 'sign_faq': h_sign_faq, 'sign_rules': h_sign_rules, 'sign_glossary': h_sign_glossary,
     'sign_sources': h_sign_sources, 'sign_fonts': h_sign_fonts, 'sign_font_chips': h_sign_font_chips, 'sign_gist': h_sign_gist,
+    'sign_whole': h_sign_whole,
     'tel_href': h_tel_href, 'line_add_href': h_line_add_href, 'line_qr': h_line_qr, 'line_msg_base': h_line_msg_base, 'insta_href': h_insta_href, 'year': h_year,
     'map_url': lambda ctx: esc(map_url()), 'route_url': lambda ctx: esc(route_url()),
     'root': lambda ctx: ctx['root'],

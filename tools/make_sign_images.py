@@ -1273,6 +1273,7 @@ def render(b, svg, name, tmp, size=(1600, 1000), dsf=1.5, web=(1200, 750), jpg=T
 
 # ---- 書体の案の画像（ポスター全体・丸で囲んだ所の拡大・一覧用・大きい画像） ------------------------------
 TYPE_K = 3        # 書体の案のポスターを、1mm＝3ピクセルで描く
+CARD = (600, 850)  # ページに並べるポスター全体の画像の大きさ（10案を1枚に並べた画像にも使う）
 ZOOM = ((30, 336, 424, 402), (30, 626, 424, 830))    # 丸で囲んだ所（上: NEW OPEN の札、下: 値段の一覧と営業時間。mm）
 
 
@@ -1296,12 +1297,12 @@ def where_svg():
 
 
 def render_type(b, tmp, t):
-    """書体の案: ページに出すポスター全体（view）・丸で囲んだ所を大きくしたもの（zoom）・一覧用（thumb）・題名つきの大きい画像（poster）。"""
+    """書体の案: ページに出すポスター全体（card）・丸で囲んだ所を大きくしたもの（zoom）・一覧用（thumb）・題名つきの大きい画像（poster）。"""
     base = type_base(t)
     art = type_art(t)
     im = capture(b, f'<svg xmlns="http://www.w3.org/2000/svg" width="{PW}" height="{PH}" viewBox="0 0 {PW} {PH}">{DEFS}{art}</svg>',
                  tmp, (PW, PH), TYPE_K)
-    im.resize((1000, 1416), Image.LANCZOS).save(OUT / f'{base}-view.webp', 'WEBP', quality=82, method=6)
+    im.resize(CARD, Image.LANCZOS).save(OUT / f'{base}-card.webp', 'WEBP', quality=84, method=6)
     top, bottom = (im.crop(tuple(round(v * TYPE_K) for v in box)) for box in ZOOM)
     gap = 6 * TYPE_K
     z = Image.new('RGB', (top.width, top.height + gap + bottom.height), '#1c2029')
@@ -1314,6 +1315,25 @@ def render_type(b, tmp, t):
              f'英語・数字：{t["en_name"]}　／　日本語：{t["ja_name"]}')
     render(b, sheet_svg(pr, art, lines), f'{base}-poster', tmp, size=SHEET, dsf=1.2, web=None)
     return im.size, z.size
+
+
+def fonts_all_svg():
+    """書体の10案を、ポスター全体で1枚に並べた画像（保存して LINE などで送れるように）。各案の card の画像を並べる。"""
+    W, H, cols, pw, gap, y0 = 1800, 1240, 5, 312, 32, 150
+    ph = pw * PH / PW
+    x0 = (W - cols * pw - (cols - 1) * gap) / 2
+    body = f'<rect width="{W}" height="{H}" fill="url(#bgDesign)"/><rect width="{W}" height="{H}" fill="url(#grid)"/>'
+    body += T(x0, 72, '書体の10案（ポスター全体）', 36, '#fff', JP, 700, 'start')
+    body += T(x0, 110, '丸で囲んでいただいた所（NEW OPEN の札と、値段の一覧）の書体だけを変えています。ほかの所は同じです。',
+              20, '#cfd0d8', JP, 500, 'start')
+    for i, t in enumerate(t for t in DATA['fonts']['list'] if not t.get('now')):
+        x, y = x0 + i % cols * (pw + gap), y0 + i // cols * (ph + 76)
+        body += f'<rect x="{x + 6}" y="{y + 10}" width="{pw}" height="{ph:.1f}" fill="#000" opacity=".55" filter="url(#soft)"/>'
+        body += f'<image href="{(OUT / f"{type_base(t)}-card.webp").as_uri()}" x="{x}" y="{y}" width="{pw}" height="{ph:.1f}"/>'
+        body += f'<rect x="{x}" y="{y + ph + 14:.1f}" rx="8" width="50" height="34" fill="{GOLD}"/>' + T(x + 25, y + ph + 38.5, t['no'], 22, '#1a1408', JP, 700)
+        body += T(x + 62, y + ph + 39, t['name'], 22, '#fff', JP, 700, 'start')
+    body += T(W - x0, H - 26, 'ダイニングバー XⅢ クロスリー｜入口の置き看板のポスター', 18, GOLD, JP, 700, 'end')
+    return f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">{DEFS}{body}</svg>'
 
 
 # ---- 印刷用の PDF（仕上がり） ------------------------------------------------------------
@@ -1407,6 +1427,8 @@ def main():
             if only and 'fonts' not in only and f'font{t["no"]}' not in only:
                 continue
             print('書体', t['no'], t['name'], *render_type(b, tmp, t))
+        if not only or any(x == 'fonts' or x.startswith('font') for x in only):   # 10案をポスター全体で1枚に並べた画像
+            print('書体の10案（1枚）', render(b, fonts_all_svg(), 'sign-font-all', tmp, size=(1800, 1240), dsf=1.5, web=None))
         for pr in DATA['proposals']:     # それまでの10案（参考）: デザインと一覧用の画像だけ
             if only and pr['no'] not in only:
                 continue
