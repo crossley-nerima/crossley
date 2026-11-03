@@ -1,8 +1,8 @@
 """看板の提案（1階入口の光る置き看板に差し込むポスター・10案）のイメージ画像を作る。
 
-  python -I -X utf8 tools/make_sign_images.py [final,pdf,fonts,font03,00,stand,01 …]   … 名前を渡すと、その画像だけ作り直す
+  python -I -X utf8 tools/make_sign_images.py [final,pdf,fonts,font03,where,00,stand,01 …]   … 名前を渡すと、その画像だけ作り直す
       （final は仕上がりの画像、pdf は印刷用の PDF、fonts は書体の案すべて、font03 は書体の案03だけ、
-        00 は今のようす、stand はスタンドの大きさ、01〜10 はそれまでの10案）
+        where は書体を変える所の目印、00 は今のようす、stand はスタンドの大きさ、01〜10 はそれまでの10案）
 
 スタンドは決まっている: モノタロウの LEDパネルA型スタンド 片面（A1）。幅640×奥行490×高さ1185mm、ボード面 640×884mm。
 枠の色はブラック（2026-10-31 にお店が決めた。signs.json の stand.frame）。
@@ -14,7 +14,8 @@
 書体の案（2026-11-03 お店の返事: 丸で囲んだ所＝NEW OPEN の札と、値段の一覧の書体の候補がほしい）は、仕上がりのその所の
 書体だけを変えたもの（signs.json の fonts）。書体は Google Fonts の無料の書体（SIL Open Font License。看板・印刷に使ってよい）で、
 ポスターに使う字だけを Google Fonts から取ってきて（tools/fonts/cache に残す。リポジトリには入れない）、SVG に埋め込んで描く。
-仕上がりと印刷用の PDF の書体は signs.json の final の font（書体の案の番号。00 はいまの書体＝パソコンの書体）。
+仕上がりと印刷用の PDF の書体は signs.json の final の font（書体の案の番号。00 はもとの書体＝パソコンの書体）。
+同じ日にお店が 01「上品で細身」に決めた（確定版）。
 
 文字や値段は signs.json と site.json から読む（値段の計算は build.py の sign_prices と同じもの）。
 値段が決まったら site.json を直して、この画像とページを作り直す。
@@ -264,11 +265,11 @@ def plist(x, y, w, items, size, lab, val, lead=None, lh=None, fam=JPB, wl=500, w
 # ---- 書体の案（丸で囲んだ所＝NEW OPEN の札と、値段の一覧・営業時間の書体） ------------------------------------
 # 2026-11-03 お店の返事: その所の書体の候補がほしい。書体は Google Fonts の無料の書体（SIL Open Font License）。
 # ポスターに使う字だけを Google Fonts から取ってきて（tools/fonts/cache に残す）、SVG に埋め込んで描く。
-# 00（いまの書体）は、パソコンに入っている書体（Bahnschrift・Noto Sans JP）。
+# 00（もとの書体）は、パソコンに入っている書体（Bahnschrift・Noto Sans JP）。
 FONT_CACHE = ROOT / 'tools' / 'fonts' / 'cache'
 WIN_FONTS = Path(os.environ.get('WINDIR', r'C:\Windows')) / 'Fonts'
 LOCAL_FONTS = {'Bahnschrift': 'bahnschrift.ttf', 'Noto Sans JP': 'NotoSansJP-VF.ttf'}
-BAND_PAD = 2.1     # NEW OPEN の札の右の余白（いまの書体で、札の幅が前と同じ 356 になる値）
+BAND_PAD = 2.1     # NEW OPEN の札の右の余白（もとの書体で、札の幅が前と同じ 356 になる値）
 
 
 def _type_text():
@@ -1288,12 +1289,13 @@ def type_art(t):
 
 
 def where_svg():
-    """書体を変える所（丸で囲んでいただいた所）の目印: いまの仕上がりのポスターに、黄色の枠を重ねる。"""
+    """書体を変える所（丸で囲んでいただいた所）の目印: もとの書体（00）のポスターに、黄色の枠を重ねる。"""
+    t = next(t for t in DATA['fonts']['list'] if t.get('now'))
     marks = ''
-    for x, y, w, h in ((28, 338, FINAL_TYPE.band_width() + 24, 66), (32, 626, 344, 206)):
+    for x, y, w, h in ((28, 338, TYPES[t['no']].band_width() + 24, 66), (32, 626, 344, 206)):
         marks += (f'<rect x="{x}" y="{y}" width="{w:.1f}" height="{h}" rx="20" fill="none" stroke="#000" stroke-opacity=".55" stroke-width="11"/>'
                   f'<rect x="{x}" y="{y}" width="{w:.1f}" height="{h}" rx="20" fill="none" stroke="#ffe14d" stroke-width="6"/>')
-    return f'<svg xmlns="http://www.w3.org/2000/svg" width="{PW}" height="{PH}" viewBox="0 0 {PW} {PH}">{DEFS}{poster(DATA["final"])}{marks}</svg>'
+    return f'<svg xmlns="http://www.w3.org/2000/svg" width="{PW}" height="{PH}" viewBox="0 0 {PW} {PH}">{DEFS}{type_art(t)}{marks}</svg>'
 
 
 def render_type(b, tmp, t):
@@ -1310,8 +1312,8 @@ def render_type(b, tmp, t):
     z.paste(bottom, (0, top.height + gap))
     for name, w in (('zoom', 1000), ('thumb', 360)):
         z.resize((w, round(w * z.height / z.width)), Image.LANCZOS).save(OUT / f'{base}-{name}.webp', 'WEBP', quality=84, method=6)
-    pr = {'id': 'font', 'badge': 'いまの書体' if t.get('now') else '書体' + t['no'], 'name': t['name']}
-    lines = ('いまの仕上がりの書体です（くらべる用）' if t.get('now') else '丸で囲んだ所（NEW OPEN の札と、値段の一覧）の書体だけを変えた案',
+    pr = {'id': 'font', 'badge': t['name'] if t.get('now') else '書体' + t['no'], 'name': t['name']}
+    lines = ('書体を変える前の仕上がりの書体です（くらべる用）' if t.get('now') else '丸で囲んだ所（NEW OPEN の札と、値段の一覧）の書体だけを変えた案',
              f'英語・数字：{t["en_name"]}　／　日本語：{t["ja_name"]}')
     render(b, sheet_svg(pr, art, lines), f'{base}-poster', tmp, size=SHEET, dsf=1.2, web=None)
     return im.size, z.size
@@ -1421,7 +1423,7 @@ def main():
                   render(b, sheet_svg(final), 'sign-final-poster', tmp, size=SHEET, dsf=1.2, web=(800, 1200)))
         if not only or 'pdf' in only:
             print('印刷用 PDF', PDF.name, *render_print(b, tmp), '（確かめる用の画像:', tmp / 'print-preview.png', '）')
-        if not only or 'fonts' in only:
+        if not only or 'fonts' in only or 'where' in only:
             print('書体を変える所の目印', render(b, where_svg(), 'sign-font-where', tmp, size=(PW, PH), dsf=1, web=(480, 680), jpg=False))
         for t in DATA['fonts']['list']:  # 書体の案（丸で囲んだ所の書体だけを変えたもの）
             if only and 'fonts' not in only and f'font{t["no"]}' not in only:
